@@ -26,8 +26,8 @@ class Bootstrap
 {
     public const MODULE_PATH = '/interface/modules/custom_modules/oe-module-appt-hovercard';
 
-    /** Calendar pages that render the appointment blocks (same pages the bundled telehealth module hooks). */
-    private const CALENDAR_PAGES = ['pnuserapi.php', 'pnadmin.php'];
+    /** The calendar view page. (pnadmin.php is the category admin screen, not an appointment view.) */
+    private const CALENDAR_PAGE = 'pnuserapi.php';
 
     public function __construct(private readonly EventDispatcherInterface $eventDispatcher)
     {
@@ -42,7 +42,7 @@ class Bootstrap
 
     public function addScripts(ScriptFilterEvent $event): ScriptFilterEvent
     {
-        if (!$this->shouldInject($event->getPageName())) {
+        if (!$this->shouldInject($event->getPageName(), $event->getContextArgument('viewtype'))) {
             return $event;
         }
         $base = $this->webPath() . '/public/';
@@ -54,8 +54,9 @@ class Bootstrap
 
     public function addStyles(StyleFilterEvent $event): StyleFilterEvent
     {
-        $page = basename((string)$event->getContextArgument(StyleFilterEvent::CONTEXT_ARGUMENT_SCRIPT_NAME));
-        if (!$this->shouldInject($page)) {
+        // The calendar dispatches this event with the page name 'pnuserapi.php'; it sets no script-name context.
+        $page = basename($event->getPageName());
+        if (!$this->shouldInject($page, $event->getContextArgument('viewtype'))) {
             return $event;
         }
         $styles = $event->getStyles();
@@ -87,13 +88,13 @@ class Bootstrap
     }
 
     /**
-     * Only load the card on the calendar, and only for users who may see it.
-     * Users outside the allowed roles never get the script, so they keep the
-     * native tooltip. The endpoint enforces the same rule again.
+     * Only load the card on a calendar view the admin enabled, and only for
+     * users who may see it. Everyone else keeps the native tooltip. The
+     * endpoint enforces the role rule again.
      */
-    private function shouldInject(string $pageName): bool
+    private function shouldInject(string $pageName, mixed $viewtype): bool
     {
-        if (!in_array($pageName, self::CALENDAR_PAGES, true)) {
+        if ($pageName !== self::CALENDAR_PAGE) {
             return false;
         }
         $session = SessionWrapperFactory::getInstance()->getActiveSession();
@@ -102,6 +103,9 @@ class Bootstrap
             return false;
         }
         $settings = (new SettingsRepository())->all();
+        if (!Settings::viewEnabled($settings, $viewtype)) {
+            return false;
+        }
         $access = new AccessPolicy($settings, (new RoleResolver())->titlesFor($username));
         return $access->canViewCard();
     }

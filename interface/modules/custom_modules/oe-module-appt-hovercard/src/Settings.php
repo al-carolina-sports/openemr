@@ -55,6 +55,21 @@ final class Settings
     }
 
     /**
+     * Is the card enabled for this calendar view ('day', 'week' or 'month')?
+     * An unknown or missing view is never enabled.
+     *
+     * @param array<string, mixed> $settings
+     */
+    public static function viewEnabled(array $settings, mixed $viewtype): bool
+    {
+        if (!is_string($viewtype) || !in_array($viewtype, self::VIEWS, true)) {
+            return false;
+        }
+        $views = $settings['views'] ?? [];
+        return is_array($views) && in_array($viewtype, $views, true);
+    }
+
+    /**
      * Turn untrusted form input into a complete, valid settings array.
      * Anything missing or out of range falls back to the default.
      *

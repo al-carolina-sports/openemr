@@ -58,3 +58,8 @@
     font-size: 24px;
     color: #6c757d;
 }
+
+/* Core's picture pop-up (ShowImage) must not appear under the card. */
+#popup {
+    display: none !important;
+}

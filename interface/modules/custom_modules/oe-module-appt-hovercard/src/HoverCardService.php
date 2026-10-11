@@ -26,14 +26,15 @@ class HoverCardService
         private readonly array $settings,
         private readonly AccessPolicy $access,
         private readonly \DateTimeImmutable $today,
-        private readonly string $webRoot
+        private readonly string $webRoot,
+        private readonly PhotoService $photos = new PhotoService()
     ) {
     }
 
     /**
      * @return array<string, mixed>|null null when the appointment does not exist
      */
-    public function build(int $eid): ?array
+    public function build(int $eid, bool $canSeeDemographics = true): ?array
     {
         $event = QueryUtils::querySingleRow(
             'SELECT e.`pc_eid`, e.`pc_pid`, e.`pc_hometext`, e.`pc_eventDate`, e.`pc_startTime`, '
@@ -53,7 +54,8 @@ class HoverCardService
 
         $pid = (int)($event['pc_pid'] ?? 0);
         $patient = $pid > 0 ? $this->patientRow($pid) : null;
-        $sensitive = $this->access->canViewSensitive();
+        // DOB and contact data need the role rule AND core's patients/demo ACL.
+        $sensitive = $canSeeDemographics && $this->access->canViewSensitive();
         $values = $this->appointmentValues($event);
 
         if ($patient !== null) {
@@ -102,7 +104,7 @@ class HoverCardService
             'eid' => $eid,
             'pid' => $pid,
             'blocks' => $blocks,
-            'photo' => $patient !== null ? $this->photo($pid, $patient) : null,
+            'photo' => $patient !== null && $canSeeDemographics ? $this->photo($pid, $patient) : null,
         ];
     }
 
@@ -235,21 +237,10 @@ class HoverCardService
 
         $size = Settings::PHOTO_SIZES[(string)($this->settings['photo_size'] ?? 'medium')] ?? 100;
         $category = (string)($this->settings['photo_category'] ?? 'Patient Photograph');
-        $doc = QueryUtils::querySingleRow(
-            'SELECT d.`id` FROM `documents` d '
-            . 'JOIN `categories_to_documents` cd ON cd.`document_id` = d.`id` '
-            . 'JOIN `categories` c ON c.`id` = cd.`category_id` '
-            . 'WHERE d.`foreign_id` = ? AND d.`deleted` = 0 AND c.`name` = ? '
-            . 'ORDER BY d.`date` DESC, d.`id` DESC LIMIT 1',
-            [$pid, $category],
-            false
-        );
-
         $url = null;
-        if (is_array($doc) && isset($doc['id'])) {
-            // TODO: serve a thumbnail instead of the full image (spec: "never the full image").
-            $url = $this->webRoot . '/controller.php?document&retrieve&patient_id=' . $pid
-                . '&document_id=' . (int)$doc['id'] . '&as_file=false&original_file=true&context=patient_picture';
+        if ($this->photos->findDocumentId($pid, $category) !== null) {
+            // Module endpoint, not core's document controller (8.5 only lets that one serve the open patient).
+            $url = $this->webRoot . Bootstrap::MODULE_PATH . '/public/ajax.php?action=photo&pid=' . $pid;
         }
         if ($url === null && ($this->settings['photo_missing'] ?? 'initials') === 'hide') {
             return null;
@@ -267,11 +258,7 @@ class HoverCardService
     private function patientRow(int $pid): ?array
     {
         $columns = ['fname', 'lname', 'preferred_name', 'DOB', 'email', 'phone_cell', 'phone_home', 'phone_biz'];
-        $existing = QueryUtils::fetchTableColumn(
-            'SELECT COLUMN_NAME FROM information_schema.COLUMNS WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = ?',
-            'COLUMN_NAME',
-            ['patient_data']
-        );
+        $existing = self::patientColumns();
         foreach (['source_preferred_contact', 'source_best_time'] as $setting) {
             $column = $this->settings[$setting] ?? '';
             // Column names cannot be bound, so only names that really exist in patient_data are allowed.
@@ -283,6 +270,33 @@ class HoverCardService
         $select = implode(', ', array_map(static fn (string $c): string => '`' . $c . '`', $columns));
         $row = QueryUtils::querySingleRow('SELECT ' . $select . ' FROM `patient_data` WHERE `pid` = ?', [$pid], false);
         return is_array($row) ? $row : null;
+    }
+
+    /** @var list<string>|null */
+    private static ?array $patientColumns = null;
+
+    /**
+     * patient_data column names, looked up once per request.
+     *
+     * @return list<string>
+     */
+    private static function patientColumns(): array
+    {
+        if (self::$patientColumns === null) {
+            $columns = [];
+            $rows = QueryUtils::fetchTableColumn(
+                'SELECT COLUMN_NAME FROM information_schema.COLUMNS WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = ?',
+                'COLUMN_NAME',
+                ['patient_data']
+            );
+            foreach ($rows as $name) {
+                if (is_string($name)) {
+                    $columns[] = $name;
+                }
+            }
+            self::$patientColumns = $columns;
+        }
+        return self::$patientColumns;
     }
 
     /**

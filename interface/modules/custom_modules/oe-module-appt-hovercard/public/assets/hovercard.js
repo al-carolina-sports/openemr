@@ -19,17 +19,15 @@
 
     // ---- The only place that knows about the calendar's markup. ----------
     // Re-test after every OpenEMR upgrade (templates/calendar/default/views/*).
+    // Day/Week events are div.event[data-eid]; Month events are div.month_event[data-eid].
+    // Which views get the card is decided server-side (Bootstrap::shouldInject).
     var SELECTORS = {
-        appointment: '.event[data-eid]',
+        appointment: '.event[data-eid], .month_event[data-eid]',
         eidAttribute: 'data-eid',
-        titleAttribute: 'title'
+        titleAttribute: 'title',
+        // Core's picture pop-up icon: onmouseover="ShowImage(...)" inside the event content.
+        legacyHover: '[onmouseover*="ShowImage"]'
     };
-
-    // TODO: confirm how to tell Day/Week/Month apart on a running instance.
-    // Until then every view that renders .event[data-eid] is eligible.
-    function currentViewAllowed() {
-        return true;
-    }
     // ----------------------------------------------------------------------
 
     var cache = new Map();
@@ -74,18 +72,34 @@
             var photo = el('div', 'oe-hc-photo');
             photo.style.width = data.photo.size + 'px';
             photo.style.height = data.photo.size + 'px';
-            if (data.photo.url) {
-                var img = document.createElement('img');
-                img.src = data.photo.url;
-                img.alt = '';
-                photo.appendChild(img);
-            } else {
-                photo.classList.add('oe-hc-initials');
-                photo.textContent = data.photo.initials || '';
+            photo.classList.add('oe-hc-initials');
+            photo.textContent = data.photo.initials || '';
+            if (data.photo.url && config) {
+                loadPhoto(data.photo.url, photo);
             }
             root.appendChild(photo);
         }
         return root;
+    }
+
+    // The photo endpoint needs the CSRF header, which <img src> cannot send, so fetch it as a blob.
+    function loadPhoto(url, holder) {
+        fetch(url, { credentials: 'same-origin', headers: { 'X-CSRF-Token': config.csrf } })
+            .then(function (response) {
+                if (!response.ok) {
+                    throw new Error('photo ' + response.status);
+                }
+                return response.blob();
+            })
+            .then(function (blob) {
+                var img = document.createElement('img');
+                img.alt = '';
+                img.src = URL.createObjectURL(blob);
+                holder.textContent = '';
+                holder.classList.remove('oe-hc-initials');
+                holder.appendChild(img);
+            })
+            .catch(function () { /* keep the initials */ });
     }
 
     function ensureCard() {
@@ -124,29 +138,58 @@
         hideTimer = setTimeout(hide, config.hideDelayMs);
     }
 
+    // Remove every native tooltip under the event (event, patient name, address, age, DOB...)
+    // and core's ShowImage pop-up handlers. Titles are kept in data-oe-hc-title so they can be
+    // put back if the card cannot be shown.
     function suppressNativeTooltip(target) {
-        var title = target.getAttribute(SELECTORS.titleAttribute);
-        if (title !== null) {
-            target.setAttribute('data-oe-hc-title', title);
-            target.removeAttribute(SELECTORS.titleAttribute);
+        var nodes = [target].concat(Array.prototype.slice.call(target.querySelectorAll('[title]')));
+        nodes.forEach(function (node) {
+            var title = node.getAttribute(SELECTORS.titleAttribute);
+            if (title !== null) {
+                node.setAttribute('data-oe-hc-title', title);
+                node.removeAttribute(SELECTORS.titleAttribute);
+            }
+        });
+        target.querySelectorAll(SELECTORS.legacyHover).forEach(function (node) {
+            node.removeAttribute('onmouseover');
+            node.removeAttribute('onmouseout');
+        });
+        var popup = document.getElementById('popup');
+        if (popup) {
+            popup.style.display = 'none';
         }
     }
 
     function restoreNativeTooltip(target) {
-        var title = target.getAttribute('data-oe-hc-title');
-        if (title !== null) {
-            target.setAttribute(SELECTORS.titleAttribute, title);
-            target.removeAttribute('data-oe-hc-title');
+        var nodes = [target].concat(Array.prototype.slice.call(target.querySelectorAll('[data-oe-hc-title]')));
+        nodes.forEach(function (node) {
+            var title = node.getAttribute('data-oe-hc-title');
+            if (title !== null) {
+                node.setAttribute(SELECTORS.titleAttribute, title);
+                node.removeAttribute('data-oe-hc-title');
+            }
+        });
+    }
+
+    // Appointment id: data-eid, or the middle part of id="{date}-{eid}-{cattype}".
+    function eidOf(target) {
+        var eid = target.getAttribute(SELECTORS.eidAttribute);
+        if (eid && /^\d+$/.test(eid)) {
+            return eid;
         }
+        var m = /-(\d+)-[^-]*$/.exec(target.id || '');
+        return m ? m[1] : '';
     }
 
     function fetchCard(eid) {
         if (cache.has(eid)) {
             return Promise.resolve(cache.get(eid));
         }
-        var url = config.endpoint + '?eid=' + encodeURIComponent(eid)
-            + '&csrf_token_form=' + encodeURIComponent(config.csrf);
-        return fetch(url, { credentials: 'same-origin', headers: { 'Accept': 'application/json' } })
+        var url = config.endpoint + '?eid=' + encodeURIComponent(eid);
+        return fetch(url, {
+            credentials: 'same-origin',
+            headers: { 'Accept': 'application/json', 'X-CSRF-Token': config.csrf }
+        })
             .then(function (response) {
                 if (!response.ok) {
                     throw new Error('hovercard ' + response.status);
@@ -160,12 +203,11 @@
     }
 
     function open(target) {
-        var eid = target.getAttribute(SELECTORS.eidAttribute);
+        var eid = eidOf(target);
         if (!eid) {
             return;
         }
         activeEl = target;
-        suppressNativeTooltip(target);
         fetchCard(eid).then(function (data) {
             if (activeEl !== target) {
                 return; // pointer already moved on
@@ -183,34 +225,56 @@
         return node && node.closest ? node.closest(SELECTORS.appointment) : null;
     }
 
-    if (currentViewAllowed()) {
-        if (config.clickMode) {
-            document.addEventListener('click', function (event) {
-                var target = appointmentFrom(event.target);
-                if (target) {
-                    open(target);
-                } else if (!card || !card.contains(event.target)) {
-                    hide();
-                }
-            });
-        } else {
-            document.addEventListener('mouseover', function (event) {
-                var target = appointmentFrom(event.target);
-                if (!target || target === activeEl) {
-                    clearTimeout(hideTimer);
+    function insideCard(node) {
+        return !!(card && node && card.contains(node));
+    }
+
+    if (config.clickMode) {
+        document.addEventListener('mouseover', function (event) {
+            var target = appointmentFrom(event.target);
+            if (target) {
+                suppressNativeTooltip(target);
+            }
+        });
+        document.addEventListener('click', function (event) {
+            var target = appointmentFrom(event.target);
+            if (target) {
+                suppressNativeTooltip(target);
+                open(target);
+            } else if (!insideCard(event.target)) {
+                hide();
+            }
+        });
+    } else {
+        // One rule: the pointer is either over an appointment / the card, or it is not.
+        // Every mouseover (including onto empty grid) re-evaluates, so leaving both always hides.
+        document.addEventListener('mouseover', function (event) {
+            var target = appointmentFrom(event.target);
+            if (target) {
+                suppressNativeTooltip(target); // before the browser's tooltip delay
+                clearTimeout(hideTimer);
+                if (target === activeEl) {
                     return;
                 }
                 clearTimeout(showTimer);
-                clearTimeout(hideTimer);
                 showTimer = setTimeout(function () { open(target); }, config.hoverDelayMs);
-            });
-            document.addEventListener('mouseout', function (event) {
-                var target = appointmentFrom(event.target);
-                if (target) {
-                    clearTimeout(showTimer);
-                    scheduleHide();
-                }
-            });
-        }
+                return;
+            }
+            if (insideCard(event.target)) {
+                clearTimeout(hideTimer);
+                return;
+            }
+            clearTimeout(showTimer);
+            if (activeEl) {
+                scheduleHide();
+            }
+        });
+        // Pointer left the page/iframe entirely.
+        document.documentElement.addEventListener('mouseleave', function () {
+            clearTimeout(showTimer);
+            if (activeEl) {
+                scheduleHide();
+            }
+        });
     }
 })();
