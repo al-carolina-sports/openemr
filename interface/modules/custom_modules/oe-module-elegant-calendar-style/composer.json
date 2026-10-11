@@ -1,0 +1,20 @@
+{
+    "name": "carolina-sports/oe-module-elegant-calendar-style",
+    "description": "Annie's Elegant Calendar Style: smaller, cleaner appointment text on the OpenEMR calendar (CSS only)",
+    "type": "openemr-module",
+    "license": "GPL-3.0-or-later",
+    "require": {
+        "php": ">=8.3"
+    },
+    "autoload": {
+        "psr-4": {
+            "OpenEMR\\Modules\\ElegantCalendarStyle\\": "src/"
+        }
+    },
+    "extra": {
+        "openemr": {
+            "type": "custom-module",
+            "directory": "oe-module-elegant-calendar-style"
+        }
+    }
+}

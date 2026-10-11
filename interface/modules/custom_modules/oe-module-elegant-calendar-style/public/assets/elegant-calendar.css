@@ -1,0 +1,22 @@
+/**
+ * Annie's Elegant Calendar Style
+ *
+ * Appointment text in the Day/Week views at the same size as the time labels
+ * (0.8rem, about 13px). Everything else keeps the theme's styling.
+ *
+ * To change the size: edit --aecs-event-font-size below, then bump
+ * Config::VERSION in src/Config.php.
+ */
+:root {
+    --aecs-event-font-size: 0.8rem;
+}
+
+.event,
+.event_appointment,
+.event_in,
+.event_highlight.event_time,
+.event .event_details,
+.event_details,
+.therapy_group .event_details {
+    font-size: var(--aecs-event-font-size);
+}
