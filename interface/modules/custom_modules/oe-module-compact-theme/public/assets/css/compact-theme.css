@@ -1,0 +1,716 @@
+/**
+ * Compact Theme module stylesheet.
+ *
+ * Layered on top of OpenEMR's General Theme (Light for Paper and Rail, Dark
+ * for Slate). Everything is scoped to attributes that compact-theme.js sets on
+ * <html>, so with the module disabled nothing here matches:
+ *
+ *   html[data-cmt-theme="slate|paper|rail"]
+ *   html[data-cmt-density="compact|cozy"]
+ *   html[data-cmt-menu="both|icons|labels"]
+ *
+ * Sections: 1 tokens · 2 density · 3 base · 4 components · 5 main window
+ * (menu, tabs, patient bar) · 6 menu icons · 7 icon-only menu · 8 rail layout
+ *
+ * @package   OpenEMR
+ * @link      https://www.open-emr.org
+ * @author    Carolina Sports and Spine
+ * @copyright Copyright (c) 2026 Carolina Sports and Spine
+ * @license   https://github.com/openemr/openemr/blob/master/LICENSE GNU General Public License 3
+ */
+
+/* ------------------------------------------------------------------ */
+/* 1. Theme tokens                                                     */
+/* ------------------------------------------------------------------ */
+
+html[data-cmt-theme] {
+  --cmt-font: "Inter", "Segoe UI", system-ui, -apple-system, "Helvetica Neue", Arial, sans-serif;
+  --cmt-mono: "JetBrains Mono", ui-monospace, "SFMono-Regular", Menlo, Consolas, monospace;
+  --cmt-a: var(--cmt-accent, var(--cmt-accent-default));
+  --cmt-on-a: var(--cmt-on-accent, var(--cmt-on-accent-default));
+  --cmt-a-soft: color-mix(in srgb, var(--cmt-a) 14%, var(--cmt-surface));
+  --cmt-a-ring: color-mix(in srgb, var(--cmt-a) 35%, transparent);
+}
+
+html[data-cmt-theme="slate"] {
+  color-scheme: dark;
+  --cmt-bg: #0d1015;
+  --cmt-surface: #151a21;
+  --cmt-surface-2: #11151b;
+  --cmt-hover: #1c232c;
+  --cmt-border: #222a33;
+  --cmt-border-soft: #1d232b;
+  --cmt-text: #e6e9ee;
+  --cmt-muted: #9aa4b2;
+  --cmt-accent-default: #2dd4bf;
+  --cmt-on-accent-default: #06201c;
+  --cmt-danger-bg: #3a1418;
+  --cmt-danger-fg: #fca5a5;
+  --cmt-nav-bg: #11151b;
+  --cmt-nav-fg: #c3cbd6;
+  --cmt-stripe: rgba(255, 255, 255, 0.025);
+  --cmt-shadow: 0 10px 28px rgba(0, 0, 0, 0.45);
+  --cmt-radius: 8px;
+  --cmt-card-title-size: 0.6875rem;
+  --cmt-card-title-weight: 600;
+  --cmt-card-title-transform: uppercase;
+  --cmt-card-title-tracking: 0.06em;
+  --cmt-card-title-color: var(--cmt-muted);
+}
+
+html[data-cmt-theme="paper"] {
+  color-scheme: light;
+  --cmt-bg: #f4f5f7;
+  --cmt-surface: #ffffff;
+  --cmt-surface-2: #ffffff;
+  --cmt-hover: #f1f3f6;
+  --cmt-border: #e3e6ea;
+  --cmt-border-soft: #eef0f3;
+  --cmt-text: #1b1f24;
+  --cmt-muted: #5b6470;
+  --cmt-accent-default: #2563eb;
+  --cmt-on-accent-default: #ffffff;
+  --cmt-danger-bg: #fdecec;
+  --cmt-danger-fg: #a11d1d;
+  --cmt-nav-bg: #ffffff;
+  --cmt-nav-fg: #3d4550;
+  --cmt-stripe: #fafbfc;
+  --cmt-shadow: 0 8px 24px rgba(17, 20, 24, 0.12);
+  --cmt-radius: 6px;
+  --cmt-card-title-size: 0.8125rem;
+  --cmt-card-title-weight: 600;
+  --cmt-card-title-transform: none;
+  --cmt-card-title-tracking: 0;
+  --cmt-card-title-color: var(--cmt-text);
+}
+
+html[data-cmt-theme="rail"] {
+  color-scheme: light;
+  --cmt-bg: #f6f6f4;
+  --cmt-surface: #ffffff;
+  --cmt-surface-2: #ffffff;
+  --cmt-hover: #efeee9;
+  --cmt-border: #e6e5e1;
+  --cmt-border-soft: #efeee9;
+  --cmt-text: #17191c;
+  --cmt-muted: #57606a;
+  --cmt-accent-default: #4f46e5;
+  --cmt-on-accent-default: #ffffff;
+  --cmt-danger-bg: #fdecec;
+  --cmt-danger-fg: #a11d1d;
+  --cmt-nav-bg: #ffffff;
+  --cmt-nav-fg: #3d4550;
+  --cmt-rail-bg: #111827;
+  --cmt-rail-fg: #cbd5e1;
+  --cmt-rail-hover: #1f2937;
+  --cmt-stripe: #fafaf8;
+  --cmt-shadow: 0 8px 24px rgba(17, 20, 24, 0.14);
+  --cmt-radius: 10px;
+  --cmt-card-title-size: 0.6875rem;
+  --cmt-card-title-weight: 500;
+  --cmt-card-title-transform: none;
+  --cmt-card-title-tracking: 0;
+  --cmt-card-title-color: var(--cmt-muted);
+}
+
+/* ------------------------------------------------------------------ */
+/* 2. Density                                                          */
+/* ------------------------------------------------------------------ */
+
+html[data-cmt-density="compact"] {
+  font-size: 13px;
+  --cmt-cell-y: 0.25rem;
+  --cmt-cell-x: 0.5rem;
+  --cmt-card-pad: 0.5rem;
+}
+
+html[data-cmt-density="cozy"] {
+  font-size: 14px;
+  --cmt-cell-y: 0.5rem;
+  --cmt-cell-x: 0.75rem;
+  --cmt-card-pad: 0.75rem;
+}
+
+/* ------------------------------------------------------------------ */
+/* 3. Base                                                             */
+/* ------------------------------------------------------------------ */
+
+html[data-cmt-theme] body {
+  background-color: var(--cmt-bg);
+  color: var(--cmt-text);
+  font-family: var(--cmt-font);
+  line-height: 1.35;
+}
+
+html[data-cmt-theme] a:not([class]) {
+  color: var(--cmt-a);
+}
+
+html[data-cmt-theme] code,
+html[data-cmt-theme] kbd,
+html[data-cmt-theme] pre,
+html[data-cmt-theme] .text-monospace {
+  font-family: var(--cmt-mono) !important;
+}
+
+html[data-cmt-theme] .text-muted {
+  color: var(--cmt-muted) !important;
+}
+
+html[data-cmt-theme] .bg-light,
+html[data-cmt-theme] .bg-white {
+  background-color: var(--cmt-surface) !important;
+}
+
+html[data-cmt-theme] .border,
+html[data-cmt-theme] .border-top,
+html[data-cmt-theme] .border-bottom,
+html[data-cmt-theme] hr {
+  border-color: var(--cmt-border) !important;
+}
+
+/* ------------------------------------------------------------------ */
+/* 4. Components                                                       */
+/* ------------------------------------------------------------------ */
+
+/* Cards (patient dashboard and most modern pages) */
+html[data-cmt-theme] .card {
+  background-color: var(--cmt-surface);
+  border: 1px solid var(--cmt-border);
+  border-radius: var(--cmt-radius);
+  box-shadow: none;
+  color: var(--cmt-text);
+}
+
+html[data-cmt-theme] .card-header,
+html[data-cmt-theme] .card-footer {
+  background-color: transparent;
+  border-color: var(--cmt-border-soft);
+}
+
+html[data-cmt-theme] .card > .card-body {
+  padding: var(--cmt-card-pad) !important;
+}
+
+html[data-cmt-theme] .card .card-title,
+html[data-cmt-theme] .card .card-title > a {
+  color: var(--cmt-card-title-color);
+  font-size: var(--cmt-card-title-size);
+  font-weight: var(--cmt-card-title-weight) !important;
+  letter-spacing: var(--cmt-card-title-tracking);
+  text-decoration: none;
+  text-transform: var(--cmt-card-title-transform);
+}
+
+html[data-cmt-theme] .card .card-title {
+  align-items: center;
+}
+
+html[data-cmt-theme] .card .card-title .btn,
+html[data-cmt-theme] .card .card-title > span > a {
+  color: var(--cmt-a);
+  font-size: 0.8462rem;
+  font-weight: 400;
+  letter-spacing: 0;
+  padding: 0 0.25rem;
+  text-transform: none;
+}
+
+html[data-cmt-theme] .card .card-text > .clearfix {
+  padding-top: 0.25rem !important;
+}
+
+/* Tables */
+html[data-cmt-theme] .table {
+  color: var(--cmt-text);
+  margin-bottom: 0.5rem;
+}
+
+html[data-cmt-theme] .table th,
+html[data-cmt-theme] .table td {
+  border-top-color: var(--cmt-border-soft);
+  padding: var(--cmt-cell-y) var(--cmt-cell-x);
+  vertical-align: middle;
+}
+
+html[data-cmt-theme] .table thead th {
+  border-bottom: 1px solid var(--cmt-border);
+  color: var(--cmt-muted);
+  font-size: 0.75rem;
+  font-weight: 600;
+}
+
+html[data-cmt-theme] .table-striped tbody tr:nth-of-type(odd) {
+  background-color: var(--cmt-stripe);
+}
+
+html[data-cmt-theme] .table-hover tbody tr:hover {
+  background-color: var(--cmt-hover);
+  color: var(--cmt-text);
+}
+
+html[data-cmt-theme] .table-bordered,
+html[data-cmt-theme] .table-bordered th,
+html[data-cmt-theme] .table-bordered td {
+  border-color: var(--cmt-border-soft);
+}
+
+/* Form controls */
+html[data-cmt-theme] .form-control,
+html[data-cmt-theme] .custom-select {
+  background-color: var(--cmt-surface);
+  border-color: var(--cmt-border);
+  border-radius: calc(var(--cmt-radius) - 2px);
+  color: var(--cmt-text);
+}
+
+html[data-cmt-theme] .form-control:not(textarea):not([multiple]):not([size]),
+html[data-cmt-theme] .custom-select:not([multiple]):not([size]) {
+  font-size: 0.9231rem;
+  height: calc(1.5em + 0.5rem + 2px);
+  padding: 0.25rem 0.5rem;
+}
+
+html[data-cmt-theme] .form-control::placeholder {
+  color: var(--cmt-muted);
+  opacity: 1;
+}
+
+html[data-cmt-theme] .form-control:focus,
+html[data-cmt-theme] .custom-select:focus {
+  background-color: var(--cmt-surface);
+  border-color: var(--cmt-a);
+  box-shadow: 0 0 0 3px var(--cmt-a-ring);
+  color: var(--cmt-text);
+}
+
+html[data-cmt-theme] .form-control:disabled,
+html[data-cmt-theme] .form-control[readonly] {
+  background-color: var(--cmt-bg);
+}
+
+html[data-cmt-theme] .input-group-text {
+  background-color: var(--cmt-surface-2);
+  border-color: var(--cmt-border);
+  color: var(--cmt-muted);
+}
+
+/* Buttons */
+html[data-cmt-theme] .btn {
+  border-radius: calc(var(--cmt-radius) - 2px);
+  font-size: 0.9231rem;
+  padding: 0.25rem 0.625rem;
+}
+
+html[data-cmt-theme] .btn-sm,
+html[data-cmt-theme] .btn-group-sm > .btn {
+  font-size: 0.8462rem;
+  padding: 0.125rem 0.5rem;
+}
+
+html[data-cmt-theme] .btn-primary {
+  background-color: var(--cmt-a);
+  border-color: var(--cmt-a);
+  color: var(--cmt-on-a);
+}
+
+html[data-cmt-theme] .btn-primary:hover,
+html[data-cmt-theme] .btn-primary:focus {
+  background-color: var(--cmt-a);
+  border-color: var(--cmt-a);
+  color: var(--cmt-on-a);
+  filter: brightness(0.92);
+}
+
+html[data-cmt-theme] .btn-secondary,
+html[data-cmt-theme] .btn-light {
+  background-color: var(--cmt-surface);
+  border-color: var(--cmt-border);
+  color: var(--cmt-text);
+}
+
+html[data-cmt-theme] .btn-secondary:hover,
+html[data-cmt-theme] .btn-light:hover {
+  background-color: var(--cmt-hover);
+  border-color: var(--cmt-border);
+  color: var(--cmt-text);
+}
+
+html[data-cmt-theme] .btn:focus,
+html[data-cmt-theme] .btn.focus {
+  box-shadow: 0 0 0 3px var(--cmt-a-ring);
+}
+
+html[data-cmt-theme] .btn-link {
+  color: var(--cmt-a);
+}
+
+/* Badges */
+html[data-cmt-theme] .badge {
+  border-radius: 999px;
+  font-weight: 500;
+  padding: 0.2em 0.6em;
+}
+
+/* Dropdowns */
+html[data-cmt-theme] .dropdown-menu {
+  background-color: var(--cmt-surface);
+  border: 1px solid var(--cmt-border);
+  border-radius: var(--cmt-radius);
+  box-shadow: var(--cmt-shadow);
+  color: var(--cmt-text);
+  padding: 0.25rem;
+}
+
+html[data-cmt-theme] .dropdown-item {
+  border-radius: calc(var(--cmt-radius) - 3px);
+  color: var(--cmt-text);
+  padding: 0.3rem 0.75rem;
+}
+
+html[data-cmt-theme] .dropdown-item:hover,
+html[data-cmt-theme] .dropdown-item:focus {
+  background-color: var(--cmt-hover);
+  color: var(--cmt-text);
+}
+
+html[data-cmt-theme] .dropdown-divider {
+  border-top-color: var(--cmt-border-soft);
+}
+
+/* Nav tabs, list groups, modals */
+html[data-cmt-theme] .nav-tabs {
+  border-bottom-color: var(--cmt-border);
+}
+
+html[data-cmt-theme] .nav-tabs .nav-link {
+  border: 0;
+  border-bottom: 2px solid transparent;
+  color: var(--cmt-muted);
+  padding: 0.375rem 0.75rem;
+}
+
+html[data-cmt-theme] .nav-tabs .nav-link.active,
+html[data-cmt-theme] .nav-tabs .nav-item.show .nav-link {
+  background-color: transparent;
+  border-bottom-color: var(--cmt-a);
+  color: var(--cmt-text);
+}
+
+html[data-cmt-theme] .list-group-item {
+  background-color: var(--cmt-surface);
+  border-color: var(--cmt-border-soft);
+  color: var(--cmt-text);
+  padding: var(--cmt-cell-y) var(--cmt-cell-x);
+}
+
+html[data-cmt-theme] .modal-content {
+  background-color: var(--cmt-surface);
+  border: 1px solid var(--cmt-border);
+  border-radius: var(--cmt-radius);
+  box-shadow: var(--cmt-shadow);
+  color: var(--cmt-text);
+}
+
+html[data-cmt-theme] .modal-header,
+html[data-cmt-theme] .modal-footer {
+  border-color: var(--cmt-border-soft);
+}
+
+html[data-cmt-theme] .alert-danger {
+  background-color: var(--cmt-danger-bg);
+  border-color: transparent;
+  color: var(--cmt-danger-fg);
+}
+
+/* ------------------------------------------------------------------ */
+/* 5. Main window: menu bar, tab strip, patient bar (main.php)         */
+/* ------------------------------------------------------------------ */
+
+html[data-cmt-theme] #mainBox > .navbar {
+  background-color: var(--cmt-nav-bg) !important;
+  border-bottom: 1px solid var(--cmt-border);
+  min-height: 2.75rem;
+  padding-left: 0.75rem;
+  padding-right: 0.75rem;
+}
+
+html[data-cmt-theme] #mainMenu .appMenu > div {
+  align-items: center;
+  border-radius: 6px;
+  color: var(--cmt-nav-fg);
+  display: flex;
+  margin: 0 1px;
+}
+
+html[data-cmt-theme] #mainMenu .appMenu > div:hover {
+  background-color: var(--cmt-hover);
+  color: var(--cmt-text);
+}
+
+html[data-cmt-theme] #mainMenu .appMenu > div > .menuLabel,
+html[data-cmt-theme] #mainMenu .appMenu > div > .menuSection > .menuLabel {
+  background: transparent;
+  color: inherit;
+  cursor: pointer;
+  padding: 0.375rem 0.5rem;
+  white-space: nowrap;
+}
+
+html[data-cmt-theme] #mainMenu .menuEntries .menuLabel {
+  border-radius: calc(var(--cmt-radius) - 3px);
+  color: var(--cmt-text);
+  padding: 0.3rem 0.75rem;
+}
+
+html[data-cmt-theme] #mainMenu .menuEntries .menuLabel:hover {
+  background-color: var(--cmt-hover);
+  color: var(--cmt-text);
+}
+
+html[data-cmt-theme] #mainMenu .menuEntries .menuDisabled {
+  color: var(--cmt-muted) !important;
+  opacity: 0.6;
+}
+
+html[data-cmt-theme] #mainMenu .menuEntries.dropdown-menu {
+  background-color: var(--cmt-surface);
+  border: 1px solid var(--cmt-border) !important;
+  border-radius: var(--cmt-radius) !important;
+  box-shadow: var(--cmt-shadow);
+  padding: 0.25rem;
+}
+
+html[data-cmt-theme] #tabs_div {
+  background-color: var(--cmt-nav-bg);
+  border-bottom: 1px solid var(--cmt-border);
+  padding-top: 0 !important;
+}
+
+html[data-cmt-theme] .tabControls .tabSpan {
+  background: transparent !important;
+  border: 0;
+  border-bottom: 2px solid transparent;
+  border-radius: 0;
+  color: var(--cmt-muted);
+  font-size: 0.9231rem;
+  margin: 0;
+  padding: 0.375rem 0.625rem;
+}
+
+html[data-cmt-theme] .tabControls .tabSpan:not(.tabsNoHover) {
+  border-bottom-color: var(--cmt-a);
+  color: var(--cmt-text);
+  font-weight: 500;
+}
+
+html[data-cmt-theme] .tabControls .tabSpan .fa {
+  opacity: 0.55;
+}
+
+html[data-cmt-theme] .tabControls .tabSpan .fa:hover {
+  opacity: 1;
+}
+
+html[data-cmt-theme] #attendantData {
+  background-color: var(--cmt-surface-2);
+  border-bottom: 1px solid var(--cmt-border);
+  color: var(--cmt-text);
+  padding: 0.375rem 0.25rem;
+}
+
+html[data-cmt-theme] #attendantData .patientPicture img {
+  border: 0;
+  border-radius: 8px;
+  height: 2.75rem;
+  object-fit: cover;
+  padding: 0;
+  width: 2.75rem;
+}
+
+/* ------------------------------------------------------------------ */
+/* 6. Menu icons (icon names come from MenuIconMap.php)                */
+/* ------------------------------------------------------------------ */
+
+html[data-cmt-theme] #mainMenu .appMenu > div > .cmt-ico {
+  background-color: currentColor;
+  display: inline-block;
+  flex: 0 0 auto;
+  float: none;
+  height: 18px;
+  inset: auto;
+  margin: 0 0 0 0.375rem;
+  -webkit-mask-position: center;
+  mask-position: center;
+  -webkit-mask-repeat: no-repeat;
+  mask-repeat: no-repeat;
+  -webkit-mask-size: 18px 18px;
+  mask-size: 18px 18px;
+  position: static;
+  top: auto;
+  width: 18px;
+}
+
+.cmt-ico-calendar { -webkit-mask-image: url("../icons/calendar.svg"); mask-image: url("../icons/calendar.svg"); }
+.cmt-ico-finder { -webkit-mask-image: url("../icons/finder.svg"); mask-image: url("../icons/finder.svg"); }
+.cmt-ico-flow { -webkit-mask-image: url("../icons/flow.svg"); mask-image: url("../icons/flow.svg"); }
+.cmt-ico-recalls { -webkit-mask-image: url("../icons/recalls.svg"); mask-image: url("../icons/recalls.svg"); }
+.cmt-ico-messages { -webkit-mask-image: url("../icons/messages.svg"); mask-image: url("../icons/messages.svg"); }
+.cmt-ico-patient { -webkit-mask-image: url("../icons/patient.svg"); mask-image: url("../icons/patient.svg"); }
+.cmt-ico-groups { -webkit-mask-image: url("../icons/groups.svg"); mask-image: url("../icons/groups.svg"); }
+.cmt-ico-fees { -webkit-mask-image: url("../icons/fees.svg"); mask-image: url("../icons/fees.svg"); }
+.cmt-ico-erx { -webkit-mask-image: url("../icons/erx.svg"); mask-image: url("../icons/erx.svg"); }
+.cmt-ico-modules { -webkit-mask-image: url("../icons/modules.svg"); mask-image: url("../icons/modules.svg"); }
+.cmt-ico-inventory { -webkit-mask-image: url("../icons/inventory.svg"); mask-image: url("../icons/inventory.svg"); }
+.cmt-ico-procedures { -webkit-mask-image: url("../icons/procedures.svg"); mask-image: url("../icons/procedures.svg"); }
+.cmt-ico-reports { -webkit-mask-image: url("../icons/reports.svg"); mask-image: url("../icons/reports.svg"); }
+.cmt-ico-misc { -webkit-mask-image: url("../icons/misc.svg"); mask-image: url("../icons/misc.svg"); }
+.cmt-ico-popups { -webkit-mask-image: url("../icons/popups.svg"); mask-image: url("../icons/popups.svg"); }
+.cmt-ico-admin { -webkit-mask-image: url("../icons/admin.svg"); mask-image: url("../icons/admin.svg"); }
+
+/* ------------------------------------------------------------------ */
+/* 7. Icon-only top menu (wide screens; the collapsed hamburger menu   */
+/*    below 1200px keeps labels). The label stays in the DOM, covering */
+/*    the whole item, so clicks and screen readers still work.         */
+/* ------------------------------------------------------------------ */
+
+@media (min-width: 1200px) {
+  html[data-cmt-menu="icons"]:not([data-cmt-theme="rail"]) #mainMenu .appMenu > div {
+    height: 2.25rem;
+    justify-content: center;
+    position: relative;
+    width: 2.25rem;
+  }
+
+  html[data-cmt-menu="icons"]:not([data-cmt-theme="rail"]) #mainMenu .appMenu > div > .cmt-ico {
+    margin: 0;
+  }
+
+  html[data-cmt-menu="icons"]:not([data-cmt-theme="rail"]) #mainMenu .appMenu > div > .menuSection {
+    position: static;
+  }
+
+  html[data-cmt-menu="icons"]:not([data-cmt-theme="rail"]) #mainMenu .appMenu > div > .menuLabel,
+  html[data-cmt-menu="icons"]:not([data-cmt-theme="rail"]) #mainMenu .appMenu > div > .menuSection > .menuLabel {
+    color: transparent;
+    font-size: 0;
+    inset: 0;
+    padding: 0;
+    position: absolute;
+  }
+
+  html[data-cmt-menu="icons"]:not([data-cmt-theme="rail"]) #mainMenu .appMenu > div > .menuSection > .dropdown-toggle::after {
+    display: none;
+  }
+
+  /* items that got no icon (added by other modules) keep their label */
+  html[data-cmt-menu="icons"]:not([data-cmt-theme="rail"]) #mainMenu .appMenu > div:not(:has(> .cmt-ico)) {
+    width: auto;
+  }
+
+  html[data-cmt-menu="icons"]:not([data-cmt-theme="rail"]) #mainMenu .appMenu > div:not(:has(> .cmt-ico)) > .menuLabel,
+  html[data-cmt-menu="icons"]:not([data-cmt-theme="rail"]) #mainMenu .appMenu > div:not(:has(> .cmt-ico)) > .menuSection > .menuLabel {
+    color: inherit;
+    font-size: inherit;
+    padding: 0.375rem 0.5rem;
+    position: static;
+  }
+}
+
+/* ------------------------------------------------------------------ */
+/* 8. Graphite Rail: the top-level menu becomes a 72px side rail on    */
+/*    wide screens; submenus fly out to the right.                     */
+/* ------------------------------------------------------------------ */
+
+@media (min-width: 1200px) {
+  html[data-cmt-theme="rail"] #mainBox {
+    padding-left: 72px;
+  }
+
+  html[data-cmt-theme="rail"] #mainMenu .appMenu {
+    align-items: center;
+    background-color: var(--cmt-rail-bg);
+    bottom: 0;
+    flex-direction: column;
+    gap: 2px;
+    left: 0;
+    padding: 8px 4px;
+    position: fixed;
+    top: 0;
+    width: 72px;
+    z-index: 1040;
+  }
+
+  html[data-cmt-theme="rail"] #mainMenu .appMenu > div {
+    color: var(--cmt-rail-fg);
+    flex: 0 0 auto;
+    flex-direction: column;
+    justify-content: flex-start;
+    margin: 0;
+    min-height: 48px;
+    padding-top: 7px;
+    position: relative;
+    width: 64px;
+  }
+
+  html[data-cmt-theme="rail"] #mainMenu .appMenu > div:hover,
+  html[data-cmt-theme="rail"] #mainMenu .appMenu > div:has(.menuEntries.show) {
+    background-color: var(--cmt-rail-hover);
+    color: #ffffff;
+  }
+
+  html[data-cmt-theme="rail"] #mainMenu .appMenu > div > .cmt-ico {
+    margin: 0;
+  }
+
+  html[data-cmt-theme="rail"] #mainMenu .appMenu > div > .menuSection {
+    position: static;
+  }
+
+  html[data-cmt-theme="rail"] #mainMenu .appMenu > div > .menuLabel,
+  html[data-cmt-theme="rail"] #mainMenu .appMenu > div > .menuSection > .menuLabel {
+    align-items: flex-end;
+    display: flex;
+    font-size: 10px;
+    inset: 0;
+    justify-content: center;
+    line-height: 1.1;
+    overflow: hidden;
+    padding: 0 2px 6px;
+    position: absolute;
+    text-align: center;
+  }
+
+  html[data-cmt-theme="rail"] #mainMenu .appMenu > div > .menuSection > .dropdown-toggle::after {
+    display: none;
+  }
+
+  /* items without an icon (labels-only setting, or other modules' items) center their text */
+  html[data-cmt-theme="rail"] #mainMenu .appMenu > div:not(:has(> .cmt-ico)) > .menuLabel,
+  html[data-cmt-theme="rail"] #mainMenu .appMenu > div:not(:has(> .cmt-ico)) > .menuSection > .menuLabel {
+    align-items: center;
+    padding-bottom: 0;
+  }
+
+  html[data-cmt-theme="rail"][data-cmt-menu="icons"] #mainMenu .appMenu > div:has(> .cmt-ico) {
+    justify-content: center;
+    min-height: 44px;
+    padding-top: 0;
+  }
+
+  html[data-cmt-theme="rail"][data-cmt-menu="icons"] #mainMenu .appMenu > div:has(> .cmt-ico) > .menuLabel,
+  html[data-cmt-theme="rail"][data-cmt-menu="icons"] #mainMenu .appMenu > div:has(> .cmt-ico) > .menuSection > .menuLabel {
+    color: transparent;
+    font-size: 0;
+  }
+
+  html[data-cmt-theme="rail"] #mainMenu .appMenu > div > .menuSection > .menuEntries {
+    left: calc(100% + 6px);
+    margin: 0;
+    top: 0;
+  }
+
+  html[data-cmt-theme="rail"] #mainMenu .appMenu > div > .menuSection > .menuEntries .menuLabel {
+    font-size: 0.9231rem;
+  }
+}
