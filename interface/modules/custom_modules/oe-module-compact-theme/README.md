@@ -27,9 +27,21 @@ over untouched.
 
 ## Where to choose a theme
 
-**Miscellaneous > Themes** (added by the module, open to every user): a picker
-with a preview of each installed theme pack, plus density, main menu style and
-accent color.
+**Miscellaneous > Annie's Elegant Themes** (open to every user). The module
+looks under Miscellaneous for an entry whose name contains "Annie" and "Theme"
+(so "Annie's Elegant Themes" and "Annie's Themes" both match) and adds to it:
+
+- **Choose a Theme**: the picker, with a preview of each installed theme pack,
+  plus density, main menu style and accent color.
+- **One entry per theme pack** (Slate Night, Paper Compact, Graphite Rail, and
+  any pack added later): opens the picker with that theme already selected.
+
+If that entry is a plain menu item rather than a folder, it becomes a folder
+whose first entry is the original item, so it still opens what it did before.
+If there is no such entry, the module creates the folder at the end of
+Miscellaneous.
+
+In the picker:
 
 - **Save for me**: your own choice.
 - **Use practice default**: drop your own choice.
@@ -69,7 +81,7 @@ never resets anyone's choices.
 
 Copy `public/themes/_template` to `public/themes/<your-id>`, set `"id"` in
 `theme.json` to the folder name, and edit the tokens in `theme.css`. The new
-theme appears in Miscellaneous > Themes and the Theme dropdown on the next
+theme appears in Miscellaneous > Annie's Elegant Themes and the Theme dropdown on the next
 page load. No code change, no
 database change. The template's comments list every token.
 
@@ -96,7 +108,7 @@ fall back to Paper Compact.
 | `GlobalsInitializedEvent` | the *Compact Themes* settings section (also in User Settings) |
 | `StyleFilterEvent` | `public/assets/css/compact-base.css`, then the chosen `public/themes/<id>/theme.css` |
 | `ScriptFilterEvent` | `public/assets/js/compact-theme.js`, which tags `<html>` with the theme, layout, density and menu style |
-| `MenuEvent::MENU_UPDATE` | the Miscellaneous > Themes item, and an icon class on each top-level main menu item |
+| `MenuEvent::MENU_UPDATE` | the theme entries under Miscellaneous > Annie's Elegant Themes, and an icon class on each top-level main menu item |
 
 The patient portal, login and setup screens are left alone. Pages that do not
 call `Header::setupHeader()` (a few older screens) keep the base theme.
@@ -112,7 +124,8 @@ src/ThemeManifest.php            parses and validates theme.json
 src/ThemeSettings.php            settings parsing + the settings section
 src/ThemeChoice.php              a validated picker submission
 src/ThemePreferences.php         saves to globals / user_settings
-public/theme_picker.php          Miscellaneous > Themes page
+public/theme_picker.php          the theme picker page
+src/ThemesMenu.php               places the picker under Annie's Elegant Themes
 src/MenuIconMap.php              menu item -> icon name
 src/Config.php                   cache-busting version
 src/Density.php, MenuStyle.php, Layout.php, ColorScheme.php

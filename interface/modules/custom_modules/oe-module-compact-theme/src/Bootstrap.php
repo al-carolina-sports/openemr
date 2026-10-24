@@ -7,8 +7,8 @@
  * without touching core files:
  *  - the shared base stylesheet, then the selected theme pack's theme.css,
  *    and one small settings script, all through the header filter events
- *  - a Miscellaneous > Themes menu item (the theme picker page) and SVG icons
- *    on the top-level main menu, through the menu update event
+ *  - the theme picker under Miscellaneous > Annie's Elegant Themes, and SVG
+ *    icons on the top-level main menu, through the menu update event
  *  - per-user settings (theme, density, menu style, accent) in Admin > Config
  *    and in each user's own User Settings
  *
@@ -51,10 +51,6 @@ final class Bootstrap
     ) {
     }
 
-    /** menu_id of the stock top-level Miscellaneous menu. */
-    private const MISC_MENU_ID = 'misimg';
-    private const PICKER_MENU_ID = 'cmtthemes0';
-
     public function subscribeToEvents(): void
     {
         $this->eventDispatcher->addListener(GlobalsInitializedEvent::EVENT_HANDLE, $this->addGlobalSettings(...));
@@ -74,30 +70,22 @@ final class Bootstrap
     }
 
     /**
-     * Adds Miscellaneous > Themes, the theme picker page (open to every user).
+     * Puts the theme picker, and one entry per theme, inside
+     * Miscellaneous > Annie's Elegant Themes (open to every user).
      */
     public function addPickerMenuItem(MenuEvent $event): MenuEvent
     {
-        $menu = $event->getMenu();
-        foreach ($menu as $item) {
-            if (!$item instanceof \stdClass || ($item->menu_id ?? null) !== self::MISC_MENU_ID) {
-                continue;
-            }
-            $children = is_array($item->children ?? null) ? $item->children : [];
-            $picker = new \stdClass();
-            $picker->label = xl('Themes');
-            $picker->menu_id = self::PICKER_MENU_ID;
-            $picker->target = 'msc';
-            $picker->url = self::MODULE_INSTALLATION_PATH . '/public/theme_picker.php';
-            $picker->children = [];
-            $picker->requirement = 0;
-            $picker->acl_req = [];
-            $picker->global_req = [];
-            $children[] = $picker;
-            $item->children = $children;
-            break;
+        $current = $event->getMenu();
+        if (!is_array($current)) {
+            return $event;
         }
-        $event->setMenu($menu);
+        $menu = new ThemesMenu(
+            $this->registry->all(),
+            self::MODULE_INSTALLATION_PATH . ThemesMenu::PICKER_PATH,
+            xl("Annie's Elegant Themes"),
+            xl('Choose a Theme')
+        );
+        $event->setMenu($menu->attach($current));
         return $event;
     }
 

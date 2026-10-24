@@ -20,5 +20,5 @@ final class Config
      * Cache-busting version appended to the module's stylesheet and script URLs.
      * Bump it with version.php whenever a CSS or JS file changes.
      */
-    public const VERSION = '1.1.0';
+    public const VERSION = '1.2.0';
 }

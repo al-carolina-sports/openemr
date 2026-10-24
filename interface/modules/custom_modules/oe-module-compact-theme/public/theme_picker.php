@@ -1,7 +1,7 @@
 <?php
 
 /**
- * Theme picker: Miscellaneous > Themes.
+ * Theme picker: Miscellaneous > Annie's Elegant Themes > Choose a Theme.
  *
  * Every user can choose their own theme pack, density, menu style and accent.
  * Users with Administration > Superuser access can also save the practice
@@ -75,6 +75,10 @@ if ($request->getMethod() === 'POST') {
 $current = ThemeSettings::fromGlobals($globals, $registry);
 $currentThemeId = $current->theme === null ? ThemeSettings::THEME_OFF : $current->theme->id;
 $themes = $registry->all();
+// opened from a theme's entry under Miscellaneous > Annie's Elegant Themes: preselect it
+$requestedThemeId = $request->query->getString('theme');
+$requestedTheme = $requestedThemeId === '' ? null : $registry->find($requestedThemeId);
+$selectedThemeId = $requestedTheme === null ? $currentThemeId : $requestedTheme->id;
 $hasOverride = $preferences->userHasOverride($userId);
 $defaults = $preferences->practiceDefaults();
 $defaultThemeId = $defaults[ThemeSettings::KEY_THEME] ?? ThemeSettings::DEFAULT_THEME_ID;
@@ -138,6 +142,12 @@ $csrfToken = CsrfUtils::collectCsrfToken(session: $session);
         </div>
     <?php } ?>
 
+    <?php if ($requestedTheme !== null && $requestedTheme->id !== $currentThemeId) { ?>
+        <div class="alert alert-info" role="status">
+            <?php echo text(sprintf(xl('%s is selected below. Click Save for me to start using it.'), $requestedTheme->name)); ?>
+        </div>
+    <?php } ?>
+
     <form method="post" action="theme_picker.php">
         <input type="hidden" name="csrf_token_form" value="<?php echo attr($csrfToken); ?>">
 
@@ -147,7 +157,7 @@ $csrfToken = CsrfUtils::collectCsrfToken(session: $session);
                 <?php foreach ($themes as $theme) {
                     $c = $theme->preview; ?>
                     <label class="cmt-option">
-                        <input type="radio" name="theme" value="<?php echo attr($theme->id); ?>" <?php echo $theme->id === $currentThemeId ? 'checked' : ''; ?>>
+                        <input type="radio" name="theme" value="<?php echo attr($theme->id); ?>" <?php echo $theme->id === $selectedThemeId ? 'checked' : ''; ?>>
                         <span class="cmt-tile">
                             <span class="cmt-pv" aria-hidden="true" style="background: <?php echo attr($c['bg']); ?>; border-color: <?php echo attr($c['border']); ?>;">
                                 <?php if ($theme->layout === Layout::Rail) { ?>
@@ -178,7 +188,7 @@ $csrfToken = CsrfUtils::collectCsrfToken(session: $session);
                     </label>
                 <?php } ?>
                 <label class="cmt-option">
-                    <input type="radio" name="theme" value="<?php echo attr(ThemeSettings::THEME_OFF); ?>" <?php echo $currentThemeId === ThemeSettings::THEME_OFF ? 'checked' : ''; ?>>
+                    <input type="radio" name="theme" value="<?php echo attr(ThemeSettings::THEME_OFF); ?>" <?php echo $selectedThemeId === ThemeSettings::THEME_OFF ? 'checked' : ''; ?>>
                     <span class="cmt-tile">
                         <span class="cmt-pv cmt-pv-off" aria-hidden="true"><?php echo xlt('Stock'); ?></span>
                         <span class="d-block cmt-tile-name"><?php echo xlt('Off'); ?></span>
