@@ -1,0 +1,38 @@
+/**
+ * Slate Night theme pack for Annie's Compact Themes.
+ *
+ * Only the selected theme's file is loaded, after compact-base.css, so this
+ * file only needs to set the --cmt-* tokens (plus any extra rules it wants).
+ * Token reference: README.md, "Making a theme".
+ *
+ * @package   OpenEMR
+ * @link      https://www.open-emr.org
+ * @copyright Copyright (c) 2026 Carolina Sports and Spine
+ * @license   https://github.com/openemr/openemr/blob/master/LICENSE GNU General Public License 3
+ */
+
+html[data-cmt-theme] {
+  color-scheme: dark;
+  --cmt-bg: #0d1015;
+  --cmt-surface: #151a21;
+  --cmt-surface-2: #11151b;
+  --cmt-hover: #1c232c;
+  --cmt-border: #222a33;
+  --cmt-border-soft: #1d232b;
+  --cmt-text: #e6e9ee;
+  --cmt-muted: #9aa4b2;
+  --cmt-accent-default: #2dd4bf;
+  --cmt-on-accent-default: #06201c;
+  --cmt-danger-bg: #3a1418;
+  --cmt-danger-fg: #fca5a5;
+  --cmt-nav-bg: #11151b;
+  --cmt-nav-fg: #c3cbd6;
+  --cmt-stripe: rgba(255, 255, 255, 0.025);
+  --cmt-shadow: 0 10px 28px rgba(0, 0, 0, 0.45);
+  --cmt-radius: 8px;
+  --cmt-card-title-size: 0.6875rem;
+  --cmt-card-title-weight: 600;
+  --cmt-card-title-transform: uppercase;
+  --cmt-card-title-tracking: 0.06em;
+  --cmt-card-title-color: var(--cmt-muted);
+}

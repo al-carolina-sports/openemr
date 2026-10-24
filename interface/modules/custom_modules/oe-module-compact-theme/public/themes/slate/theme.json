@@ -1,0 +1,18 @@
+{
+    "id": "slate",
+    "name": "Slate Night",
+    "description": "Dark and dense. Pair with General Theme: Dark.",
+    "base": "dark",
+    "layout": "top",
+    "order": 10,
+    "version": "1.0.0",
+    "preview": {
+        "bg": "#0d1015",
+        "surface": "#151a21",
+        "nav": "#11151b",
+        "border": "#222a33",
+        "text": "#e6e9ee",
+        "muted": "#9aa4b2",
+        "accent": "#2dd4bf"
+    }
+}
