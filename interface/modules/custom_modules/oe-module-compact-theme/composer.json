@@ -1,0 +1,20 @@
+{
+    "name": "carolina-sports/oe-module-compact-theme",
+    "description": "Annie's Compact Themes: compact, modern theme packs and menu icons for OpenEMR, layered on the General Theme without core edits",
+    "license": "GPL-3.0-or-later",
+    "type": "openemr-module",
+    "require": {
+        "php": ">=8.3"
+    },
+    "autoload": {
+        "psr-4": {
+            "OpenEMR\\Modules\\CompactTheme\\": "src/"
+        }
+    },
+    "extra": {
+        "openemr": {
+            "directory": "oe-module-compact-theme",
+            "type": "custom-module"
+        }
+    }
+}

@@ -1,7 +1,7 @@
 <?php
 
 /**
- * Visual themes offered by the Compact Theme module. Backed because the value is stored in globals.
+ * Where a theme pack puts the main menu. Backed because it is read from theme.json.
  *
  * @package   OpenEMR
  * @link      https://www.open-emr.org
@@ -14,10 +14,8 @@ declare(strict_types=1);
 
 namespace OpenEMR\Modules\CompactTheme;
 
-enum Theme: string
+enum Layout: string
 {
-    case Slate = 'slate';
-    case Paper = 'paper';
+    case Top = 'top';
     case Rail = 'rail';
-    case Off = 'off';
 }

@@ -1,0 +1,18 @@
+{
+    "id": "paper",
+    "name": "Paper Compact",
+    "description": "Light, hairline borders, table-like cards.",
+    "base": "light",
+    "layout": "top",
+    "order": 20,
+    "version": "1.0.0",
+    "preview": {
+        "bg": "#f4f5f7",
+        "surface": "#ffffff",
+        "nav": "#ffffff",
+        "border": "#e3e6ea",
+        "text": "#1b1f24",
+        "muted": "#5b6470",
+        "accent": "#2563eb"
+    }
+}

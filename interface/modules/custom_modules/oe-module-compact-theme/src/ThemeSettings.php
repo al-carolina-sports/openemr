@@ -1,10 +1,12 @@
 <?php
 
 /**
- * The Compact Theme settings for the current user, parsed from globals.
+ * The Compact Themes settings for the current user, parsed from globals.
  *
- * Every setting is user-specific: the Admin > Globals value is the practice
- * default and each user can override it under their own User Settings.
+ * Every setting is user-specific: the Admin > Config value is the practice
+ * default and each user can override it under their own User Settings. The
+ * stored values are plain strings in `globals` / `user_settings`, so they
+ * survive OpenEMR upgrades and module updates unchanged.
  *
  * @package   OpenEMR
  * @link      https://www.open-emr.org
@@ -23,32 +25,41 @@ use OpenEMR\Services\Globals\GlobalsService;
 
 final readonly class ThemeSettings
 {
-    public const SECTION = 'Compact Theme';
+    public const SECTION = 'Compact Themes';
 
     public const KEY_THEME = 'cmt_theme';
     public const KEY_DENSITY = 'cmt_density';
     public const KEY_MENU_STYLE = 'cmt_menu_style';
     public const KEY_ACCENT = 'cmt_accent';
 
-    public const DEFAULT_THEME = Theme::Paper;
+    /** Stored theme value that turns the module's styling off for a user. */
+    public const THEME_OFF = 'off';
+    /** Used when the stored theme pack has been removed or is invalid. */
+    public const DEFAULT_THEME_ID = 'paper';
     public const DEFAULT_DENSITY = Density::Compact;
     public const DEFAULT_MENU_STYLE = MenuStyle::IconsAndLabels;
 
     /**
-     * @param ?string $accent Six hex digits without '#', or null for the theme's own accent
+     * @param ?ThemeManifest $theme  Null when the user has the theme set to Off
+     * @param ?string        $accent Six hex digits without '#', or null for the theme's own accent
      */
     public function __construct(
-        public Theme $theme,
+        public ?ThemeManifest $theme,
         public Density $density,
         public MenuStyle $menuStyle,
         public ?string $accent
     ) {
     }
 
-    public static function fromGlobals(OEGlobalsBag $globals): self
+    public static function fromGlobals(OEGlobalsBag $globals, ThemeRegistry $registry): self
     {
+        $themeId = $globals->getString(self::KEY_THEME, self::DEFAULT_THEME_ID);
+        $theme = $themeId === self::THEME_OFF
+            ? null
+            : ($registry->find($themeId) ?? $registry->find(self::DEFAULT_THEME_ID));
+
         return new self(
-            Theme::tryFrom($globals->getString(self::KEY_THEME)) ?? self::DEFAULT_THEME,
+            $theme,
             Density::tryFrom($globals->getString(self::KEY_DENSITY)) ?? self::DEFAULT_DENSITY,
             MenuStyle::tryFrom($globals->getString(self::KEY_MENU_STYLE)) ?? self::DEFAULT_MENU_STYLE,
             self::parseAccent($globals->getString(self::KEY_ACCENT))
@@ -65,18 +76,23 @@ final readonly class ThemeSettings
 
     public function isActive(): bool
     {
-        return $this->theme !== Theme::Off;
+        return $this->theme !== null;
     }
 
     /**
-     * Values handed to compact-theme.js in its query string.
+     * Values handed to compact-theme.js in its query string. Every value is a
+     * theme id (ThemeManifest::ID_PATTERN), an enum value or 6 hex digits.
      *
      * @return array<string, string>
      */
     public function clientParameters(): array
     {
+        if ($this->theme === null) {
+            return [];
+        }
         $parameters = [
-            't' => $this->theme->value,
+            't' => $this->theme->id,
+            'l' => $this->theme->layout->value,
             'd' => $this->density->value,
             'm' => $this->menuStyle->value,
         ];
@@ -86,21 +102,26 @@ final readonly class ThemeSettings
         return $parameters;
     }
 
-    public static function registerGlobals(GlobalsService $service): void
+    public static function registerGlobals(GlobalsService $service, ThemeRegistry $registry): void
     {
-        // adds the section to Admin > Globals and to every user's User Settings
+        // adds the section to Admin > Config and to every user's User Settings
         $service->addUserSpecificTab(self::SECTION);
+
+        $themeOptions = [];
+        foreach ($registry->all() as $theme) {
+            $label = $theme->name;
+            if ($theme->description !== '') {
+                $label .= ' - ' . $theme->description;
+            }
+            $themeOptions[$theme->id] = $label;
+        }
+        $themeOptions[self::THEME_OFF] = xl('Off (stock OpenEMR look)');
 
         $service->appendToSection(self::SECTION, self::KEY_THEME, new GlobalSetting(
             xl('Theme'),
-            [
-                Theme::Slate->value => xl('Slate Night (dark, dense) - use with General Theme: Dark'),
-                Theme::Paper->value => xl('Paper Compact (light, hairline)'),
-                Theme::Rail->value => xl('Graphite Rail (side icon menu, light)'),
-                Theme::Off->value => xl('Off (stock OpenEMR look)'),
-            ],
-            self::DEFAULT_THEME->value,
-            xl('Compact look applied on top of the General Theme. Reload the page after changing.'),
+            $themeOptions,
+            self::DEFAULT_THEME_ID,
+            xl('Theme packs found in the module\'s public/themes folder, applied on top of the General Theme. Reload the page after changing.'),
             true
         ));
 
@@ -123,7 +144,7 @@ final readonly class ThemeSettings
                 MenuStyle::LabelsOnly->value => xl('Labels only'),
             ],
             self::DEFAULT_MENU_STYLE->value,
-            xl('How the top-level main menu items are shown. Logout and login after changing.'),
+            xl('How the top-level main menu items are shown. Log out and back in after changing.'),
             true
         ));
 

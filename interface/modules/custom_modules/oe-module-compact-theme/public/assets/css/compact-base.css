@@ -1,16 +1,19 @@
 /**
- * Compact Theme module stylesheet.
+ * Annie's Compact Themes: shared base stylesheet.
  *
- * Layered on top of OpenEMR's General Theme (Light for Paper and Rail, Dark
- * for Slate). Everything is scoped to attributes that compact-theme.js sets on
- * <html>, so with the module disabled nothing here matches:
+ * Loaded first on every themed page; the selected theme pack's theme.css
+ * (public/themes/<id>/theme.css) loads after it and sets the --cmt-* tokens.
+ * Everything is scoped to attributes compact-theme.js sets on <html>, so with
+ * the module disabled nothing here matches:
  *
- *   html[data-cmt-theme="slate|paper|rail"]
- *   html[data-cmt-density="compact|cozy"]
- *   html[data-cmt-menu="both|icons|labels"]
+ *   data-cmt-theme   the selected theme pack id
+ *   data-cmt-layout  top | rail     (from the theme pack's theme.json)
+ *   data-cmt-density compact | cozy
+ *   data-cmt-menu    both | icons | labels
  *
- * Sections: 1 tokens · 2 density · 3 base · 4 components · 5 main window
- * (menu, tabs, patient bar) · 6 menu icons · 7 icon-only menu · 8 rail layout
+ * Sections: 1 default tokens · 2 density · 3 base · 4 components · 5 main
+ * window (menu, tabs, patient bar) · 6 menu icons · 7 icon-only menu · 8 rail
+ * layout
  *
  * @package   OpenEMR
  * @link      https://www.open-emr.org
@@ -20,7 +23,7 @@
  */
 
 /* ------------------------------------------------------------------ */
-/* 1. Theme tokens                                                     */
+/* 1. Default tokens (Paper values; theme packs override any of them) */
 /* ------------------------------------------------------------------ */
 
 html[data-cmt-theme] {
@@ -30,35 +33,6 @@ html[data-cmt-theme] {
   --cmt-on-a: var(--cmt-on-accent, var(--cmt-on-accent-default));
   --cmt-a-soft: color-mix(in srgb, var(--cmt-a) 14%, var(--cmt-surface));
   --cmt-a-ring: color-mix(in srgb, var(--cmt-a) 35%, transparent);
-}
-
-html[data-cmt-theme="slate"] {
-  color-scheme: dark;
-  --cmt-bg: #0d1015;
-  --cmt-surface: #151a21;
-  --cmt-surface-2: #11151b;
-  --cmt-hover: #1c232c;
-  --cmt-border: #222a33;
-  --cmt-border-soft: #1d232b;
-  --cmt-text: #e6e9ee;
-  --cmt-muted: #9aa4b2;
-  --cmt-accent-default: #2dd4bf;
-  --cmt-on-accent-default: #06201c;
-  --cmt-danger-bg: #3a1418;
-  --cmt-danger-fg: #fca5a5;
-  --cmt-nav-bg: #11151b;
-  --cmt-nav-fg: #c3cbd6;
-  --cmt-stripe: rgba(255, 255, 255, 0.025);
-  --cmt-shadow: 0 10px 28px rgba(0, 0, 0, 0.45);
-  --cmt-radius: 8px;
-  --cmt-card-title-size: 0.6875rem;
-  --cmt-card-title-weight: 600;
-  --cmt-card-title-transform: uppercase;
-  --cmt-card-title-tracking: 0.06em;
-  --cmt-card-title-color: var(--cmt-muted);
-}
-
-html[data-cmt-theme="paper"] {
   color-scheme: light;
   --cmt-bg: #f4f5f7;
   --cmt-surface: #ffffff;
@@ -82,35 +56,10 @@ html[data-cmt-theme="paper"] {
   --cmt-card-title-transform: none;
   --cmt-card-title-tracking: 0;
   --cmt-card-title-color: var(--cmt-text);
-}
-
-html[data-cmt-theme="rail"] {
-  color-scheme: light;
-  --cmt-bg: #f6f6f4;
-  --cmt-surface: #ffffff;
-  --cmt-surface-2: #ffffff;
-  --cmt-hover: #efeee9;
-  --cmt-border: #e6e5e1;
-  --cmt-border-soft: #efeee9;
-  --cmt-text: #17191c;
-  --cmt-muted: #57606a;
-  --cmt-accent-default: #4f46e5;
-  --cmt-on-accent-default: #ffffff;
-  --cmt-danger-bg: #fdecec;
-  --cmt-danger-fg: #a11d1d;
-  --cmt-nav-bg: #ffffff;
-  --cmt-nav-fg: #3d4550;
+  /* rail layout defaults; a theme pack may override them */
   --cmt-rail-bg: #111827;
   --cmt-rail-fg: #cbd5e1;
   --cmt-rail-hover: #1f2937;
-  --cmt-stripe: #fafaf8;
-  --cmt-shadow: 0 8px 24px rgba(17, 20, 24, 0.14);
-  --cmt-radius: 10px;
-  --cmt-card-title-size: 0.6875rem;
-  --cmt-card-title-weight: 500;
-  --cmt-card-title-transform: none;
-  --cmt-card-title-tracking: 0;
-  --cmt-card-title-color: var(--cmt-muted);
 }
 
 /* ------------------------------------------------------------------ */
@@ -417,6 +366,12 @@ html[data-cmt-theme] .modal-footer {
   border-color: var(--cmt-border-soft);
 }
 
+html[data-cmt-theme] .alert-success {
+  background-color: color-mix(in srgb, #16a34a 16%, var(--cmt-surface));
+  border-color: transparent;
+  color: var(--cmt-text);
+}
+
 html[data-cmt-theme] .alert-danger {
   background-color: var(--cmt-danger-bg);
   border-color: transparent;
@@ -575,23 +530,23 @@ html[data-cmt-theme] #mainMenu .appMenu > div > .cmt-ico {
 /* ------------------------------------------------------------------ */
 
 @media (min-width: 1200px) {
-  html[data-cmt-menu="icons"]:not([data-cmt-theme="rail"]) #mainMenu .appMenu > div {
+  html[data-cmt-menu="icons"]:not([data-cmt-layout="rail"]) #mainMenu .appMenu > div {
     height: 2.25rem;
     justify-content: center;
     position: relative;
     width: 2.25rem;
   }
 
-  html[data-cmt-menu="icons"]:not([data-cmt-theme="rail"]) #mainMenu .appMenu > div > .cmt-ico {
+  html[data-cmt-menu="icons"]:not([data-cmt-layout="rail"]) #mainMenu .appMenu > div > .cmt-ico {
     margin: 0;
   }
 
-  html[data-cmt-menu="icons"]:not([data-cmt-theme="rail"]) #mainMenu .appMenu > div > .menuSection {
+  html[data-cmt-menu="icons"]:not([data-cmt-layout="rail"]) #mainMenu .appMenu > div > .menuSection {
     position: static;
   }
 
-  html[data-cmt-menu="icons"]:not([data-cmt-theme="rail"]) #mainMenu .appMenu > div > .menuLabel,
-  html[data-cmt-menu="icons"]:not([data-cmt-theme="rail"]) #mainMenu .appMenu > div > .menuSection > .menuLabel {
+  html[data-cmt-menu="icons"]:not([data-cmt-layout="rail"]) #mainMenu .appMenu > div > .menuLabel,
+  html[data-cmt-menu="icons"]:not([data-cmt-layout="rail"]) #mainMenu .appMenu > div > .menuSection > .menuLabel {
     color: transparent;
     font-size: 0;
     inset: 0;
@@ -599,17 +554,17 @@ html[data-cmt-theme] #mainMenu .appMenu > div > .cmt-ico {
     position: absolute;
   }
 
-  html[data-cmt-menu="icons"]:not([data-cmt-theme="rail"]) #mainMenu .appMenu > div > .menuSection > .dropdown-toggle::after {
+  html[data-cmt-menu="icons"]:not([data-cmt-layout="rail"]) #mainMenu .appMenu > div > .menuSection > .dropdown-toggle::after {
     display: none;
   }
 
   /* items that got no icon (added by other modules) keep their label */
-  html[data-cmt-menu="icons"]:not([data-cmt-theme="rail"]) #mainMenu .appMenu > div:not(:has(> .cmt-ico)) {
+  html[data-cmt-menu="icons"]:not([data-cmt-layout="rail"]) #mainMenu .appMenu > div:not(:has(> .cmt-ico)) {
     width: auto;
   }
 
-  html[data-cmt-menu="icons"]:not([data-cmt-theme="rail"]) #mainMenu .appMenu > div:not(:has(> .cmt-ico)) > .menuLabel,
-  html[data-cmt-menu="icons"]:not([data-cmt-theme="rail"]) #mainMenu .appMenu > div:not(:has(> .cmt-ico)) > .menuSection > .menuLabel {
+  html[data-cmt-menu="icons"]:not([data-cmt-layout="rail"]) #mainMenu .appMenu > div:not(:has(> .cmt-ico)) > .menuLabel,
+  html[data-cmt-menu="icons"]:not([data-cmt-layout="rail"]) #mainMenu .appMenu > div:not(:has(> .cmt-ico)) > .menuSection > .menuLabel {
     color: inherit;
     font-size: inherit;
     padding: 0.375rem 0.5rem;
@@ -618,16 +573,16 @@ html[data-cmt-theme] #mainMenu .appMenu > div > .cmt-ico {
 }
 
 /* ------------------------------------------------------------------ */
-/* 8. Graphite Rail: the top-level menu becomes a 72px side rail on    */
-/*    wide screens; submenus fly out to the right.                     */
+/* 8. Rail layout (theme.json "layout": "rail"): the top-level menu    */
+/*    becomes a 72px side rail on wide screens; submenus fly out right. */
 /* ------------------------------------------------------------------ */
 
 @media (min-width: 1200px) {
-  html[data-cmt-theme="rail"] #mainBox {
+  html[data-cmt-layout="rail"] #mainBox {
     padding-left: 72px;
   }
 
-  html[data-cmt-theme="rail"] #mainMenu .appMenu {
+  html[data-cmt-layout="rail"] #mainMenu .appMenu {
     align-items: center;
     background-color: var(--cmt-rail-bg);
     bottom: 0;
@@ -641,7 +596,7 @@ html[data-cmt-theme] #mainMenu .appMenu > div > .cmt-ico {
     z-index: 1040;
   }
 
-  html[data-cmt-theme="rail"] #mainMenu .appMenu > div {
+  html[data-cmt-layout="rail"] #mainMenu .appMenu > div {
     color: var(--cmt-rail-fg);
     flex: 0 0 auto;
     flex-direction: column;
@@ -653,22 +608,22 @@ html[data-cmt-theme] #mainMenu .appMenu > div > .cmt-ico {
     width: 64px;
   }
 
-  html[data-cmt-theme="rail"] #mainMenu .appMenu > div:hover,
-  html[data-cmt-theme="rail"] #mainMenu .appMenu > div:has(.menuEntries.show) {
+  html[data-cmt-layout="rail"] #mainMenu .appMenu > div:hover,
+  html[data-cmt-layout="rail"] #mainMenu .appMenu > div:has(.menuEntries.show) {
     background-color: var(--cmt-rail-hover);
     color: #ffffff;
   }
 
-  html[data-cmt-theme="rail"] #mainMenu .appMenu > div > .cmt-ico {
+  html[data-cmt-layout="rail"] #mainMenu .appMenu > div > .cmt-ico {
     margin: 0;
   }
 
-  html[data-cmt-theme="rail"] #mainMenu .appMenu > div > .menuSection {
+  html[data-cmt-layout="rail"] #mainMenu .appMenu > div > .menuSection {
     position: static;
   }
 
-  html[data-cmt-theme="rail"] #mainMenu .appMenu > div > .menuLabel,
-  html[data-cmt-theme="rail"] #mainMenu .appMenu > div > .menuSection > .menuLabel {
+  html[data-cmt-layout="rail"] #mainMenu .appMenu > div > .menuLabel,
+  html[data-cmt-layout="rail"] #mainMenu .appMenu > div > .menuSection > .menuLabel {
     align-items: flex-end;
     display: flex;
     font-size: 10px;
@@ -681,36 +636,36 @@ html[data-cmt-theme] #mainMenu .appMenu > div > .cmt-ico {
     text-align: center;
   }
 
-  html[data-cmt-theme="rail"] #mainMenu .appMenu > div > .menuSection > .dropdown-toggle::after {
+  html[data-cmt-layout="rail"] #mainMenu .appMenu > div > .menuSection > .dropdown-toggle::after {
     display: none;
   }
 
   /* items without an icon (labels-only setting, or other modules' items) center their text */
-  html[data-cmt-theme="rail"] #mainMenu .appMenu > div:not(:has(> .cmt-ico)) > .menuLabel,
-  html[data-cmt-theme="rail"] #mainMenu .appMenu > div:not(:has(> .cmt-ico)) > .menuSection > .menuLabel {
+  html[data-cmt-layout="rail"] #mainMenu .appMenu > div:not(:has(> .cmt-ico)) > .menuLabel,
+  html[data-cmt-layout="rail"] #mainMenu .appMenu > div:not(:has(> .cmt-ico)) > .menuSection > .menuLabel {
     align-items: center;
     padding-bottom: 0;
   }
 
-  html[data-cmt-theme="rail"][data-cmt-menu="icons"] #mainMenu .appMenu > div:has(> .cmt-ico) {
+  html[data-cmt-layout="rail"][data-cmt-menu="icons"] #mainMenu .appMenu > div:has(> .cmt-ico) {
     justify-content: center;
     min-height: 44px;
     padding-top: 0;
   }
 
-  html[data-cmt-theme="rail"][data-cmt-menu="icons"] #mainMenu .appMenu > div:has(> .cmt-ico) > .menuLabel,
-  html[data-cmt-theme="rail"][data-cmt-menu="icons"] #mainMenu .appMenu > div:has(> .cmt-ico) > .menuSection > .menuLabel {
+  html[data-cmt-layout="rail"][data-cmt-menu="icons"] #mainMenu .appMenu > div:has(> .cmt-ico) > .menuLabel,
+  html[data-cmt-layout="rail"][data-cmt-menu="icons"] #mainMenu .appMenu > div:has(> .cmt-ico) > .menuSection > .menuLabel {
     color: transparent;
     font-size: 0;
   }
 
-  html[data-cmt-theme="rail"] #mainMenu .appMenu > div > .menuSection > .menuEntries {
+  html[data-cmt-layout="rail"] #mainMenu .appMenu > div > .menuSection > .menuEntries {
     left: calc(100% + 6px);
     margin: 0;
     top: 0;
   }
 
-  html[data-cmt-theme="rail"] #mainMenu .appMenu > div > .menuSection > .menuEntries .menuLabel {
+  html[data-cmt-layout="rail"] #mainMenu .appMenu > div > .menuSection > .menuEntries .menuLabel {
     font-size: 0.9231rem;
   }
 }

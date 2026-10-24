@@ -1,11 +1,13 @@
 /**
- * Compact Theme module client script.
+ * Annie's Compact Themes client script.
  *
  * Loaded in <head> on every OpenEMR page (main window and each tab's iframe)
- * before the module stylesheet. It reads the user's settings from its own
- * query string and tags <html> so compact-theme.css can scope everything:
+ * before the module stylesheets. It reads the user's settings from its own
+ * query string and tags <html> so compact-base.css and the theme pack can
+ * scope everything:
  *
- *   data-cmt-theme   slate | paper | rail
+ *   data-cmt-theme   the selected theme pack id
+ *   data-cmt-layout  top | rail
  *   data-cmt-density compact | cozy
  *   data-cmt-menu    both | icons | labels
  *   --cmt-accent     optional custom accent (6 hex digits)
@@ -21,7 +23,7 @@
     "use strict";
 
     const allowed = {
-        t: ["slate", "paper", "rail"],
+        l: ["top", "rail"],
         d: ["compact", "cozy"],
         m: ["both", "icons", "labels"]
     };
@@ -37,8 +39,15 @@
         return allowed[key].indexOf(value) !== -1 ? value : fallback;
     };
 
+    // theme ids are folder names under public/themes (see ThemeManifest::ID_PATTERN)
+    const theme = params.get("t");
+    if (!theme || !/^[a-z0-9][a-z0-9_-]{0,31}$/.test(theme)) {
+        return;
+    }
+
     const root = document.documentElement;
-    root.setAttribute("data-cmt-theme", pick("t", "paper"));
+    root.setAttribute("data-cmt-theme", theme);
+    root.setAttribute("data-cmt-layout", pick("l", "top"));
     root.setAttribute("data-cmt-density", pick("d", "compact"));
     root.setAttribute("data-cmt-menu", pick("m", "both"));
 
