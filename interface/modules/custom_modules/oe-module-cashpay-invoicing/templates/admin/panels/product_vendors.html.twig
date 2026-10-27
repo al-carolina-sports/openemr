@@ -1,0 +1,36 @@
+{% import 'admin/macros.html.twig' as m %}
+<table class="table table-sm">
+    <thead><tr><th>{{ 'Vendor'|xlt }}</th><th>{{ 'Default'|xlt }}</th><th></th></tr></thead>
+    <tbody>
+    {% for row in p.rows %}
+        <tr>
+            <td>{{ row.name|text }}</td>
+            <td>
+                {% if row.is_default == 1 %}<span class="badge badge-info">{{ 'Default'|xlt }}</span>{% else %}
+                <form method="post" class="d-inline">
+                    {{ m.panelForm(key, 'default', csrfField, csrfToken) }}
+                    <input type="hidden" name="vendor_id" value="{{ row.vendor_id|attr }}">
+                    <button class="btn btn-link btn-sm p-0">{{ 'Make default'|xlt }}</button>
+                </form>{% endif %}
+            </td>
+            <td class="text-right">
+                <form method="post" class="d-inline" data-confirm="{{ 'Remove this row?'|xla }}">
+                    {{ m.panelForm(key, 'delete', csrfField, csrfToken) }}
+                    <input type="hidden" name="vendor_id" value="{{ row.vendor_id|attr }}">
+                    <button class="btn btn-link btn-sm p-0 text-danger">{{ 'Remove'|xlt }}</button>
+                </form>
+            </td>
+        </tr>
+    {% else %}
+        <tr><td colspan="3" class="text-muted">{{ 'No vendors linked.'|xlt }}</td></tr>
+    {% endfor %}
+    </tbody>
+</table>
+<form method="post" class="form-row align-items-end">
+    {{ m.panelForm(key, 'save', csrfField, csrfToken) }}
+    <div class="col-md-5 mb-2"><label class="small">{{ 'Vendor'|xlt }}</label>
+        <select class="form-control form-control-sm" name="vendor_id" required><option value="">{{ '-- choose --'|xlt }}</option>
+            {% for vid, name in p.vendors %}<option value="{{ vid|attr }}">{{ name|text }}</option>{% endfor %}</select></div>
+    <div class="col-md-3 mb-2 form-check pl-4"><input type="checkbox" class="form-check-input" id="pv_default" name="is_default" value="1"><label class="form-check-label small" for="pv_default">{{ 'Default vendor'|xlt }}</label></div>
+    <div class="col-md-2 mb-2"><button class="btn btn-secondary btn-sm">{{ 'Add vendor'|xlt }}</button></div>
+</form>

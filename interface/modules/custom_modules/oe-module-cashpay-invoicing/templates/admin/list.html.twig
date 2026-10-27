@@ -1,0 +1,87 @@
+{% extends 'admin/base.html.twig' %}
+{% import 'admin/macros.html.twig' as m %}
+{% block title %}{{ entity.title|xlt }}{% endblock %}
+{% block crumbs %}<li class="breadcrumb-item active">{{ entity.title|xlt }}</li>{% endblock %}
+{% block content %}
+    <div class="d-flex flex-wrap justify-content-between align-items-center mb-2">
+        <h3 class="mb-0">{{ entity.title|xlt }} <small class="text-muted">({{ total|text }})</small></h3>
+        <div>
+            {% if csvEntity %}
+                <a class="btn btn-outline-secondary btn-sm" href="{{ adminUrl|attr }}price_list.php?format=csv&amp;entity={{ entity.key|attr_url }}">{{ 'Export CSV'|xlt }}</a>
+                <a class="btn btn-outline-secondary btn-sm" href="{{ adminUrl|attr }}import.php">{{ 'Import CSV'|xlt }}</a>
+            {% endif %}
+            <a class="btn btn-primary btn-sm" href="{{ adminUrl|attr }}edit.php?entity={{ entity.key|attr_url }}">{{ 'Add'|xlt }} {{ entity.singular|xlt }}</a>
+        </div>
+    </div>
+    <form method="get" class="form-inline mb-3 cpi-filters">
+        <input type="hidden" name="entity" value="{{ entity.key|attr }}">
+        <input type="search" class="form-control form-control-sm mr-2 mb-1" name="q" value="{{ query.search|attr }}" placeholder="{{ 'Search'|xla }}">
+        {% for column, opts in filterOptions %}
+            <select class="form-control form-control-sm mr-2 mb-1" name="f_{{ column|attr }}" aria-label="{{ entity.field(column).label|xla }}">
+                <option value="">{{ 'All'|xlt }} {{ entity.field(column).label|xlt }}</option>
+                {% for optId, label in opts %}
+                    <option value="{{ optId|attr }}"{% if query.filters[column] is defined and query.filters[column] == optId %} selected{% endif %}>{{ label|text }}</option>
+                {% endfor %}
+            </select>
+        {% endfor %}
+        {% if entity.hasActive %}
+            <div class="form-check mr-2 mb-1">
+                <input type="checkbox" class="form-check-input" id="inactive" name="inactive" value="1"{% if query.includeInactive %} checked{% endif %}>
+                <label class="form-check-label" for="inactive">{{ 'Show inactive'|xlt }}</label>
+            </div>
+        {% endif %}
+        <button type="submit" class="btn btn-secondary btn-sm mb-1">{{ 'Filter'|xlt }}</button>
+    </form>
+    <div class="table-responsive">
+        <table class="table table-sm table-hover cpi-table">
+            <thead class="thead-light">
+            <tr>
+                {% for field in fields %}
+                    <th class="{{ field.type.name in ['Money', 'Decimal', 'Integer'] ? 'text-right' : '' }}">{{ field.label|xlt }}</th>
+                {% endfor %}
+                <th></th>
+            </tr>
+            </thead>
+            <tbody>
+            {% for row in rows %}
+                <tr class="{{ row.active ? '' : 'text-muted cpi-inactive' }}">
+                    {% for field in fields %}
+                        <td class="{{ field.type.name in ['Money', 'Decimal', 'Integer'] ? 'text-right text-nowrap' : '' }}">
+                            {% if loop.first %}
+                                <a href="{{ adminUrl|attr }}edit.php?entity={{ entity.key|attr_url }}&amp;id={{ row.id|attr_url }}">{{ row.cells[field.name]|text }}</a>
+                            {% elseif field.name == 'active' %}
+                                {{ row.cells[field.name]|xlt }}
+                            {% else %}
+                                {{ row.cells[field.name]|text }}
+                            {% endif %}
+                        </td>
+                    {% endfor %}
+                    <td class="text-right text-nowrap">
+                        {% if entity.hasActive %}
+                            <form method="post" class="d-inline">
+                                {{ m.csrf(csrfField, csrfToken) }}
+                                <input type="hidden" name="id" value="{{ row.id|attr }}">
+                                <input type="hidden" name="active" value="{{ row.active ? '0' : '1' }}">
+                                <button type="submit" class="btn btn-link btn-sm p-0">{{ row.active ? 'Deactivate'|xlt : 'Activate'|xlt }}</button>
+                            </form>
+                        {% endif %}
+                    </td>
+                </tr>
+            {% else %}
+                <tr><td colspan="{{ fields|length + 1 }}" class="text-muted">{{ 'Nothing found.'|xlt }}</td></tr>
+            {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    {% if pages > 1 %}
+        <nav aria-label="{{ 'Pages'|xla }}">
+            <ul class="pagination pagination-sm flex-wrap">
+                {% for p in 1..pages %}
+                    <li class="page-item{{ p == query.page ? ' active' : '' }}">
+                        <a class="page-link" href="?entity={{ entity.key|attr_url }}&amp;q={{ query.search|attr_url }}&amp;inactive={{ query.includeInactive ? '1' : '' }}{% for c, v in query.filters %}&amp;f_{{ c|attr_url }}={{ v|attr_url }}{% endfor %}&amp;page={{ p|attr_url }}">{{ p|text }}</a>
+                    </li>
+                {% endfor %}
+            </ul>
+        </nav>
+    {% endif %}
+{% endblock %}

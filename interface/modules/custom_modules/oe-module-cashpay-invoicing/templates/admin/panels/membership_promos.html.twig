@@ -1,0 +1,17 @@
+{% import 'admin/macros.html.twig' as m %}
+<p class="small text-muted">{{ 'Members of this plan get these discounts on their invoices.'|xlt }}</p>
+<form method="post">
+    {{ m.panelForm(key, 'save', csrfField, csrfToken) }}
+    {% for promo in p.promos %}
+        <div class="form-check">
+            <input type="checkbox" class="form-check-input" id="mp_{{ promo.id|attr }}" name="promo_ids[]" value="{{ promo.id|attr }}"{% if promo.id in p.linked %} checked{% endif %}>
+            <label class="form-check-label{{ promo.active == 1 ? '' : ' text-muted' }}" for="mp_{{ promo.id|attr }}">
+                {{ promo.name|text }}
+                <span class="small text-muted">({{ promo.kind == 'percent' ? (promo.amount|number_format(2) ~ '%') : ('$' ~ promo.amount|number_format(2)) }}{{ promo.members_only == 1 ? ', ' ~ 'members only'|xl : '' }}{{ promo.active == 1 ? '' : ', ' ~ 'inactive'|xl }})</span>
+            </label>
+        </div>
+    {% else %}
+        <p class="text-muted">{{ 'No promotional discounts yet. Add them under Promotional Discounts.'|xlt }}</p>
+    {% endfor %}
+    {% if p.promos is not empty %}<button class="btn btn-secondary btn-sm mt-2">{{ 'Save member discounts'|xlt }}</button>{% endif %}
+</form>

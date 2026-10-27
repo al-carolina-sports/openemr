@@ -712,3 +712,102 @@ CREATE TABLE `cpi_commission_line` (
     KEY `idx_run_user` (`run_id`, `user_id`)
 ) ENGINE=InnoDB;
 #EndIf
+
+-- ---------------------------------------------------------------------------
+-- Default rows (added only when missing; admins can edit or disable them)
+-- ---------------------------------------------------------------------------
+#IfNotRow cpi_tax_type slot 1
+INSERT INTO `cpi_tax_type` (`slot`, `name`, `rate_pct`, `active`) VALUES (1, 'NC Sales Tax', 6.7500, 1);
+#EndIf
+
+#IfNotRow cpi_tax_type slot 2
+INSERT INTO `cpi_tax_type` (`slot`, `name`, `rate_pct`, `active`) VALUES (2, 'Tax 2', 0.0000, 0);
+#EndIf
+
+#IfNotRow cpi_discount_reason name Membership Discount
+INSERT INTO `cpi_discount_reason` (`name`, `active`) VALUES ('Membership Discount', 1);
+#EndIf
+
+#IfNotRow cpi_discount_reason name Regenerative Wellness Membership
+INSERT INTO `cpi_discount_reason` (`name`, `active`) VALUES ('Regenerative Wellness Membership', 1);
+#EndIf
+
+#IfNotRow cpi_discount_reason name Courtesy
+INSERT INTO `cpi_discount_reason` (`name`, `active`) VALUES ('Courtesy', 1);
+#EndIf
+
+#IfNotRow cpi_discount_reason name Employee
+INSERT INTO `cpi_discount_reason` (`name`, `active`) VALUES ('Employee', 1);
+#EndIf
+
+#IfNotRow cpi_discount_reason name Promotion
+INSERT INTO `cpi_discount_reason` (`name`, `active`) VALUES ('Promotion', 1);
+#EndIf
+
+#IfNotRow cpi_discount_reason name Package
+INSERT INTO `cpi_discount_reason` (`name`, `active`) VALUES ('Package', 1);
+#EndIf
+
+#IfNotRow cpi_payment_method name Cash
+INSERT INTO `cpi_payment_method` (`name`, `kind`, `is_refund_method`, `sort_order`, `active`) VALUES ('Cash', 'cash', 0, 10, 1);
+#EndIf
+
+#IfNotRow cpi_payment_method name Check
+INSERT INTO `cpi_payment_method` (`name`, `kind`, `is_refund_method`, `sort_order`, `active`) VALUES ('Check', 'check', 0, 20, 1);
+#EndIf
+
+#IfNotRow cpi_payment_method name Card (Stripe)
+INSERT INTO `cpi_payment_method` (`name`, `kind`, `is_refund_method`, `sort_order`, `active`) VALUES ('Card (Stripe)', 'card', 0, 30, 1);
+#EndIf
+
+#IfNotRow cpi_payment_method name Card (other terminal)
+INSERT INTO `cpi_payment_method` (`name`, `kind`, `is_refund_method`, `sort_order`, `active`) VALUES ('Card (other terminal)', 'card', 0, 40, 1);
+#EndIf
+
+#IfNotRow cpi_payment_method name Award Points
+INSERT INTO `cpi_payment_method` (`name`, `kind`, `is_refund_method`, `sort_order`, `active`) VALUES ('Award Points', 'points', 0, 50, 1);
+#EndIf
+
+#IfNotRow cpi_payment_method name Gift Card
+INSERT INTO `cpi_payment_method` (`name`, `kind`, `is_refund_method`, `sort_order`, `active`) VALUES ('Gift Card', 'gift_card', 0, 60, 1);
+#EndIf
+
+#IfNotRow cpi_payment_method name Financing
+INSERT INTO `cpi_payment_method` (`name`, `kind`, `is_refund_method`, `sort_order`, `active`) VALUES ('Financing', 'financing', 0, 70, 1);
+#EndIf
+
+#IfNotRow cpi_payment_method name Refund to Card
+INSERT INTO `cpi_payment_method` (`name`, `kind`, `is_refund_method`, `sort_order`, `active`) VALUES ('Refund to Card', 'card', 1, 80, 1);
+#EndIf
+
+#IfNotRow cpi_payment_method name Refund Cash
+INSERT INTO `cpi_payment_method` (`name`, `kind`, `is_refund_method`, `sort_order`, `active`) VALUES ('Refund Cash', 'cash', 1, 90, 1);
+#EndIf
+
+#IfNotRow cpi_payment_method name Refund Check
+INSERT INTO `cpi_payment_method` (`name`, `kind`, `is_refund_method`, `sort_order`, `active`) VALUES ('Refund Check', 'check', 1, 100, 1);
+#EndIf
+
+#IfNotRow cpi_stock_reason name Physical count
+INSERT INTO `cpi_stock_reason` (`name`, `active`) VALUES ('Physical count', 1);
+#EndIf
+
+#IfNotRow cpi_stock_reason name Damaged
+INSERT INTO `cpi_stock_reason` (`name`, `active`) VALUES ('Damaged', 1);
+#EndIf
+
+#IfNotRow cpi_stock_reason name Expired
+INSERT INTO `cpi_stock_reason` (`name`, `active`) VALUES ('Expired', 1);
+#EndIf
+
+#IfNotRow cpi_stock_reason name Used in office
+INSERT INTO `cpi_stock_reason` (`name`, `active`) VALUES ('Used in office', 1);
+#EndIf
+
+#IfNotRow cpi_stock_reason name Returned to vendor
+INSERT INTO `cpi_stock_reason` (`name`, `active`) VALUES ('Returned to vendor', 1);
+#EndIf
+
+#IfNotRow cpi_stock_reason name Sample
+INSERT INTO `cpi_stock_reason` (`name`, `active`) VALUES ('Sample', 1);
+#EndIf

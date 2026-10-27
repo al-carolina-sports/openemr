@@ -1,0 +1,63 @@
+{% import 'admin/macros.html.twig' as m %}
+<p class="small text-muted">{{ 'Discount is for the whole line. The package price is the sum of the line totals.'|xlt }}</p>
+<div class="table-responsive">
+<table class="table table-sm">
+    <thead><tr>
+        <th>{{ 'Item'|xlt }}</th><th class="text-right">{{ 'Qty'|xlt }}</th><th class="text-right">{{ 'Unit price'|xlt }}</th>
+        <th class="text-right">{{ 'Discount'|xlt }}</th><th class="text-right">{{ 'Line total'|xlt }}</th><th class="text-right">{{ 'Order'|xlt }}</th><th></th>
+    </tr></thead>
+    <tbody>
+    {% for row in p.rows %}
+        <tr>
+            <td>
+                <span class="badge badge-light">{{ row.item_type == 'product' ? 'Product'|xlt : 'Procedure'|xlt }}</span>
+                {{ row.item_name|default('(' ~ 'missing item'|xl ~ ')')|text }}
+                {% if row.list_price is not null and row.list_price != row.unit_price %}<div class="small text-muted">{{ 'Catalog price'|xlt }} {{ row.list_price|money|text }}</div>{% endif %}
+            </td>
+            <td colspan="5" class="p-0">
+                <form method="post" class="form-row m-0 py-1 align-items-center" id="pi_{{ row.id|attr }}">
+                    {{ m.panelForm(key, 'update', csrfField, csrfToken) }}
+                    <input type="hidden" name="item_row_id" value="{{ row.id|attr }}">
+                    <div class="col"><input class="form-control form-control-sm text-right" name="qty" value="{{ row.qty|attr }}" aria-label="{{ 'Qty'|xla }}"></div>
+                    <div class="col"><input class="form-control form-control-sm text-right" name="unit_price" value="{{ row.unit_price|attr }}" aria-label="{{ 'Unit price'|xla }}"></div>
+                    <div class="col"><input class="form-control form-control-sm text-right" name="discount" value="{{ row.discount|attr }}" aria-label="{{ 'Discount'|xla }}"></div>
+                    <div class="col text-right text-nowrap">{{ row.net_display|text }}</div>
+                    <div class="col"><input class="form-control form-control-sm text-right" name="sort_order" value="{{ row.sort_order|attr }}" aria-label="{{ 'Order'|xla }}"></div>
+                </form>
+            </td>
+            <td class="text-right text-nowrap">
+                <button class="btn btn-link btn-sm p-0" form="pi_{{ row.id|attr }}">{{ 'Update'|xlt }}</button>
+                <form method="post" class="d-inline ml-2" data-confirm="{{ 'Remove this row?'|xla }}">
+                    {{ m.panelForm(key, 'delete', csrfField, csrfToken) }}
+                    <input type="hidden" name="item_row_id" value="{{ row.id|attr }}">
+                    <button class="btn btn-link btn-sm p-0 text-danger">{{ 'Remove'|xlt }}</button>
+                </form>
+            </td>
+        </tr>
+    {% else %}
+        <tr><td colspan="7" class="text-muted">{{ 'No items yet.'|xlt }}</td></tr>
+    {% endfor %}
+    </tbody>
+    <tfoot>
+        <tr><th colspan="4" class="text-right">{{ 'Value at unit prices'|xlt }}</th><td class="text-right">{{ p.totals.gross|text }}</td><td colspan="2"></td></tr>
+        <tr><th colspan="4" class="text-right">{{ 'Discounts'|xlt }}</th><td class="text-right">{{ p.totals.discount|text }}</td><td colspan="2"></td></tr>
+        <tr class="table-active"><th colspan="4" class="text-right">{{ 'Package price'|xlt }}</th><th class="text-right">{{ p.totals.net|text }}</th><td colspan="2"></td></tr>
+    </tfoot>
+</table>
+</div>
+<form method="post" class="form-row align-items-end">
+    {{ m.panelForm(key, 'add', csrfField, csrfToken) }}
+    <div class="col-md-2 mb-2"><label class="small">{{ 'Type'|xlt }}</label>
+        <select class="form-control form-control-sm" name="item_type" data-item-type>
+            <option value="procedure">{{ 'Procedure'|xlt }}</option><option value="product">{{ 'Product'|xlt }}</option></select></div>
+    <div class="col-md-4 mb-2" data-for-type="procedure"><label class="small">{{ 'Procedure'|xlt }}</label>
+        <select class="form-control form-control-sm" name="procedure_id"><option value="">{{ '-- choose --'|xlt }}</option>
+            {% for pid, name in p.procedures %}<option value="{{ pid|attr }}">{{ name|text }}</option>{% endfor %}</select></div>
+    <div class="col-md-4 mb-2 d-none" data-for-type="product"><label class="small">{{ 'Product'|xlt }}</label>
+        <select class="form-control form-control-sm" name="product_id"><option value="">{{ '-- choose --'|xlt }}</option>
+            {% for pid, name in p.products %}<option value="{{ pid|attr }}">{{ name|text }}</option>{% endfor %}</select></div>
+    <div class="col-md-1 mb-2"><label class="small">{{ 'Qty'|xlt }}</label><input class="form-control form-control-sm text-right" name="qty" value="1" inputmode="decimal"></div>
+    <div class="col-md-2 mb-2"><label class="small">{{ 'Unit price'|xlt }}</label><input class="form-control form-control-sm text-right" name="unit_price" placeholder="{{ 'catalog'|xla }}" inputmode="decimal"></div>
+    <div class="col-md-1 mb-2"><label class="small">{{ 'Discount'|xlt }}</label><input class="form-control form-control-sm text-right" name="discount" inputmode="decimal"></div>
+    <div class="col-md-2 mb-2"><button class="btn btn-secondary btn-sm">{{ 'Add item'|xlt }}</button></div>
+</form>

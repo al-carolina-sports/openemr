@@ -1,0 +1,61 @@
+{% extends 'admin/base.html.twig' %}
+{% block title %}{{ 'Price List'|xlt }}{% endblock %}
+{% block crumbs %}<li class="breadcrumb-item active">{{ 'Price List'|xlt }}</li>{% endblock %}
+{% block content %}
+    <div class="d-flex flex-wrap justify-content-between align-items-center mb-3 d-print-none">
+        <h3 class="mb-0">{{ 'Price List'|xlt }}</h3>
+        <div>
+            {% if canSetup %}
+                <a class="btn btn-outline-secondary btn-sm" href="?format=csv&amp;entity=procedure">{{ 'Procedures CSV'|xlt }}</a>
+                <a class="btn btn-outline-secondary btn-sm" href="?format=csv&amp;entity=product">{{ 'Products CSV'|xlt }}</a>
+            {% endif %}
+            <button type="button" class="btn btn-primary btn-sm" onclick="window.print()">{{ 'Print'|xlt }}</button>
+        </div>
+    </div>
+    <p class="d-none d-print-block">{{ 'Price list printed'|xlt }} {{ printedOn|text }}</p>
+    <ul class="nav nav-tabs d-print-none" role="tablist">
+        <li class="nav-item"><a class="nav-link active" data-toggle="tab" href="#pl-proc" role="tab">{{ 'Procedures'|xlt }}</a></li>
+        <li class="nav-item"><a class="nav-link" data-toggle="tab" href="#pl-prod" role="tab">{{ 'Products'|xlt }}</a></li>
+        <li class="nav-item"><a class="nav-link" data-toggle="tab" href="#pl-pkg" role="tab">{{ 'Packages and memberships'|xlt }}</a></li>
+    </ul>
+    <div class="tab-content pt-3">
+        <div class="tab-pane show active cpi-print-all" id="pl-proc" role="tabpanel">
+            {% for category, rows in procedures %}
+                <h6 class="mt-3">{{ category|text }}</h6>
+                <table class="table table-sm cpi-price-table">
+                    {% for row in rows %}
+                        <tr><td>{{ row.name|text }}{% if row.cpt_code %} <span class="small text-muted">{{ row.cpt_code|text }}</span>{% endif %}</td>
+                            <td class="text-right text-nowrap">{{ row.price_display|text }}{% if row.tax1 == 1 or row.tax2 == 1 %} <span class="small text-muted">+{{ 'tax'|xlt }}</span>{% endif %}</td></tr>
+                    {% endfor %}
+                </table>
+            {% else %}<p class="text-muted">{{ 'No active procedures.'|xlt }}</p>{% endfor %}
+        </div>
+        <div class="tab-pane cpi-print-all" id="pl-prod" role="tabpanel">
+            {% for category, rows in products %}
+                <h6 class="mt-3">{{ category|text }}</h6>
+                <table class="table table-sm cpi-price-table">
+                    {% for row in rows %}
+                        <tr><td>{{ row.name|text }}{% if row.style %} <span class="small text-muted">{{ row.style|text }}</span>{% endif %}{% if row.manufacturer %} <span class="small text-muted">· {{ row.manufacturer|text }}</span>{% endif %}</td>
+                            <td class="text-right text-nowrap">{{ row.price_display|text }}{% if row.tax1 == 1 or row.tax2 == 1 %} <span class="small text-muted">+{{ 'tax'|xlt }}</span>{% endif %}</td></tr>
+                    {% endfor %}
+                </table>
+            {% else %}<p class="text-muted">{{ 'No active products.'|xlt }}</p>{% endfor %}
+        </div>
+        <div class="tab-pane cpi-print-all" id="pl-pkg" role="tabpanel">
+            <h6>{{ 'Sales packages'|xlt }}</h6>
+            <table class="table table-sm cpi-price-table">
+                {% for pkg in packages %}
+                    <tr><td>{{ pkg.name|text }} <span class="small text-muted">{{ pkg.type|xlt }}</span></td><td class="text-right">{{ pkg.total|text }}</td></tr>
+                {% else %}<tr><td class="text-muted">{{ 'No active packages.'|xlt }}</td></tr>{% endfor %}
+            </table>
+            <h6 class="mt-3">{{ 'Membership plans'|xlt }}</h6>
+            <table class="table table-sm cpi-price-table">
+                <thead><tr><th>{{ 'Plan'|xlt }}</th><th class="text-right">{{ 'Monthly'|xlt }}</th><th class="text-right">{{ 'Annual'|xlt }}</th></tr></thead>
+                {% for plan in memberships %}
+                    <tr><td>{{ plan.name|text }} <span class="badge badge-light">{{ plan.code|text }}</span></td>
+                        <td class="text-right">{{ plan.monthly_price|money|text }}</td><td class="text-right">{{ plan.annual_price|money|text }}</td></tr>
+                {% else %}<tr><td class="text-muted" colspan="3">{{ 'No active plans.'|xlt }}</td></tr>{% endfor %}
+            </table>
+        </div>
+    </div>
+{% endblock %}

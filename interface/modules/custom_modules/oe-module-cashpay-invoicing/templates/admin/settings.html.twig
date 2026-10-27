@@ -1,0 +1,75 @@
+{% extends 'admin/base.html.twig' %}
+{% import 'admin/macros.html.twig' as m %}
+{% block title %}{{ 'Cash-Pay Settings'|xlt }}{% endblock %}
+{% block crumbs %}<li class="breadcrumb-item active">{{ 'Settings'|xlt }}</li>{% endblock %}
+{% macro val(submitted, key, current) %}{{ (submitted[key] is defined ? submitted[key] : current)|attr }}{% endmacro %}
+{% macro chk(submitted, key, current) %}{% if (submitted is not empty ? (submitted[key] is defined) : current) %} checked{% endif %}{% endmacro %}
+{% block content %}
+    {% import _self as s %}
+    <h3>{{ 'Cash-Pay Settings'|xlt }}</h3>
+    {{ m.errors(errors) }}
+    <form method="post" novalidate>
+        {{ m.csrf(csrfField, csrfToken) }}
+
+        <section class="card mb-4"><div class="card-header"><strong>{{ 'Taxes'|xlt }}</strong></div><div class="card-body">
+            <p class="small text-muted">{{ 'Two true taxes. Each procedure, product and membership plan says whether Tax 1 and Tax 2 apply to it.'|xlt }}</p>
+            {% for slot, tax in taxes %}
+                <div class="form-row align-items-end">
+                    <div class="form-group col-md-1"><label>{{ 'Tax'|xlt }} {{ slot|text }}</label></div>
+                    <div class="form-group col-md-4"><label for="tax{{ slot|attr }}_name">{{ 'Name'|xlt }}</label>
+                        <input class="form-control" id="tax{{ slot|attr }}_name" name="tax{{ slot|attr }}_name" maxlength="100" value="{{ s.val(submitted, 'tax' ~ slot ~ '_name', tax.name) }}"></div>
+                    <div class="form-group col-md-2"><label for="tax{{ slot|attr }}_rate">{{ 'Rate %'|xlt }}</label>
+                        <input class="form-control text-right" id="tax{{ slot|attr }}_rate" name="tax{{ slot|attr }}_rate" inputmode="decimal" value="{{ s.val(submitted, 'tax' ~ slot ~ '_rate', tax.rateText) }}"></div>
+                    <div class="form-group col-md-2 form-check pl-4"><input type="checkbox" class="form-check-input" id="tax{{ slot|attr }}_active" name="tax{{ slot|attr }}_active" value="1"{{ s.chk(submitted, 'tax' ~ slot ~ '_active', tax.active) }}>
+                        <label class="form-check-label" for="tax{{ slot|attr }}_active">{{ 'Active'|xlt }}</label></div>
+                </div>
+            {% endfor %}
+        </div></section>
+
+        <section class="card mb-4"><div class="card-header"><strong>{{ 'Credit card service charge'|xlt }}</strong></div><div class="card-body">
+            <p class="small text-muted">{{ 'Added to credit card payments only. Debit and prepaid cards are never charged. This is not a tax and prints as its own receipt line. Card network rules cap it at 3%, and the patient must be told before paying.'|xlt }}</p>
+            <div class="form-row align-items-end">
+                <div class="form-group col-md-3 form-check pl-4"><input type="checkbox" class="form-check-input" id="card_fee_enabled" name="card_fee_enabled" value="1"{{ s.chk(submitted, 'card_fee_enabled', settings.cardFeeEnabled) }}>
+                    <label class="form-check-label" for="card_fee_enabled">{{ 'Charge the service charge'|xlt }}</label></div>
+                <div class="form-group col-md-2"><label for="card_fee_pct">{{ 'Percent'|xlt }}</label>
+                    <select class="form-control" id="card_fee_pct" name="card_fee_pct">
+                        {% set currentPct = submitted.card_fee_pct is defined ? submitted.card_fee_pct : settings.cardFeePercentText %}
+                        {% set standard = ['0.00', '1.00', '1.50', '2.00', '2.50', '3.00'] %}
+                        {% for pct in standard %}<option value="{{ pct|attr }}"{% if pct == currentPct %} selected{% endif %}>{{ pct|text }}%</option>{% endfor %}
+                        {% if currentPct not in standard %}<option value="{{ currentPct|attr }}" selected>{{ currentPct|text }}%</option>{% endif %}
+                    </select></div>
+                <div class="form-group col-md-4"><label for="card_fee_label">{{ 'Receipt label'|xlt }}</label>
+                    <input class="form-control" id="card_fee_label" name="card_fee_label" maxlength="60" value="{{ s.val(submitted, 'card_fee_label', settings.cardFeeLabel) }}"></div>
+            </div>
+            <p class="small mb-0">{{ 'With the saved settings, a $100.00 credit card payment carries a charge of'|xlt }} <strong>{{ exampleFee|text }}</strong>.</p>
+        </div></section>
+
+        <section class="card mb-4"><div class="card-header"><strong>{{ 'Award points'|xlt }}</strong></div><div class="card-body">
+            <p class="small text-muted">{{ 'Points are earned on dollars paid for items marked "Earns award points", only by enrolled patients. Payments made with points or gift cards earn nothing, and refunds take points back.'|xlt }}</p>
+            <div class="form-row align-items-end">
+                <div class="form-group col-md-3 form-check pl-4"><input type="checkbox" class="form-check-input" id="rewards_enabled" name="rewards_enabled" value="1"{{ s.chk(submitted, 'rewards_enabled', settings.rewardsEnabled) }}>
+                    <label class="form-check-label" for="rewards_enabled">{{ 'Award points program on'|xlt }}</label></div>
+                <div class="form-group col-md-3"><label for="points_per_dollar">{{ 'Points per $1 paid'|xlt }}</label>
+                    <input class="form-control text-right" id="points_per_dollar" name="points_per_dollar" inputmode="decimal" value="{{ s.val(submitted, 'points_per_dollar', settings.pointsPerDollarText) }}"></div>
+                <div class="form-group col-md-3"><label for="point_value">{{ 'Value of 1 point ($)'|xlt }}</label>
+                    <input class="form-control text-right" id="point_value" name="point_value" inputmode="decimal" value="{{ s.val(submitted, 'point_value', settings.pointValue.toDecimalString) }}"></div>
+                <div class="form-group col-md-3"><label for="min_redeem_points">{{ 'Minimum points to redeem'|xlt }}</label>
+                    <input class="form-control text-right" id="min_redeem_points" name="min_redeem_points" inputmode="numeric" value="{{ s.val(submitted, 'min_redeem_points', settings.minRedeemPoints) }}"></div>
+            </div>
+        </div></section>
+
+        <section class="card mb-4"><div class="card-header"><strong>{{ 'Quotes and receipts'|xlt }}</strong></div><div class="card-body">
+            <div class="form-row">
+                <div class="form-group col-md-3"><label for="quote_valid_days">{{ 'Quotes valid for (days)'|xlt }}</label>
+                    <input class="form-control text-right" id="quote_valid_days" name="quote_valid_days" inputmode="numeric" value="{{ s.val(submitted, 'quote_valid_days', settings.quoteValidDays) }}"></div>
+                <div class="form-group col-md-12"><label for="quote_footer">{{ 'Text printed at the bottom of quotes'|xlt }}</label>
+                    <textarea class="form-control" id="quote_footer" name="quote_footer" rows="3" maxlength="2000">{{ (submitted.quote_footer is defined ? submitted.quote_footer : settings.quoteFooter)|text }}</textarea></div>
+                <div class="form-group col-md-12"><label for="receipt_footer">{{ 'Text printed at the bottom of receipts'|xlt }}</label>
+                    <textarea class="form-control" id="receipt_footer" name="receipt_footer" rows="2" maxlength="2000">{{ (submitted.receipt_footer is defined ? submitted.receipt_footer : settings.receiptFooter)|text }}</textarea></div>
+            </div>
+        </div></section>
+
+        <p class="small text-muted">{{ 'Stripe keys are set up in phase 2, with card payments.'|xlt }}</p>
+        <button type="submit" class="btn btn-primary">{{ 'Save settings'|xlt }}</button>
+    </form>
+{% endblock %}

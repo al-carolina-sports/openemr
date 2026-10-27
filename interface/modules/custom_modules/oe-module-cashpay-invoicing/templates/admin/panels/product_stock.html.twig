@@ -1,0 +1,87 @@
+{% import 'admin/macros.html.twig' as m %}
+<div class="table-responsive">
+<table class="table table-sm">
+    <thead><tr>
+        <th>{{ 'Office'|xlt }}</th><th class="text-right">{{ 'On hand'|xlt }}</th>
+        <th class="text-right">{{ 'On order'|xlt }}</th><th class="text-right">{{ 'Low-stock level'|xlt }}</th><th></th>
+    </tr></thead>
+    <tbody>
+    {% for row in p.rows %}
+        <tr class="{{ row.is_low ? 'table-warning' : '' }}">
+            <td>{{ row.facility_name|text }}{% if row.is_low %} <span class="badge badge-warning">{{ 'Low'|xlt }}</span>{% endif %}</td>
+            <td class="text-right">{{ row.on_hand|text }}</td>
+            <td class="text-right">{{ row.on_order|text }}</td>
+            <td class="text-right">{{ row.low_stock_level|text }}</td>
+            <td class="text-right"><button type="button" class="btn btn-link btn-sm p-0" data-toggle="collapse" data-target="#stock_{{ row.facility_id|attr }}">{{ 'Change'|xlt }}</button></td>
+        </tr>
+        <tr class="collapse" id="stock_{{ row.facility_id|attr }}">
+            <td colspan="5" class="bg-light">
+                <div class="row">
+                    <form method="post" class="col-lg-4 mb-2">
+                        {{ m.panelForm(key, 'adjust', csrfField, csrfToken) }}
+                        <input type="hidden" name="facility_id" value="{{ row.facility_id|attr }}">
+                        <label class="small mb-0">{{ 'Add or remove (use a minus sign to remove)'|xlt }}</label>
+                        <div class="input-group input-group-sm">
+                            <input class="form-control text-right" name="qty" inputmode="decimal" required>
+                            <select class="form-control" name="reason_id" required><option value="">{{ 'Reason'|xlt }}</option>
+                                {% for rid, name in p.reasons %}<option value="{{ rid|attr }}">{{ name|text }}</option>{% endfor %}</select>
+                            <div class="input-group-append"><button class="btn btn-secondary">{{ 'Adjust'|xlt }}</button></div>
+                        </div>
+                    </form>
+                    <form method="post" class="col-lg-3 mb-2">
+                        {{ m.panelForm(key, 'receive', csrfField, csrfToken) }}
+                        <input type="hidden" name="facility_id" value="{{ row.facility_id|attr }}">
+                        <label class="small mb-0">{{ 'Receive an order'|xlt }}</label>
+                        <div class="input-group input-group-sm">
+                            <input class="form-control text-right" name="qty" inputmode="decimal" required>
+                            <div class="input-group-append"><button class="btn btn-secondary">{{ 'Receive'|xlt }}</button></div>
+                        </div>
+                    </form>
+                    <form method="post" class="col-lg-3 mb-2">
+                        {{ m.panelForm(key, 'count', csrfField, csrfToken) }}
+                        <input type="hidden" name="facility_id" value="{{ row.facility_id|attr }}">
+                        <label class="small mb-0">{{ 'Physical count'|xlt }}</label>
+                        <div class="input-group input-group-sm">
+                            <input class="form-control text-right" name="qty" inputmode="decimal" required>
+                            <div class="input-group-append"><button class="btn btn-secondary">{{ 'Record'|xlt }}</button></div>
+                        </div>
+                    </form>
+                    <form method="post" class="col-lg-2 mb-2">
+                        {{ m.panelForm(key, 'levels', csrfField, csrfToken) }}
+                        <input type="hidden" name="facility_id" value="{{ row.facility_id|attr }}">
+                        <label class="small mb-0">{{ 'On order / low level'|xlt }}</label>
+                        <div class="input-group input-group-sm">
+                            <input class="form-control text-right" name="on_order" value="{{ row.on_order|attr }}" inputmode="decimal" aria-label="{{ 'On order'|xla }}">
+                            <input class="form-control text-right" name="low_stock_level" value="{{ row.low_stock_level|attr }}" inputmode="decimal" aria-label="{{ 'Low-stock level'|xla }}">
+                            <div class="input-group-append"><button class="btn btn-secondary">{{ 'Set'|xlt }}</button></div>
+                        </div>
+                    </form>
+                </div>
+            </td>
+        </tr>
+    {% else %}
+        <tr><td colspan="5" class="text-muted">{{ 'No active facilities in OpenEMR.'|xlt }}</td></tr>
+    {% endfor %}
+    </tbody>
+</table>
+</div>
+{% if p.history is not empty %}
+    <details>
+        <summary class="small">{{ 'Recent stock changes'|xlt }}</summary>
+        <table class="table table-sm small mt-2">
+            <thead><tr><th>{{ 'When'|xlt }}</th><th>{{ 'Office'|xlt }}</th><th>{{ 'Change'|xlt }}</th><th class="text-right">{{ 'Quantity'|xlt }}</th><th>{{ 'Reason'|xlt }}</th><th>{{ 'User'|xlt }}</th></tr></thead>
+            <tbody>
+            {% for t in p.history %}
+                <tr>
+                    <td class="text-nowrap">{{ t.created_at|text }}</td>
+                    <td>{{ t.facility_name|text }}</td>
+                    <td>{{ t.kind|replace({'_': ' '})|text }}</td>
+                    <td class="text-right">{{ t.qty_delta|text }}</td>
+                    <td>{{ t.reason_name|text }}</td>
+                    <td>{{ t.username|text }}</td>
+                </tr>
+            {% endfor %}
+            </tbody>
+        </table>
+    </details>
+{% endif %}

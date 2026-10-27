@@ -1,0 +1,64 @@
+{% extends 'admin/base.html.twig' %}
+{% import 'admin/macros.html.twig' as m %}
+{% block title %}{{ entity.singular|xlt }}{% endblock %}
+{% block crumbs %}
+    <li class="breadcrumb-item"><a href="{{ adminUrl|attr }}list.php?entity={{ entity.key|attr_url }}">{{ entity.title|xlt }}</a></li>
+    <li class="breadcrumb-item active">{{ id > 0 ? values.name|default('')|text : ('New'|xlt) }}</li>
+{% endblock %}
+{% block content %}
+    <h3>{{ id > 0 ? ('Edit'|xlt) : ('Add'|xlt) }} {{ entity.singular|xlt }}</h3>
+    {% if record and record.source is defined and record.source == 'patientnow_import' %}
+        <p class="small text-muted">{{ 'Imported from PatientNow.'|xlt }}</p>
+    {% endif %}
+    {{ m.errors(errors) }}
+    <form method="post" class="card card-body mb-4" novalidate>
+        {{ m.csrf(csrfField, csrfToken) }}
+        <input type="hidden" name="action" value="save">
+        <div class="form-row">
+            {% for field in entity.fields %}
+                {{ m.field(field, values[field.name]|default(''), errors[field.name]|default(''), options[field.name]|default([])) }}
+            {% endfor %}
+        </div>
+        <div>
+            <button type="submit" class="btn btn-primary">{{ 'Save'|xlt }}</button>
+            <a class="btn btn-link" href="{{ adminUrl|attr }}list.php?entity={{ entity.key|attr_url }}">{{ 'Back to list'|xlt }}</a>
+        </div>
+    </form>
+
+    {% if id == 0 and entity.panels is not empty %}
+        <p class="text-muted">{{ 'Save first to add the remaining details.'|xlt }}</p>
+    {% endif %}
+
+    {% for panel in panels %}
+        <section class="card mb-4 cpi-panel" id="{{ panel.key|attr }}">
+            <div class="card-header"><strong>{{ panel.title|xlt }}</strong></div>
+            <div class="card-body">
+                {{ m.errors(panel.errors) }}
+                {% include 'admin/panels/' ~ panel.key ~ '.html.twig' with {'p': panel.data, 'key': panel.key} %}
+            </div>
+        </section>
+    {% endfor %}
+{% endblock %}
+{% block scripts %}
+    <script>
+        // Package and stock forms ask before removing a row.
+        document.querySelectorAll('form[data-confirm]').forEach(function (form) {
+            form.addEventListener('submit', function (e) {
+                if (!window.confirm(form.getAttribute('data-confirm'))) { e.preventDefault(); }
+            });
+        });
+        // Package item type switch.
+        document.querySelectorAll('[data-item-type]').forEach(function (select) {
+            var sync = function () {
+                var form = select.form;
+                form.querySelectorAll('[data-for-type]').forEach(function (el) {
+                    var show = el.getAttribute('data-for-type') === select.value;
+                    el.classList.toggle('d-none', !show);
+                    el.querySelectorAll('select').forEach(function (s) { s.disabled = !show; });
+                });
+            };
+            select.addEventListener('change', sync);
+            sync();
+        });
+    </script>
+{% endblock %}

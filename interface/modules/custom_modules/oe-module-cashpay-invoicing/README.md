@@ -14,8 +14,29 @@ stay in OpenEMR's Fee Sheet / billing module, and no insurance data is migrated.
 
 ## Status
 
-Proposal stage: `table.sql` (data model) and this file tree are up for approval.
-No feature code is written yet.
+**Phase 1 (catalog admin) is built** and ready for testing. Phases 2 to 4 are not started.
+
+Phase 1 adds **Admin > Cash-Pay Setup**:
+
+- Catalog and Pricing home page with counts.
+- Procedures, with price overrides by provider and/or office and the products each procedure uses.
+- Products, with stock by office (adjust, receive, physical count, on-order and low-stock levels, history), vendors and office prices.
+- Sales packages, with a line builder and the package price.
+- Membership plans, with their member discounts.
+- Promotional discounts, with a scope editor (invoice types, offices, procedures, procedure and product categories, products, vendors, manufacturers).
+- Lists: categories, manufacturers, vendors, discount reasons, stock reasons, payment methods.
+- Settings: Tax 1 and Tax 2, the credit card service charge (credit cards only, 0 to 3%), award points, quote and receipt text.
+- Price List (printable) with CSV export, and CSV import for bulk edits of procedures and products.
+- One-time import of the PatientNow catalog (`data/patientnow_catalog.json`).
+
+Install and test steps are in [TESTING.md](TESTING.md).
+
+### Data safety
+
+- Uninstalling (unregistering) the module does **not** drop its tables, because they will hold invoices,
+  payments and commission history. `cleanup.sql` removes them by hand if that is ever wanted.
+- Records are deactivated, not deleted, so old invoices keep their items.
+- The PatientNow import runs once, in one transaction, and refuses to run again.
 
 ## Decisions baked in
 
@@ -37,9 +58,9 @@ oe-module-cashpay-invoicing/
   version.php                   Module version / database version
   composer.json                 PSR-4 autoload OpenEMR\Modules\CashpayInvoicing\ -> src/, stripe/stripe-php
   openemr.bootstrap.php         Registers the namespace and subscribes Bootstrap to events
-  ModuleManagerListener.php     Registers ACL objects on install; drops cpi_ tables on unregister
-  table.sql                     44 cpi_ tables (this proposal)
-  cleanup.sql                   Drops all cpi_ tables
+  ModuleManagerListener.php     Registers the 'cashpay' ACL objects on enable; keeps data on unregister
+  table.sql                     44 cpi_ tables plus default rows
+  cleanup.sql                   Drops all cpi_ tables (manual use only)
   README.md
 
   src/
@@ -69,9 +90,10 @@ oe-module-cashpay-invoicing/
 
   templates/                    Twig templates for all pages and printable quote/receipt PDFs
 
-  sql/
-    seed_defaults.sql           Tax types, discount reasons, payment methods, stock reasons
-    seed_patientnow_catalog.sql Procedures, products, packages, memberships, promos from PatientNow
+    (default tax types, discount reasons, payment methods and stock reasons are #IfNotRow blocks at the end of table.sql)
+
+  data/
+    patientnow_catalog.json     Procedures, products, packages, memberships, promos captured from PatientNow
 
   tests/                        Isolated PHPUnit tests (no database): pricing, tax, card fee,
                                 prepaid/unearned income, points, commission matching and tie-break

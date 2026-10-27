@@ -1,0 +1,74 @@
+{% extends 'admin/base.html.twig' %}
+{% import 'admin/macros.html.twig' as m %}
+{% block title %}{{ 'Import Catalog'|xlt }}{% endblock %}
+{% block crumbs %}<li class="breadcrumb-item active">{{ 'Import Catalog'|xlt }}</li>{% endblock %}
+{% block content %}
+    <h3>{{ 'Import Catalog'|xlt }}</h3>
+
+    <section class="card mb-4"><div class="card-header"><strong>{{ 'PatientNow catalog'|xlt }}</strong></div><div class="card-body">
+        {{ m.errors(errors) }}
+        {% if report %}
+            <div class="alert alert-success">
+                <strong>{{ 'Import finished.'|xlt }}</strong>
+                <ul class="mb-0">{% for what, n in report.counts %}<li>{{ n|text }} {{ what|replace({'cpi_': '', '_': ' '})|text }}</li>{% endfor %}</ul>
+            </div>
+            {% if report.warnings is not empty %}
+                <div class="alert alert-warning"><ul class="mb-0">{% for w in report.warnings %}<li>{{ w|text }}</li>{% endfor %}</ul></div>
+            {% endif %}
+        {% endif %}
+        {% if alreadyImported %}
+            <p class="mb-0">{{ 'The PatientNow catalog is already loaded. It can only be imported once, so it is never duplicated. Use the CSV import below for changes.'|xlt }}</p>
+        {% else %}
+            <p>{{ 'Loads what was captured from PatientNow on 2026-10-26:'|xlt }}
+                {{ summary.procedures|text }} {{ 'procedures'|xlt }}, {{ summary.products|text }} {{ 'products'|xlt }},
+                {{ summary.packages|text }} {{ 'sales packages'|xlt }}, {{ summary.promos|text }} {{ 'promotional discounts'|xlt }},
+                {{ summary.memberships|text }} {{ 'membership plans'|xlt }}.
+                {{ 'Stock starts at zero in every office. Patient balances, saved cards and insurance are not imported.'|xlt }}</p>
+            <form method="post">
+                {{ m.csrf(csrfField, csrfToken) }}
+                <input type="hidden" name="action" value="patientnow">
+                <p class="mb-1">{{ 'Which OpenEMR facility is each PatientNow office?'|xlt }}</p>
+                <div class="form-row">
+                    {% for office in offices %}
+                        <div class="form-group col-md-4">
+                            <label for="office_{{ loop.index0|attr }}">{{ office|text }}</label>
+                            <select class="form-control" id="office_{{ loop.index0|attr }}" name="office_{{ loop.index0|attr }}">
+                                <option value="">{{ 'Not in OpenEMR yet (skip)'|xlt }}</option>
+                                {% for fid, name in facilities %}<option value="{{ fid|attr }}"{% if officeGuess[office] == fid %} selected{% endif %}>{{ name|text }}</option>{% endfor %}
+                            </select>
+                        </div>
+                    {% endfor %}
+                </div>
+                <button type="submit" class="btn btn-primary" onclick="return confirm({{ 'Import the PatientNow catalog now? This can only be done once.'|xlj }});">{{ 'Import PatientNow catalog'|xlt }}</button>
+            </form>
+        {% endif %}
+        <details class="mt-3">
+            <summary>{{ 'Items to check after import'|xlt }} ({{ review|length|text }})</summary>
+            <ul class="small mt-2">{% for note in review %}<li>{{ note|text }}</li>{% endfor %}</ul>
+        </details>
+    </div></section>
+
+    <section class="card mb-4"><div class="card-header"><strong>{{ 'CSV import (procedures or products)'|xlt }}</strong></div><div class="card-body">
+        <p class="small text-muted">{{ 'Export a CSV from the Price List, edit it in a spreadsheet, then load it here. Rows with an id update that record; rows without an id are added. Columns you remove are left unchanged. A file with any bad row changes nothing.'|xlt }}</p>
+        {{ m.errors(csvErrors) }}
+        {% if csvReport %}
+            <div class="alert alert-info">
+                {% for what, n in csvReport.counts %}{{ n|text }} {{ what|xlt }}{% if not loop.last %}, {% endif %}{% endfor %}.
+                {% for w in csvReport.warnings %} {{ w|xlt }}{% endfor %}
+            </div>
+        {% endif %}
+        <form method="post" enctype="multipart/form-data" class="form-row align-items-end">
+            {{ m.csrf(csrfField, csrfToken) }}
+            <input type="hidden" name="action" value="csv">
+            <div class="form-group col-md-3"><label for="csv_entity">{{ 'List'|xlt }}</label>
+                <select class="form-control" id="csv_entity" name="entity">
+                    {% for e in csvEntities %}<option value="{{ e|attr }}">{{ e == 'procedure' ? 'Procedures'|xlt : 'Products'|xlt }}</option>{% endfor %}
+                </select></div>
+            <div class="form-group col-md-4"><label for="csv_file">{{ 'CSV file'|xlt }}</label>
+                <input type="file" class="form-control-file" id="csv_file" name="csv_file" accept=".csv,text/csv" required></div>
+            <div class="form-group col-md-2 form-check pl-4"><input type="checkbox" class="form-check-input" id="apply" name="apply" value="1">
+                <label class="form-check-label" for="apply">{{ 'Save changes'|xlt }}</label></div>
+            <div class="form-group col-md-3"><button type="submit" class="btn btn-secondary">{{ 'Check file'|xlt }} / {{ 'Load'|xlt }}</button></div>
+        </form>
+    </div></section>
+{% endblock %}

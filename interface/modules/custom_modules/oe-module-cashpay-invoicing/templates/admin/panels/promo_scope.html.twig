@@ -1,0 +1,29 @@
+{% import 'admin/macros.html.twig' as m %}
+<form method="post">
+    {{ m.panelForm(key, 'save', csrfField, csrfToken) }}
+    <div class="form-group">
+        <label class="d-block">{{ 'Invoice types'|xlt }}</label>
+        {% for type, label in p.invoiceTypes %}
+            <div class="form-check form-check-inline">
+                <input type="checkbox" class="form-check-input" id="it_{{ type|attr }}" name="invoice_types[]" value="{{ type|attr }}"{% if type in p.selectedTypes %} checked{% endif %}>
+                <label class="form-check-label" for="it_{{ type|attr }}">{{ label|xlt }}</label>
+            </div>
+        {% endfor %}
+    </div>
+    <div class="form-row">
+        {% for dim in p.dimensions %}
+            <div class="form-group col-md-6 col-xl-4">
+                <label for="sc_{{ dim.key|attr }}">{{ dim.label|xlt }} <span class="small text-muted">({{ dim.selected is empty ? 'all'|xlt : dim.selected|length ~ ' ' ~ 'selected'|xl }})</span></label>
+                <select multiple size="6" class="form-control form-control-sm" id="sc_{{ dim.key|attr }}" name="{{ dim.key|attr }}[]">
+                    {% for oid, name in dim.options %}<option value="{{ oid|attr }}"{% if oid in dim.selected %} selected{% endif %}>{{ name|text }}</option>{% endfor %}
+                </select>
+            </div>
+        {% endfor %}
+    </div>
+    <div class="form-check mb-3">
+        <input type="checkbox" class="form-check-input" id="no_products" name="no_products" value="1"{% if p.noProducts %} checked{% endif %}>
+        <label class="form-check-label" for="no_products">{{ 'Never apply to products (procedures only)'|xlt }}</label>
+    </div>
+    <p class="small text-muted">{{ 'Hold Ctrl (or Cmd) to pick several. Leave a list with nothing selected to mean all.'|xlt }}</p>
+    <button class="btn btn-secondary btn-sm">{{ 'Save scope'|xlt }}</button>
+</form>

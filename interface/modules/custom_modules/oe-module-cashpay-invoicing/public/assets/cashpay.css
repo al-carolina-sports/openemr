@@ -1,0 +1,12 @@
+/* Cash-Pay Invoicing admin pages */
+.cpi .cpi-crumbs { background: transparent; padding: 0; margin-bottom: .75rem; }
+.cpi .cpi-tile { color: inherit; text-decoration: none; transition: box-shadow .15s ease; }
+.cpi .cpi-tile:hover, .cpi .cpi-tile:focus { box-shadow: 0 2px 8px rgba(0, 0, 0, .12); }
+.cpi .cpi-table td, .cpi .cpi-table th { vertical-align: middle; }
+.cpi .cpi-inactive a { color: inherit; text-decoration: line-through; }
+.cpi .cpi-panel { scroll-margin-top: 1rem; }
+.cpi .cpi-price-table td:last-child { width: 9rem; }
+@media print {
+    .cpi .breadcrumb, .cpi .alert { display: none; }
+    .cpi .tab-content > .cpi-print-all { display: block !important; opacity: 1 !important; page-break-after: always; }
+}

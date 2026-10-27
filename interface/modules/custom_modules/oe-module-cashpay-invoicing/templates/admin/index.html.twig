@@ -1,0 +1,41 @@
+{% extends 'admin/base.html.twig' %}
+{% block title %}{{ 'Cash-Pay Setup'|xlt }}{% endblock %}
+{% block content %}
+    <h3>{{ 'Cash-Pay Setup'|xlt }}</h3>
+    <p class="text-muted">{{ 'Catalog, pricing and lists used by cash-pay quotes and invoices.'|xlt }}</p>
+    {% for group, items in groups %}
+        <h5 class="mt-4">{{ group|xlt }}</h5>
+        <div class="row">
+            {% for item in items %}
+                <div class="col-sm-6 col-lg-4 col-xl-3 mb-3">
+                    <a class="card h-100 cpi-tile" href="{{ adminUrl|attr }}list.php?entity={{ item.entity.key|attr_url }}">
+                        <div class="card-body">
+                            <div class="d-flex justify-content-between align-items-baseline">
+                                <strong>{{ item.entity.title|xlt }}</strong>
+                                <span class="badge badge-light">{{ item.count|text }}</span>
+                            </div>
+                            {% if item.entity.description %}<div class="small text-muted mt-1">{{ item.entity.description|xlt }}</div>{% endif %}
+                        </div>
+                    </a>
+                </div>
+            {% endfor %}
+        </div>
+    {% endfor %}
+    <h5 class="mt-4">{{ 'Tools'|xlt }}</h5>
+    <div class="row">
+        <div class="col-sm-6 col-lg-4 col-xl-3 mb-3">
+            <a class="card h-100 cpi-tile" href="{{ adminUrl|attr }}price_list.php"><div class="card-body"><strong>{{ 'Price List'|xlt }}</strong>
+                <div class="small text-muted mt-1">{{ 'Printable list of active prices; CSV export for bulk edits.'|xlt }}</div></div></a>
+        </div>
+        <div class="col-sm-6 col-lg-4 col-xl-3 mb-3">
+            <a class="card h-100 cpi-tile" href="{{ adminUrl|attr }}import.php"><div class="card-body"><strong>{{ 'Import Catalog'|xlt }}</strong>
+                <div class="small text-muted mt-1">{{ 'Load the PatientNow catalog, or a CSV of procedures or products.'|xlt }}</div></div></a>
+        </div>
+        {% if canSettings %}
+            <div class="col-sm-6 col-lg-4 col-xl-3 mb-3">
+                <a class="card h-100 cpi-tile" href="{{ adminUrl|attr }}settings.php"><div class="card-body"><strong>{{ 'Settings'|xlt }}</strong>
+                    <div class="small text-muted mt-1">{{ 'Taxes, credit card service charge, award points, quote text.'|xlt }}</div></div></a>
+            </div>
+        {% endif %}
+    </div>
+{% endblock %}

@@ -1,0 +1,36 @@
+{% import 'admin/macros.html.twig' as m %}
+<p class="small text-muted">{{ 'The most specific match wins: provider and office, then provider, then office, then the standard price.'|xlt }}</p>
+<table class="table table-sm">
+    <thead><tr><th>{{ 'Provider'|xlt }}</th><th>{{ 'Office'|xlt }}</th><th class="text-right">{{ 'Price'|xlt }}</th><th class="text-right">{{ 'Hours'|xlt }}</th><th></th></tr></thead>
+    <tbody>
+    {% for row in p.rows %}
+        <tr>
+            <td>{{ row.provider_id ? p.providerNames[row.provider_id]|default('#' ~ row.provider_id)|text : ('Any'|xlt) }}</td>
+            <td>{{ row.facility_id ? p.facilityNames[row.facility_id]|default('#' ~ row.facility_id)|text : ('Any'|xlt) }}</td>
+            <td class="text-right">{{ row.price|money|text }}</td>
+            <td class="text-right">{{ row.hours|text }}</td>
+            <td class="text-right">
+                <form method="post" class="d-inline" data-confirm="{{ 'Remove this row?'|xla }}">
+                    {{ m.panelForm(key, 'delete', csrfField, csrfToken) }}
+                    <input type="hidden" name="fee_id" value="{{ row.id|attr }}">
+                    <button class="btn btn-link btn-sm p-0 text-danger">{{ 'Remove'|xlt }}</button>
+                </form>
+            </td>
+        </tr>
+    {% else %}
+        <tr><td colspan="5" class="text-muted">{{ 'No overrides. The standard price applies everywhere.'|xlt }}</td></tr>
+    {% endfor %}
+    </tbody>
+</table>
+<form method="post" class="form-row align-items-end">
+    {{ m.panelForm(key, 'save', csrfField, csrfToken) }}
+    <div class="col-md-3 mb-2"><label class="small">{{ 'Provider'|xlt }}</label>
+        <select class="form-control form-control-sm" name="provider_id"><option value="">{{ 'Any'|xlt }}</option>
+            {% for uid, name in p.providers %}<option value="{{ uid|attr }}">{{ name|text }}</option>{% endfor %}</select></div>
+    <div class="col-md-3 mb-2"><label class="small">{{ 'Office'|xlt }}</label>
+        <select class="form-control form-control-sm" name="facility_id"><option value="">{{ 'Any'|xlt }}</option>
+            {% for fid, name in p.facilities %}<option value="{{ fid|attr }}">{{ name|text }}</option>{% endfor %}</select></div>
+    <div class="col-md-2 mb-2"><label class="small">{{ 'Price'|xlt }}</label><input class="form-control form-control-sm text-right" name="price" inputmode="decimal" required></div>
+    <div class="col-md-2 mb-2"><label class="small">{{ 'Hours'|xlt }}</label><input class="form-control form-control-sm text-right" name="hours" inputmode="decimal"></div>
+    <div class="col-md-2 mb-2"><button class="btn btn-secondary btn-sm">{{ 'Save override'|xlt }}</button></div>
+</form>
