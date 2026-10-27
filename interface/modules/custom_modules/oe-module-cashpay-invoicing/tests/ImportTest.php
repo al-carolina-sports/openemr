@@ -53,7 +53,8 @@ final class ImportTest extends TestCase
         foreach ($db->inserts('cpi_stock') as [, $binds]) {
             $this->assertContains($binds[1], [1, 2], 'stock rows only for mapped offices');
         }
-        $this->assertCount(7 + 2 + 2, $db->inserts('cpi_membership_plan_promo'));
+        // Core: seven device promos; Wellness and Regenerative Wellness: one each.
+        $this->assertCount(7 + 1 + 1, $db->inserts('cpi_membership_plan_promo'));
     }
 
     public function testImportedPackagePricesMatchPatientNow(): void

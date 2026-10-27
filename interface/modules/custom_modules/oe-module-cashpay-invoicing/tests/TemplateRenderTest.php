@@ -15,10 +15,10 @@ declare(strict_types=1);
 namespace OpenEMR\Modules\CashpayInvoicing\Tests;
 
 use OpenEMR\Modules\CashpayInvoicing\Admin\EntityRegistry;
+use OpenEMR\Modules\CashpayInvoicing\Admin\ListQuery;
 use OpenEMR\Modules\CashpayInvoicing\Import\ImportReport;
 use OpenEMR\Modules\CashpayInvoicing\Settings\Settings;
 use OpenEMR\Modules\CashpayInvoicing\Settings\TaxType;
-use OpenEMR\Modules\CashpayInvoicing\Admin\ListQuery;
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\TestCase;
 use Twig\Environment;
