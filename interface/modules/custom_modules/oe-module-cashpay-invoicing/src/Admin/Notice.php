@@ -47,6 +47,8 @@ enum Notice
     case DrawerOpened;
     case DrawerClosed;
     case DrawerReopened;
+    case LinkCreated;
+    case MembershipEnrolled;
 
     public function text(): string
     {
@@ -82,6 +84,8 @@ enum Notice
             self::DrawerOpened => 'Cash drawer opened.',
             self::DrawerClosed => 'Cash drawer closed.',
             self::DrawerReopened => 'Cash drawer reopened.',
+            self::LinkCreated => 'Link created. It is listed below; copy it or check that the email went out.',
+            self::MembershipEnrolled => 'Membership started and the first period billed.',
         };
     }
 

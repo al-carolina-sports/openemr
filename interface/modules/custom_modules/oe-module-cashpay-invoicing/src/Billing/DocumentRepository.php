@@ -90,7 +90,8 @@ final readonly class DocumentRepository
                 'discount' => Row::money($row, 'sum_discount'),
                 'tax' => Row::money($row, 'sum_tax'),
                 'paid' => Row::money($row, 'paid'),
-                'unearned' => $kind === DocumentKind::Invoice && $document->invoiceType->defersDelivery() && !$document->voided
+                // Lines delivered on sale are received when added, so only waiting lines count here.
+                'unearned' => $kind === DocumentKind::Invoice && !$document->voided
                     ? Row::money($row, 'sum_unearned') : Money::zero(),
                 'lineCount' => Row::int($row, 'line_count'),
             ];

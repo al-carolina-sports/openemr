@@ -47,6 +47,16 @@ enum InvoiceType: string
     }
 
     /**
+     * Whether one line waits for delivery. On top of prepaid and surgery
+     * invoices, the package included with a membership each month is
+     * redeemed later, so those lines wait too.
+     */
+    public function lineDeferred(?int $packageId): bool
+    {
+        return $this->defersDelivery() || ($this === self::Membership && $packageId !== null);
+    }
+
+    /**
      * @return array<string, string>
      */
     public static function choices(): array

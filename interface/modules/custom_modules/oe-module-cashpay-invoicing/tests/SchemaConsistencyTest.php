@@ -39,7 +39,7 @@ final class SchemaConsistencyTest extends TestCase
 
     public function testSchemaHasAllTables(): void
     {
-        $this->assertCount(44, self::$schema);
+        $this->assertCount(45, self::$schema);
     }
 
     public function testEveryAdminFieldIsAColumnOfTheRightKind(): void

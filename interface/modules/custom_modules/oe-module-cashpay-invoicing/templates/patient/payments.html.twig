@@ -99,6 +99,77 @@
     {% endif %}
     {% endif %}
 
+
+    {% if canBill and stripe %}
+    <section class="card mb-3" id="stripe">
+        <div class="card-header"><strong>{{ 'Cards through Stripe'|xlt }}</strong>
+            <span class="small text-muted ml-2">{{ stripe.hasCard ? 'Card on file: yes'|xlt : 'No card on file'|xlt }}</span></div>
+        <div class="card-body">
+            <div class="row">
+                <div class="col-lg-4 mb-3">
+                    <h6>{{ 'Charge on a card reader'|xlt }}</h6>
+                    {% if stripe.readers is empty %}
+                        <p class="small text-muted">{{ 'No readers found for this office. Register readers in the Stripe dashboard (Terminal) and add the location id in Stripe settings.'|xlt }}</p>
+                    {% else %}
+                        <div id="readerBox" data-url="{{ stripe.readerUrl|attr }}" data-token="{{ csrfToken|attr }}" data-field="{{ csrfField|attr }}">
+                            <select class="form-control form-control-sm mb-1" id="rdReader" aria-label="{{ 'Reader'|xla }}">
+                                {% for r in stripe.readers %}<option value="{{ r.id|attr }}">{{ r.label|text }} ({{ r.status|text }})</option>{% endfor %}
+                            </select>
+                            <select class="form-control form-control-sm mb-1" id="rdInvoice" aria-label="{{ 'Apply to'|xla }}">
+                                <option value="">{{ 'Credit on account'|xlt }}</option>
+                                {% for inv in openInvoices %}<option value="{{ inv.id|attr }}" data-due="{{ inv.dueRaw|attr }}"{% if inv.id == focusInvoice %} selected{% endif %}>#{{ inv.id|text }} {{ inv.name|text }} ({{ inv.due|text }})</option>{% endfor %}
+                            </select>
+                            <input class="form-control form-control-sm mb-1 text-right" id="rdAmount" placeholder="{{ 'Amount'|xla }}" inputmode="decimal">
+                            <input type="hidden" id="rdFacility" value="{{ defaultFacility|attr }}">
+                            <button type="button" class="btn btn-primary btn-sm" id="rdStart">{{ 'Send to reader'|xlt }}</button>
+                            <button type="button" class="btn btn-outline-secondary btn-sm d-none" id="rdCancel">{{ 'Cancel'|xlt }}</button>
+                            <div class="small mt-2" id="rdStatus" role="status" aria-live="polite"></div>
+                            <p class="small text-muted mt-1 mb-0">{{ 'The card is read first. For credit cards the service charge is added and shown on the reader before the charge.'|xlt }}</p>
+                        </div>
+                    {% endif %}
+                </div>
+                <div class="col-lg-4 mb-3">
+                    <h6>{{ 'Send a pay link'|xlt }}</h6>
+                    <form method="post">
+                        {{ m.csrf(csrfField, csrfToken) }}<input type="hidden" name="action" value="pay_link"><input type="hidden" name="facility_id" value="{{ defaultFacility|attr }}">
+                        <input class="form-control form-control-sm mb-1 text-right" name="amount" placeholder="{{ 'Amount'|xla }}" inputmode="decimal" required>
+                        {% for inv in openInvoices %}
+                            <div class="form-check small"><input type="checkbox" class="form-check-input" id="pl_{{ inv.id|attr }}" name="invoice_ids[]" value="{{ inv.id|attr }}"{% if inv.id == focusInvoice %} checked{% endif %}>
+                                <label class="form-check-label" for="pl_{{ inv.id|attr }}">#{{ inv.id|text }} {{ inv.name|text }} ({{ inv.due|text }})</label></div>
+                        {% endfor %}
+                        <div class="form-check small"><input type="checkbox" class="form-check-input" id="pl_email" name="send_email" value="1" checked>
+                            <label class="form-check-label" for="pl_email">{{ 'Email it to the patient'|xlt }}</label></div>
+                        <button class="btn btn-secondary btn-sm mt-1">{{ 'Create pay link'|xlt }}</button>
+                        <p class="small text-muted mt-1 mb-0">{{ 'Pay links are charged without the card service charge. The payment posts when Stripe confirms it.'|xlt }}</p>
+                    </form>
+                </div>
+                <div class="col-lg-4 mb-3">
+                    <h6>{{ 'Card on file'|xlt }}</h6>
+                    <form method="post">
+                        {{ m.csrf(csrfField, csrfToken) }}<input type="hidden" name="action" value="card_link"><input type="hidden" name="facility_id" value="{{ defaultFacility|attr }}">
+                        <div class="form-check small"><input type="checkbox" class="form-check-input" id="cl_email" name="send_email" value="1" checked>
+                            <label class="form-check-label" for="cl_email">{{ 'Email it to the patient'|xlt }}</label></div>
+                        <button class="btn btn-secondary btn-sm mt-1">{{ 'Send card-on-file link'|xlt }}</button>
+                        <p class="small text-muted mt-1 mb-0">{{ 'The patient saves a card for membership autopay. Cards from PatientNow are not carried over.'|xlt }}</p>
+                    </form>
+                </div>
+            </div>
+            {% if stripe.requests is not empty %}
+                <table class="table table-sm small mb-0">
+                    <thead><tr><th>{{ 'Created'|xlt }}</th><th>{{ 'Link'|xlt }}</th><th class="text-right">{{ 'Amount'|xlt }}</th><th>{{ 'Status'|xlt }}</th><th>{{ 'Emailed to'|xlt }}</th><th></th></tr></thead>
+                    <tbody>
+                    {% for r in stripe.requests %}
+                        <tr class="{{ r.highlight ? 'table-info' : '' }}"><td class="text-nowrap">{{ r.created|text }}</td><td>{{ r.purpose == 'setup' ? 'Card on file'|xlt : 'Payment'|xlt }}</td>
+                            <td class="text-right">{{ r.purpose == 'setup' ? '' : r.amount|text }}</td><td>{{ r.status|xlt }}</td><td>{{ r.sentTo|text }}</td>
+                            <td>{% if r.status == 'open' %}<button type="button" class="btn btn-link btn-sm p-0 cpi-copy" data-url="{{ r.url|attr }}">{{ 'Copy link'|xlt }}</button>{% endif %}</td></tr>
+                    {% endfor %}
+                    </tbody>
+                </table>
+            {% endif %}
+        </div>
+    </section>
+    {% endif %}
+
     <h6>{{ 'Ledger'|xlt }}</h6>
     <div class="table-responsive">
         <table class="table table-sm small cpi-table">
@@ -160,6 +231,53 @@
     document.querySelectorAll('form[data-confirm]').forEach(function (form) {
         form.addEventListener('submit', function (e) { if (!window.confirm(form.getAttribute('data-confirm'))) { e.preventDefault(); } });
     });
+    document.querySelectorAll('.cpi-copy').forEach(function (btn) {
+        btn.addEventListener('click', function () {
+            var url = btn.getAttribute('data-url');
+            if (navigator.clipboard) { navigator.clipboard.writeText(url).then(function () { btn.textContent = {{ 'Copied'|xlj }}; }); }
+            else { window.prompt({{ 'Copy the link'|xlj }}, url); }
+        });
+    });
+    var box = document.getElementById('readerBox');
+    if (box) {
+        var status = document.getElementById('rdStatus');
+        var startBtn = document.getElementById('rdStart');
+        var cancelBtn = document.getElementById('rdCancel');
+        var invoiceSel = document.getElementById('rdInvoice');
+        var amountIn = document.getElementById('rdAmount');
+        var intent = null, timer = null;
+        var syncAmount = function () { var o = invoiceSel.options[invoiceSel.selectedIndex]; if (o && o.getAttribute('data-due')) { amountIn.value = o.getAttribute('data-due'); } };
+        invoiceSel.addEventListener('change', syncAmount); syncAmount();
+        var call = function (data) {
+            var body = new URLSearchParams(data);
+            body.append(box.getAttribute('data-field'), box.getAttribute('data-token'));
+            body.append('facility_id', document.getElementById('rdFacility').value);
+            top.restoreSession && top.restoreSession();
+            return fetch(box.getAttribute('data-url'), {method: 'POST', credentials: 'same-origin', body: body}).then(function (r) { return r.json(); });
+        };
+        var show = function (res) {
+            status.textContent = res.message + (res.fee ? ' · ' + {{ 'Card charge'|xlj }} + ' ' + res.fee + ' · ' + {{ 'Total'|xlj }} + ' ' + res.total : '');
+            status.className = 'small mt-2 ' + (res.state === 'failed' ? 'text-danger' : (res.state === 'succeeded' ? 'text-success' : ''));
+        };
+        var poll = function () {
+            call({action: 'status', intent: intent}).then(function (res) {
+                show(res);
+                if (res.state === 'succeeded') { clearInterval(timer); setTimeout(function () { window.location.reload(); }, 1200); }
+                if (res.state === 'failed' || res.state === 'canceled') { clearInterval(timer); startBtn.disabled = false; cancelBtn.classList.add('d-none'); }
+            });
+        };
+        startBtn.addEventListener('click', function () {
+            startBtn.disabled = true;
+            call({action: 'start', reader_id: document.getElementById('rdReader').value, invoice_id: invoiceSel.value, amount: amountIn.value}).then(function (res) {
+                show(res);
+                if (res.intent) { intent = res.intent; cancelBtn.classList.remove('d-none'); timer = setInterval(poll, 2000); } else { startBtn.disabled = false; }
+            });
+        });
+        cancelBtn.addEventListener('click', function () {
+            call({action: 'cancel', reader_id: document.getElementById('rdReader').value}).then(show);
+            clearInterval(timer); startBtn.disabled = false; cancelBtn.classList.add('d-none');
+        });
+    }
     var method = document.getElementById('payMethod');
     if (!method) { return; }
     var amount = document.getElementById('payAmount');

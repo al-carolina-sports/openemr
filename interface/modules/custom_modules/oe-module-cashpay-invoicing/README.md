@@ -14,10 +14,10 @@ stay in OpenEMR's Fee Sheet / billing module, and no insurance data is migrated.
 
 ## Status
 
-**Phase 1 (catalog admin) is built and tested.** Phase 2 is being built in three parts;
-**parts 1 (quotes and invoices) and 2 (payments, points, gift cards, notes, cash drawer) are ready for testing**
-(module version 0.2.0, run *Upgrade* in Module Manager). Phase 2 part 3 (Stripe and memberships) and phases 3
-and 4 are not started.
+**Phase 1 (catalog admin) is built and tested.** Phase 2 is built in three parts, all ready for testing:
+quotes and invoices; payments, points, gift cards, notes and cash drawer; Stripe and memberships
+(module version 0.3.0, run *Upgrade* in Module Manager, then Disable and Enable once). Phases 3 (commissions)
+and 4 (reports) are not started.
 
 Phase 1 adds **Admin > Cash-Pay Setup**:
 
@@ -65,6 +65,26 @@ Phase 2 part 2 adds **Payments**, **Rewards** and **Financial Notes** to the pat
 - Cash drawer per office per day: opening balance, cash in and out, adjustment, counted close, over/short; reopen
   needs the refunds permission.
 
+Phase 2 part 3 adds **Membership** to the patient menu, and **Stripe** and **Memberships and Cards** to
+Admin > Cash-Pay Setup:
+
+- Stripe accounts: one per business (e.g. CSS, BFM, True Radiance), test or live keys, webhook secret, Terminal
+  location, the offices it serves, and a default. Keys are encrypted in the database. **Test connection** checks
+  the keys and lists readers.
+- Only invoice numbers and amounts go to Stripe - no names of procedures, no diagnoses.
+- Payments page: **Stripe reader** (pick a reader, the patient taps or inserts; the card service charge is added
+  only if the card turns out to be a credit card), **Pay link** by email (Stripe Checkout; no service charge,
+  because the card type is not known in advance), and **Card on file** link (Stripe saves the card; we keep only
+  brand and last four).
+- Stripe payments post themselves through the webhook (`public/stripe/webhook.php?site=default`), once only.
+  Refunds of Stripe payments go back to the card through Stripe. Stripe payments cannot be voided - refund them.
+- Memberships: enroll with plan, office, start date and autopay; freeze, unfreeze, cancel; **Bill now**. Each period
+  makes a Membership invoice (plan fee plus the plan's package lines, which wait for delivery) and, with autopay on,
+  charges the saved card. Monthly points from the plan are added. Month-end start dates stay at month end.
+- Background job *cashpay_membership_billing* runs the due memberships every hour.
+- **Memberships and Cards** worklist: failed autopay, memberships due, patients flagged as needing a card.
+- Badges beside the patient name: membership plan(s) and *Card needed*.
+
 Install and test steps are in [TESTING.md](TESTING.md).
 
 ### Data safety
@@ -95,7 +115,7 @@ oe-module-cashpay-invoicing/
   composer.json                 PSR-4 autoload OpenEMR\Modules\CashpayInvoicing\ -> src/, stripe/stripe-php
   openemr.bootstrap.php         Registers the namespace and subscribes Bootstrap to events
   ModuleManagerListener.php     Registers the 'cashpay' ACL objects on enable; keeps data on unregister
-  table.sql                     44 cpi_ tables plus default rows
+  table.sql                     45 cpi_ tables plus default rows
   cleanup.sql                   Drops all cpi_ tables (manual use only)
   README.md
 

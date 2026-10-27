@@ -1,0 +1,66 @@
+{% extends '@cashpay/patient/base.html.twig' %}
+{% import '@cashpay/admin/macros.html.twig' as m %}
+{% block title %}{{ 'Membership'|xlt }}{% endblock %}
+{% block content %}
+    {{ m.errors(errors) }}
+    <table class="table table-sm cpi-table">
+        <thead class="thead-light"><tr><th>{{ 'Plan'|xlt }}</th><th>{{ 'Price'|xlt }}</th><th>{{ 'Started'|xlt }}</th><th>{{ 'Status'|xlt }}</th><th>{{ 'Next bill'|xlt }}</th><th>{{ 'Autopay'|xlt }}</th><th></th></tr></thead>
+        <tbody>
+        {% for ms in memberships %}
+            <tr class="{{ ms.status == 'cancelled' ? 'text-muted' : '' }}">
+                <td>{{ ms.plan|text }} <span class="badge badge-info">{{ ms.code|text }}</span><div class="small text-muted">{{ ms.facility|text }}</div></td>
+                <td>{{ ms.price|text }}</td>
+                <td>{{ ms.start|text }}{% if ms.end %} – {{ ms.end|text }}{% endif %}</td>
+                <td>{{ ms.status|xlt }}</td>
+                <td>{{ ms.status == 'active' ? ms.next|text : '' }}{% if ms.status == 'active' and not ms.autoInvoice %}<div class="small text-muted">{{ 'billed by hand'|xlt }}</div>{% endif %}</td>
+                <td>{{ ms.autopay ? 'On'|xlt : 'Off'|xlt }}{% if ms.autopayError %}<div class="small text-danger">{{ ms.autopayError|text }}</div>{% endif %}</td>
+                <td class="text-nowrap">
+                    {% if canBill and ms.status != 'cancelled' %}
+                        {% for act in (ms.status == 'active' ? ['bill_now', 'freeze'] : ['unfreeze'])|merge([ms.autopay ? 'autopay_off' : 'autopay_on', 'cancel']) %}
+                            <form method="post" class="d-inline"{% if act == 'cancel' %} data-confirm="{{ 'Cancel this membership today?'|xla }}"{% endif %}>
+                                {{ m.csrf(csrfField, csrfToken) }}<input type="hidden" name="action" value="{{ act|attr }}"><input type="hidden" name="membership_id" value="{{ ms.id|attr }}">
+                                <button class="btn btn-link btn-sm p-0 mr-2{{ act == 'cancel' ? ' text-danger' : '' }}">{{ {'bill_now': 'Bill next period', 'freeze': 'Freeze', 'unfreeze': 'Unfreeze', 'autopay_on': 'Turn autopay on', 'autopay_off': 'Turn autopay off', 'cancel': 'Cancel'}[act]|xlt }}</button>
+                            </form>
+                        {% endfor %}
+                    {% endif %}
+                </td>
+            </tr>
+        {% else %}<tr><td colspan="7" class="text-muted">{{ 'No memberships.'|xlt }}</td></tr>{% endfor %}
+        </tbody>
+    </table>
+    {% if canBill %}
+        <form method="post" class="card card-body py-2">
+            {{ m.csrf(csrfField, csrfToken) }}<input type="hidden" name="action" value="enroll">
+            <h6>{{ 'Start a membership'|xlt }}</h6>
+            <div class="form-row align-items-end">
+                <div class="col-md-3 mb-2"><label class="small mb-0">{{ 'Plan'|xlt }}</label>
+                    <select class="form-control form-control-sm" name="plan_id" required><option value="">{{ '-- choose --'|xlt }}</option>
+                        {% for p in plans %}<option value="{{ p.id|attr }}">{{ p.name|text }} ({{ p.monthly|text }}/{{ 'mo'|xlt }}, {{ p.annual|text }}/{{ 'yr'|xlt }})</option>{% endfor %}</select></div>
+                <div class="col-md-2 mb-2"><label class="small mb-0">{{ 'Billing'|xlt }}</label>
+                    <select class="form-control form-control-sm" name="billing_cycle"><option value="monthly">{{ 'Monthly'|xlt }}</option><option value="annual">{{ 'Annual'|xlt }}</option></select></div>
+                <div class="col-md-2 mb-2"><label class="small mb-0">{{ 'Starts'|xlt }}</label><input type="date" class="form-control form-control-sm" name="start_date" value="{{ today|attr }}"></div>
+                <div class="col-md-2 mb-2"><label class="small mb-0">{{ 'Office'|xlt }}</label>
+                    <select class="form-control form-control-sm" name="facility_id">{% for fid, name in facilities %}<option value="{{ fid|attr }}"{% if fid == defaultFacility %} selected{% endif %}>{{ name|text }}</option>{% endfor %}</select></div>
+                <div class="col-md-2 mb-2 form-check pl-4"><input type="checkbox" class="form-check-input" id="autopay" name="autopay" value="1"{% if hasCard %} checked{% endif %}>
+                    <label class="form-check-label small" for="autopay">{{ 'Autopay with the card on file'|xlt }}</label></div>
+                <div class="col-md-1 mb-2"><button class="btn btn-primary btn-sm">{{ 'Start'|xlt }}</button></div>
+            </div>
+            <p class="small text-muted mb-0">{{ 'Starting bills the first period now on a Membership invoice. Member discounts apply to this patient from the start date.'|xlt }}
+                {% if stripeOn and not hasCard %}{{ 'There is no card on file yet: send a card-on-file link from the Payments page.'|xlt }}{% endif %}</p>
+        </form>
+        {% if stripeOn %}
+            <form method="post" class="mt-3">
+                {{ m.csrf(csrfField, csrfToken) }}
+                <button class="btn btn-link btn-sm px-0" name="action" value="needs_card_on">{{ 'Flag: patient needs to give a card (had one saved in PatientNow)'|xlt }}</button>
+                <button class="btn btn-link btn-sm px-0 ml-3" name="action" value="needs_card_off">{{ 'Clear the flag'|xlt }}</button>
+            </form>
+        {% endif %}
+    {% endif %}
+{% endblock %}
+{% block scripts %}
+<script>
+document.querySelectorAll('form[data-confirm]').forEach(function (form) {
+    form.addEventListener('submit', function (e) { if (!window.confirm(form.getAttribute('data-confirm'))) { e.preventDefault(); } });
+});
+</script>
+{% endblock %}

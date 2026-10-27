@@ -21,9 +21,11 @@ use OpenEMR\Modules\CashpayInvoicing\Access;
 use OpenEMR\Modules\CashpayInvoicing\Admin\LookupRepository;
 use OpenEMR\Modules\CashpayInvoicing\Bootstrap;
 use OpenEMR\Modules\CashpayInvoicing\Database\QueryUtilsDatabase;
+use OpenEMR\Modules\CashpayInvoicing\ModuleServices;
 use OpenEMR\Modules\CashpayInvoicing\ModuleTwig;
 use OpenEMR\Modules\CashpayInvoicing\Payments\CashDrawerService;
 use OpenEMR\Modules\CashpayInvoicing\Rewards\GiftCardService;
+use OpenEMR\Modules\CashpayInvoicing\Stripe\StripeSdkGateway;
 use OpenEMR\Modules\CashpayInvoicing\Web\PageKit;
 
 final class FrontDeskPagesFactory
@@ -42,6 +44,27 @@ final class FrontDeskPagesFactory
             drawer: new CashDrawerService($db),
             clock: ServiceContainer::getClock(),
             adminUrl: $adminUrl,
+            userId: is_numeric($userId) ? (int) $userId : 0,
+        );
+    }
+
+    public static function billingAdmin(): BillingAdminPages
+    {
+        $session = SessionWrapperFactory::getInstance()->getActiveSession();
+        $userId = $session->get('authUserID');
+        $services = new ModuleServices();
+        $adminUrl = OEGlobalsBag::getInstance()->getWebRoot() . Bootstrap::MODULE_PATH . '/public/admin/';
+        return new BillingAdminPages(
+            kit: new PageKit(CurrentRequest::get(), $session, ModuleTwig::environment(), new Access(), ['adminUrl' => $adminUrl]),
+            lookups: new LookupRepository($services->db),
+            accounts: $services->stripeAccounts,
+            gateway: new StripeSdkGateway(),
+            stripe: $services->stripe(),
+            memberships: $services->memberships(),
+            clock: ServiceContainer::getClock(),
+            logger: ServiceContainer::getLogger(),
+            adminUrl: $adminUrl,
+            webhookUrl: ModuleServices::siteUrl() . '/public/stripe/webhook.php?site=default',
             userId: is_numeric($userId) ? (int) $userId : 0,
         );
     }

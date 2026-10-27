@@ -369,7 +369,7 @@ final readonly class PatientPages
         $paid = $document !== null && $kind === DocumentKind::Invoice ? $this->documents->paidOn($document->id) : Money::zero();
         $unearned = Money::zero();
         foreach ($lines as $line) {
-            if ($document !== null && $document->invoiceType->defersDelivery() && $line->isOutstanding() && $kind === DocumentKind::Invoice) {
+            if ($document !== null && $kind === DocumentKind::Invoice && $document->invoiceType->lineDeferred($line->packageId) && $line->isOutstanding()) {
                 $unearned = $unearned->add($line->total());
             }
         }
@@ -413,7 +413,10 @@ final readonly class PatientPages
             'canBill' => $this->access->can(AclObject::Billing),
             'canUnlock' => $this->access->can(AclObject::Refunds),
             'editable' => $document === null || $document->editable(),
-            'defersDelivery' => $document !== null && $kind === DocumentKind::Invoice && $document->invoiceType->defersDelivery(),
+            'defersDelivery' => $document !== null && $kind === DocumentKind::Invoice && (
+                $document->invoiceType->defersDelivery()
+                || array_filter($lines, static fn (Line $l): bool => $document->invoiceType->lineDeferred($l->packageId)) !== []
+            ),
             'lockHistory' => $document !== null && $kind === DocumentKind::Invoice ? $this->documents->lockHistory($document->id) : [],
             'today' => $today->format('Y-m-d'),
             'searchUrl' => $this->patientUrl . 'search.php',
@@ -498,7 +501,7 @@ final readonly class PatientPages
             'outstanding' => $line->isOutstanding(),
             'fromPackage' => $line->packageId !== null ? $this->name(LookupSource::Package, $line->packageId) : '',
             'canDescribe' => $line->itemType === 'other' || $this->allowsManualDescription($line),
-            'deferred' => $document !== null && $document->kind === DocumentKind::Invoice && $document->invoiceType->defersDelivery(),
+            'deferred' => $document !== null && $document->kind === DocumentKind::Invoice && $document->invoiceType->lineDeferred($line->packageId),
         ];
     }
 

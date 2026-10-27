@@ -363,8 +363,16 @@ final class TemplateRenderTest extends TestCase
             'refundMethods' => [['id' => 8, 'name' => 'Refund Cash', 'kind' => 'cash']], 'facilities' => [1 => 'Raleigh'], 'defaultFacility' => 1,
             'today' => '2026-10-27', 'cardFee' => ['enabled' => true, 'bp' => 300, 'label' => 'Credit card service charge', 'pct' => '3.00'],
             'rewards' => ['on' => true, 'points' => '75', 'value' => '$75.00'], 'canBill' => true, 'canRefund' => true,
+            'stripe' => [
+                'readers' => [['id' => 'tmr_1', 'label' => 'Front desk', 'status' => 'online']],
+                'hasCard' => false,
+                'requests' => [['id' => 3, 'purpose' => 'payment', 'amount' => '$20.00', 'status' => 'open', 'url' => 'https://checkout.stripe.com/c/pay/cs_test', 'sentTo' => 'p@example.com', 'created' => '2026-10-27 09:00', 'highlight' => true]],
+                'readerUrl' => '/p/reader.php',
+            ],
         ]);
         $this->assertStringContainsString('name="alloc[5]"', $html);
+        $this->assertStringContainsString('Send to reader', $html);
+        $this->assertStringContainsString('data-url="https://checkout.stripe.com/c/pay/cs_test"', $html);
         $this->assertStringContainsString('Record refund', $html);
         $this->assertStringContainsString('Apply credit', $html);
         $this->assertStringContainsString('data-bp="300"', $html);
@@ -408,5 +416,44 @@ final class TemplateRenderTest extends TestCase
             ]);
             $this->assertStringContainsString(!$open ? 'Open drawer' : ($closed ? 'Reopen this day' : 'Close drawer'), $html);
         }
+    }
+
+    public function testMembershipStripeAndWorklistPages(): void
+    {
+        $twig = self::twig();
+        $html = $twig->render('@cashpay/patient/membership.html.twig', self::patientBase() + [
+            'patient' => self::patient(), 'navTab' => 'membership', 'errors' => [], 'today' => '2026-10-27', 'facilities' => [1 => 'Raleigh'],
+            'defaultFacility' => 1, 'hasCard' => false, 'stripeOn' => true, 'canBill' => true,
+            'plans' => [['id' => 4, 'name' => 'Core', 'code' => '1234', 'monthly' => '$149.00', 'annual' => '$1,788.00']],
+            'memberships' => [
+                ['id' => 1, 'plan' => 'Core', 'code' => '1234', 'cycle' => 'Monthly', 'price' => '$149.00 / month', 'start' => '2026-10-27', 'end' => '',
+                    'status' => 'active', 'autopay' => true, 'next' => '2026-11-27', 'autoInvoice' => false, 'facility' => 'Raleigh', 'autopayError' => 'Card declined'],
+                ['id' => 2, 'plan' => 'Wellness', 'code' => 'Wellness', 'cycle' => 'Annual', 'price' => '$1,428.00 / year', 'start' => '2025-01-01', 'end' => '',
+                    'status' => 'frozen', 'autopay' => false, 'next' => '2026-01-01', 'autoInvoice' => true, 'facility' => '', 'autopayError' => ''],
+            ],
+        ]);
+        $this->assertStringContainsString('Bill next period', $html);
+        $this->assertStringContainsString('Unfreeze', $html);
+        $this->assertStringContainsString('Card declined', $html);
+        $this->assertStringContainsString('needs_card_on', $html);
+
+        $html = $twig->render('@cashpay/frontdesk/stripe.html.twig', self::base() + [
+            'facilities' => [1 => 'Raleigh', 2 => 'Wilson'], 'errors' => [], 'tested' => ['key' => 'trm', 'ok' => true],
+            'webhookUrl' => 'https://emr.example.com/x/webhook.php?site=default', 'events' => ['checkout.session.completed'],
+            'accounts' => [['key' => 'trm', 'label' => 'True Radiance', 'live' => false, 'publishable' => 'pk_test_1', 'hasSecret' => true,
+                'secretHint' => 'sk_test_...abcd', 'hasWebhook' => true, 'location' => 'tml_1', 'facilityIds' => [1], 'default' => true, 'modeWarning' => true]],
+        ]);
+        $this->assertStringContainsString('accounts[1][key]', $html, 'blank row for a new account');
+        $this->assertStringContainsString('Test the key for True Radiance', $html);
+        $this->assertStringContainsString('other mode', $html);
+        $this->assertStringNotContainsString('sk_test_1', $html);
+
+        $html = $twig->render('@cashpay/frontdesk/worklist.html.twig', self::base() + [
+            'due' => [['pid' => 42, 'patient' => 'Patty', 'plan' => 'Core', 'next' => '2026-10-27', 'auto' => false, 'autopay' => true, 'error' => '']],
+            'cards' => [['pid' => 42, 'patient' => 'Patty', 'email' => 'p@example.com', 'phone' => '555', 'flagged' => true, 'plans' => '1234', 'lastLink' => '']],
+            'stripeOn' => false, 'failures' => [['patient' => 'Patty', 'plan_name' => 'Core', 'last_autopay_error' => 'Card declined']],
+        ]);
+        $this->assertStringContainsString('Bill by hand', $html);
+        $this->assertStringContainsString('Stripe is not set up yet', $html);
     }
 }

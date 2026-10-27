@@ -146,8 +146,27 @@ final class LineService
                 $document->kind->value, $document->id, $description, $category->value,
                 $amount->toDecimalString(), $amounts->net->toDecimalString(),
                 $defaults->serviceDate->format('Y-m-d'),
-                $this->deliveredOnSale($document) ? $defaults->serviceDate->format('Y-m-d') : null,
+                $this->deliveredOnSale($document, null) ? $defaults->serviceDate->format('Y-m-d') : null,
                 $defaults->providerId, $defaults->sellerId, $defaults->facilityId, $this->nextSort($document),
+            ]
+        );
+    }
+
+    /**
+     * The membership fee line on a membership invoice.
+     */
+    public function addMembershipFee(Document $document, int $planId, string $description, Money $price, bool $tax1, bool $tax2, LineDefaults $defaults): int
+    {
+        $amounts = LineAmounts::compute($price, 1000, Money::zero(), $tax1 ? $this->tax(1) : null, $tax2 ? $this->tax(2) : null);
+        return $this->db->insert(
+            'INSERT INTO `cpi_line` (`parent_type`, `parent_id`, `item_type`, `item_id`, `description`, `charge_category`, `qty`, `unit_price`,'
+            . ' `net`, `tax1_amt`, `tax2_amt`, `service_date`, `received_date`, `seller_id`, `service_facility_id`, `sort_order`)'
+            . " VALUES (?, ?, 'membership', ?, ?, 'other', 1, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
+            [
+                $document->kind->value, $document->id, $planId, mb_substr($description, 0, 255), $price->toDecimalString(),
+                $amounts->net->toDecimalString(), $amounts->tax1->toDecimalString(), $amounts->tax2->toDecimalString(),
+                $defaults->serviceDate->format('Y-m-d'), $defaults->serviceDate->format('Y-m-d'),
+                $defaults->sellerId, $defaults->facilityId, $this->nextSort($document),
             ]
         );
     }
@@ -286,7 +305,7 @@ final class LineService
     public function copyLines(Document $from, Document $to, int $userId): void
     {
         foreach ($this->documents->lines($from) as $line) {
-            $receivedNow = $this->deliveredOnSale($to);
+            $receivedNow = $this->deliveredOnSale($to, $line->packageId);
             $id = $this->db->insert(
                 'INSERT INTO `cpi_line` (`parent_type`, `parent_id`, `item_type`, `item_id`, `package_id`, `description`, `code`, `charge_category`,'
                 . ' `qty`, `unit_price`, `unit_cost`, `discount_amt`, `discount_reason_id`, `promo_id`, `net`, `tax1_amt`, `tax2_amt`,'
@@ -329,7 +348,7 @@ final class LineService
             $entry->tax2 ? $this->tax(2) : null,
             $entry->unitCost,
         );
-        $receivedNow = $this->deliveredOnSale($document);
+        $receivedNow = $this->deliveredOnSale($document, $packageId);
         $id = $this->db->insert(
             'INSERT INTO `cpi_line` (`parent_type`, `parent_id`, `item_type`, `item_id`, `package_id`, `description`, `code`, `charge_category`,'
             . ' `qty`, `unit_price`, `unit_cost`, `discount_amt`, `discount_reason_id`, `promo_id`, `net`, `tax1_amt`, `tax2_amt`,'
@@ -352,9 +371,9 @@ final class LineService
         return $id;
     }
 
-    private function deliveredOnSale(Document $document): bool
+    private function deliveredOnSale(Document $document, ?int $packageId): bool
     {
-        return $document->kind === DocumentKind::Invoice && !$document->invoiceType->defersDelivery();
+        return $document->kind === DocumentKind::Invoice && !$document->invoiceType->lineDeferred($packageId);
     }
 
     private function lineById(int $id): Line

@@ -14,9 +14,13 @@ declare(strict_types=1);
 
 namespace OpenEMR\Modules\CashpayInvoicing;
 
+use OpenEMR\Common\Session\SessionWrapperFactory;
 use OpenEMR\Core\OEGlobalsBag;
+use OpenEMR\Events\UserInterface\PageHeadingRenderEvent;
 use OpenEMR\Menu\MenuEvent;
 use OpenEMR\Menu\PatientMenuEvent;
+use OpenEMR\Modules\CashpayInvoicing\Database\QueryUtilsDatabase;
+use OpenEMR\Modules\CashpayInvoicing\Patient\PatientBadges;
 use stdClass;
 use Symfony\Component\EventDispatcher\EventDispatcherInterface;
 
@@ -32,6 +36,7 @@ class Bootstrap
     {
         $this->eventDispatcher->addListener(MenuEvent::MENU_UPDATE, $this->addMenuItems(...));
         $this->eventDispatcher->addListener(PatientMenuEvent::MENU_UPDATE, $this->addPatientMenu(...));
+        $this->eventDispatcher->addListener(PageHeadingRenderEvent::EVENT_PAGE_HEADING_RENDER, $this->addPatientBadges(...));
     }
 
     public function addMenuItems(MenuEvent $event): MenuEvent
@@ -61,6 +66,8 @@ class Bootstrap
                 $this->item('cpiSetup8', 'Cash-Pay Settings', '/public/admin/settings.php', $settings),
                 $this->item('cpiSetup9', 'Gift Cards', '/public/admin/gift_cards.php', $billing),
                 $this->item('cpiSetup10', 'Cash Drawer', '/public/admin/cash_drawer.php', $billing),
+                $this->item('cpiSetup11', 'Memberships and Cards', '/public/admin/worklist.php', $billing),
+                $this->item('cpiSetup12', 'Stripe', '/public/admin/stripe.php', $settings),
             ];
             $children = is_array($menuItem->children ?? null) ? $menuItem->children : [];
             $children[] = $submenu;
@@ -68,6 +75,28 @@ class Bootstrap
             break;
         }
         $event->setMenu($menu);
+        return $event;
+    }
+
+    /**
+     * Membership, rewards and card badges on the patient dashboard heading.
+     */
+    public function addPatientBadges(PageHeadingRenderEvent $event): PageHeadingRenderEvent
+    {
+        if ($event->getPageId() !== 'core.mrd') {
+            return $event;
+        }
+        $pid = SessionWrapperFactory::getInstance()->getActiveSession()->get('pid');
+        if (!is_numeric($pid) || (int) $pid <= 0 || !(new Access())->can(AclObject::View)) {
+            return $event;
+        }
+        $html = (new PatientBadges(new QueryUtilsDatabase()))->html(
+            (int) $pid,
+            OEGlobalsBag::getInstance()->getWebRoot() . self::MODULE_PATH . '/public/patient/'
+        );
+        if ($html !== '') {
+            $event->appendTitleNavContent($html);
+        }
         return $event;
     }
 
@@ -88,6 +117,7 @@ class Bootstrap
             $this->patientItem('cpi_invoices', 'Invoices', $base . '?tab=invoices&pid='),
             $this->patientItem('cpi_quotes', 'Quotes', $base . '?tab=quotes&pid='),
             $this->patientItem('cpi_payments', 'Payments', str_replace('account.php', 'payments.php', $base) . '?pid='),
+            $this->patientItem('cpi_membership', 'Membership', str_replace('account.php', 'membership.php', $base) . '?pid='),
             $this->patientItem('cpi_rewards', 'Rewards', str_replace('account.php', 'rewards.php', $base) . '?pid='),
             $this->patientItem('cpi_notes', 'Financial Notes', str_replace('account.php', 'notes.php', $base) . '?pid='),
         ];

@@ -20,9 +20,13 @@
 use OpenEMR\BC\ServiceContainer;
 use OpenEMR\Core\AbstractModuleActionListener;
 use OpenEMR\Modules\CashpayInvoicing\AclRegistrar;
+use OpenEMR\Services\Background\BackgroundServiceDefinition;
+use OpenEMR\Services\Background\BackgroundServiceRegistry;
 
 class ModuleManagerListener extends AbstractModuleActionListener
 {
+    private const JOB_NAME = 'cashpay_membership_billing';
+
     public function __construct()
     {
         parent::__construct();
@@ -31,7 +35,12 @@ class ModuleManagerListener extends AbstractModuleActionListener
     public function moduleManagerAction($methodName, $modId, string $currentActionStatus = 'Success'): string
     {
         if ($methodName === 'enable') {
-            return $this->registerAcl($currentActionStatus);
+            $status = $this->registerAcl($currentActionStatus);
+            $this->setBackgroundService(true);
+            return $status;
+        }
+        if ($methodName === 'disable' || $methodName === 'unregister') {
+            $this->setBackgroundService(false);
         }
         return $currentActionStatus;
     }
@@ -44,6 +53,30 @@ class ModuleManagerListener extends AbstractModuleActionListener
     public static function initListenerSelf(): ModuleManagerListener
     {
         return new self();
+    }
+
+    /**
+     * Registers the hourly membership billing job (it only bills what is due),
+     * or switches it off when the module is disabled.
+     */
+    private function setBackgroundService(bool $active): void
+    {
+        $registry = new BackgroundServiceRegistry();
+        if (!$active) {
+            if ($registry->exists(self::JOB_NAME)) {
+                $registry->setActive(self::JOB_NAME, false);
+            }
+            return;
+        }
+        $registry->register(new BackgroundServiceDefinition(
+            name: self::JOB_NAME,
+            title: 'Cash-Pay membership billing and autopay',
+            function: 'OpenEMR\\Modules\\CashpayInvoicing\\Jobs\\runMembershipBilling',
+            requireOnce: '/interface/modules/custom_modules/oe-module-cashpay-invoicing/jobs/membership_billing.php',
+            executeInterval: 60,
+            sortOrder: 100,
+            active: true,
+        ));
     }
 
     private function registerAcl(string $currentActionStatus): string

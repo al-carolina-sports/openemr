@@ -26,12 +26,10 @@ use OpenEMR\Modules\CashpayInvoicing\Billing\LineService;
 use OpenEMR\Modules\CashpayInvoicing\Bootstrap;
 use OpenEMR\Modules\CashpayInvoicing\Database\QueryUtilsDatabase;
 use OpenEMR\Modules\CashpayInvoicing\Inventory\StockService;
+use OpenEMR\Modules\CashpayInvoicing\ModuleServices;
 use OpenEMR\Modules\CashpayInvoicing\ModuleTwig;
-use OpenEMR\Modules\CashpayInvoicing\Payments\PaymentService;
 use OpenEMR\Modules\CashpayInvoicing\Pricing\CatalogLookup;
 use OpenEMR\Modules\CashpayInvoicing\Pricing\PromoRepository;
-use OpenEMR\Modules\CashpayInvoicing\Rewards\GiftCardService;
-use OpenEMR\Modules\CashpayInvoicing\Rewards\RewardsService;
 use OpenEMR\Modules\CashpayInvoicing\Settings\SettingsRepository;
 use OpenEMR\Modules\CashpayInvoicing\Web\PageKit;
 
@@ -80,21 +78,22 @@ final class PatientPagesFactory
         $session = SessionWrapperFactory::getInstance()->getActiveSession();
         $userId = $session->get('authUserID');
         $pid = $session->get('pid');
-        $db = new QueryUtilsDatabase();
-        $settings = new SettingsRepository($db);
-        $rewards = new RewardsService($db);
-        $giftCards = GiftCardService::withSystemRandom($db);
+        $services = new ModuleServices();
         $patientUrl = $globals->getWebRoot() . Bootstrap::MODULE_PATH . '/public/patient/';
         return new AccountPages(
             kit: new PageKit(CurrentRequest::get(), $session, ModuleTwig::environment(), new Access(), ['patientUrl' => $patientUrl]),
-            db: $db,
-            lookups: new LookupRepository($db),
-            payments: new PaymentService($db, $settings, $rewards, $giftCards),
-            rewards: $rewards,
-            giftCards: $giftCards,
-            notes: new FinancialNotes($db),
-            settings: $settings,
+            db: $services->db,
+            lookups: new LookupRepository($services->db),
+            payments: $services->payments(),
+            rewards: $services->rewards,
+            giftCards: $services->giftCards,
+            notes: new FinancialNotes($services->db),
+            settings: $services->settings,
+            memberships: $services->memberships(),
+            stripe: $services->stripe(),
+            mailer: $services->patientMailer(),
             clock: ServiceContainer::getClock(),
+            logger: ServiceContainer::getLogger(),
             patientUrl: $patientUrl,
             pid: is_numeric($pid) ? (int) $pid : 0,
             userId: is_numeric($userId) ? (int) $userId : 0,

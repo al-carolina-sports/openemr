@@ -67,12 +67,12 @@ final readonly class DeliveryService
     public function clearReceived(Document $invoice, int $lineId, int $userId): void
     {
         $this->assertInvoice($invoice);
-        if (!$invoice->invoiceType->defersDelivery()) {
-            throw new ValidationException(['line' => 'Only prepaid and surgery lines can be un-received']);
-        }
         $line = $this->documents->line($invoice, $lineId);
         if ($line === null || $line->receivedDate === null) {
             throw new ValidationException(['line' => 'That line has not been received']);
+        }
+        if (!$invoice->invoiceType->lineDeferred($line->packageId)) {
+            throw new ValidationException(['line' => 'Only prepaid, surgery and membership package lines can be un-received']);
         }
         $this->db->transaction(function () use ($line, $userId): void {
             $this->returnStock($line, $userId);

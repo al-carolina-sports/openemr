@@ -288,6 +288,8 @@ CREATE TABLE `cpi_patient_membership` (
     `status` VARCHAR(12) NOT NULL DEFAULT 'active' COMMENT 'active | frozen | cancelled',
     `autopay` TINYINT(1) NOT NULL DEFAULT 0,
     `next_bill_date` DATE NULL,
+    `facility_id` INT NULL COMMENT 'income facility for the membership invoices',
+    `last_autopay_error` VARCHAR(255) NULL,
     `created_by` INT NULL,
     `created_at` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
     PRIMARY KEY (`id`),
@@ -462,6 +464,7 @@ CREATE TABLE `cpi_payment` (
     `card_fee_pct` DECIMAL(7,4) NOT NULL DEFAULT 0 COMMENT 'credit card service charge rate at time of payment',
     `card_fee_amt` DECIMAL(12,2) NOT NULL DEFAULT 0 COMMENT 'never charged on debit/prepaid cards',
     `processor` VARCHAR(16) NULL COMMENT 'stripe | none',
+    `processor_account` VARCHAR(40) NULL COMMENT 'Stripe account key the money went to',
     `stripe_payment_intent` VARCHAR(64) NULL,
     `stripe_charge` VARCHAR(64) NULL,
     `stripe_refund` VARCHAR(64) NULL,
@@ -495,11 +498,12 @@ CREATE TABLE `cpi_payment_alloc` (
 #IfNotTable cpi_stripe_customer
 CREATE TABLE `cpi_stripe_customer` (
     `pid` BIGINT NOT NULL,
+    `account_key` VARCHAR(40) NOT NULL DEFAULT 'default' COMMENT 'which Stripe account (one per income entity)',
     `stripe_customer_id` VARCHAR(64) NOT NULL,
     `default_payment_method` VARCHAR(64) NULL,
     `needs_card_on_file` TINYINT(1) NOT NULL DEFAULT 0 COMMENT 'set for patients who had a saved card in PatientNow',
     `updated_at` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-    PRIMARY KEY (`pid`),
+    PRIMARY KEY (`pid`, `account_key`),
     UNIQUE KEY `uq_customer` (`stripe_customer_id`)
 ) ENGINE=InnoDB;
 #EndIf
@@ -512,6 +516,30 @@ CREATE TABLE `cpi_stripe_event` (
     `received_at` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
     `processed` TINYINT(1) NOT NULL DEFAULT 0,
     PRIMARY KEY (`event_id`)
+) ENGINE=InnoDB;
+#EndIf
+
+-- Stripe Checkout links sent to patients (payment or saving a card).
+#IfNotTable cpi_pay_request
+CREATE TABLE `cpi_pay_request` (
+    `id` INT NOT NULL AUTO_INCREMENT,
+    `pid` BIGINT NOT NULL,
+    `purpose` VARCHAR(8) NOT NULL COMMENT 'payment | setup',
+    `account_key` VARCHAR(40) NOT NULL,
+    `checkout_session_id` VARCHAR(100) NOT NULL,
+    `url` VARCHAR(1000) NOT NULL,
+    `amount` DECIMAL(12,2) NOT NULL DEFAULT 0,
+    `invoice_ids` VARCHAR(255) NULL COMMENT 'comma-separated invoice ids the payment is applied to',
+    `facility_id` INT NULL,
+    `status` VARCHAR(10) NOT NULL DEFAULT 'open' COMMENT 'open | paid | expired',
+    `payment_id` BIGINT NULL,
+    `sent_to` VARCHAR(150) NULL,
+    `created_by` INT NULL,
+    `created_at` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    `completed_at` DATETIME NULL,
+    PRIMARY KEY (`id`),
+    UNIQUE KEY `uq_session` (`checkout_session_id`),
+    KEY `idx_pid` (`pid`, `created_at`)
 ) ENGINE=InnoDB;
 #EndIf
 

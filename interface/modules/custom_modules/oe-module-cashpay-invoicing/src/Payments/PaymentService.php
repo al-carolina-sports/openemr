@@ -42,7 +42,67 @@ final readonly class PaymentService
         private SettingsRepository $settings,
         private RewardsService $rewards,
         private GiftCardService $giftCards,
+        private ?ProcessorRefunder $refunder = null,
     ) {
+    }
+
+    /**
+     * Records a card payment the processor has confirmed. Safe to call more
+     * than once for the same PaymentIntent (webhook and screen both report
+     * it). Money meant for an invoice that has since been paid stays as credit.
+     */
+    public function recordProcessorPayment(ProcessorPayment $p): int
+    {
+        $existing = $this->db->fetchOne(
+            "SELECT `id` FROM `cpi_payment` WHERE `stripe_payment_intent` = ? AND `pay_type` IN ('payment', 'deposit') LIMIT 1",
+            [$p->paymentIntentId]
+        );
+        if ($existing !== null) {
+            return Row::int($existing, 'id');
+        }
+        $methodId = $this->processorMethodId() ?? throw new \RuntimeException('No active card payment method for Stripe payments');
+        $settings = $this->settings->load();
+        return $this->db->transaction(function () use ($p, $methodId, $settings): int {
+            $paymentId = $this->db->insert(
+                'INSERT INTO `cpi_payment` (`pid`, `pay_date`, `pay_type`, `method_id`, `amount`, `card_fee_pct`, `card_fee_amt`, `processor`,'
+                . ' `processor_account`, `stripe_payment_intent`, `stripe_charge`, `card_brand`, `card_last4`, `card_funding`, `status`, `source`,'
+                . " `facility_id`, `created_by`) VALUES (?, ?, 'payment', ?, ?, ?, ?, 'stripe', ?, ?, ?, ?, ?, ?, 'posted', ?, ?, ?)",
+                [
+                    $p->pid, $p->date->format('Y-m-d'), $methodId, $p->amount->toDecimalString(),
+                    Decimal::format($p->cardFee->cents > 0 ? $p->cardFeeBasisPoints * 100 : 0, 4), $p->cardFee->toDecimalString(),
+                    $p->accountKey, $p->paymentIntentId, $p->chargeId !== '' ? $p->chargeId : null,
+                    $p->brand !== '' ? mb_substr($p->brand, 0, 20) : null, preg_match('/^\d{4}$/', $p->last4) === 1 ? $p->last4 : null,
+                    $p->funding->value, $p->source, $p->facilityId, $p->userId,
+                ]
+            );
+            $open = [];
+            foreach ($this->openInvoices($p->pid) as $invoice) {
+                $open[$invoice['id']] = $invoice['due'];
+            }
+            $left = $p->amount;
+            foreach ($p->allocations as $invoiceId => $wanted) {
+                $due = $open[$invoiceId] ?? Money::zero();
+                $take = min($wanted->cents, $due->cents, $left->cents);
+                if ($take <= 0) {
+                    continue;
+                }
+                $amount = new Money($take);
+                $this->allocate($paymentId, $invoiceId, $amount);
+                $this->rewards->earn($p->pid, $paymentId, $invoiceId, $this->eligiblePaid($invoiceId, $amount), $settings, $p->date, $p->userId ?? 0);
+                $this->afterAllocation($invoiceId, $p->pid, $p->date, $p->userId ?? 0);
+                $left = $left->subtract($amount);
+            }
+            return $paymentId;
+        });
+    }
+
+    public function processorMethodId(): ?int
+    {
+        $row = $this->db->fetchOne(
+            "SELECT `id` FROM `cpi_payment_method` WHERE `kind` = 'card' AND `active` = 1 AND `is_refund_method` = 0"
+            . " ORDER BY (`name` LIKE '%Stripe%') DESC, `sort_order` LIMIT 1"
+        );
+        return $row === null ? null : Row::int($row, 'id');
     }
 
     public function method(int $id): ?PaymentMethod
@@ -181,13 +241,27 @@ final readonly class PaymentService
         $feeBack = $paid->cents > 0 ? new Money(intdiv($originalFee->cents * $amount->cents + intdiv($paid->cents, 2), $paid->cents)) : Money::zero();
         $kind = MethodKind::tryFrom(Row::str($original, 'kind')) ?? MethodKind::Other;
 
-        return $this->db->transaction(function () use ($pid, $paymentId, $amount, $method, $reason, $date, $userId, $paid, $feeBack, $kind, $original): int {
+        $stripeRefund = null;
+        $intent = Row::strOrNull($original, 'stripe_payment_intent');
+        $account = Row::strOrNull($original, 'processor_account');
+        if (Row::str($original, 'processor') === 'stripe' && $intent !== null && $account !== null) {
+            if ($this->refunder === null) {
+                throw new ValidationException(['payment' => 'Stripe is not set up, so this card payment cannot be refunded here']);
+            }
+            // Money goes back on the card before anything is written, so a failed refund changes nothing.
+            $stripeRefund = $this->refunder->refundPayment($account, $intent, $amount->add($feeBack));
+        }
+
+        return $this->db->transaction(function () use ($pid, $paymentId, $amount, $method, $reason, $date, $userId, $paid, $feeBack, $kind, $original, $stripeRefund): int {
             $this->unallocate($paymentId, $amount);
             $refundId = $this->db->insert(
                 'INSERT INTO `cpi_payment` (`pid`, `pay_date`, `pay_type`, `method_id`, `amount`, `card_fee_amt`, `refund_of_payment_id`, `processor`,'
-                . " `comments`, `status`, `source`, `facility_id`, `created_by`) VALUES (?, ?, 'refund', ?, ?, ?, ?, 'none', ?, 'posted', 'manual', ?, ?)",
+                . ' `processor_account`, `stripe_payment_intent`, `stripe_refund`, `comments`, `status`, `source`, `facility_id`, `created_by`)'
+                . " VALUES (?, ?, 'refund', ?, ?, ?, ?, ?, ?, ?, ?, ?, 'posted', 'manual', ?, ?)",
                 [
                     $pid, $date->format('Y-m-d'), $method->id, $amount->toDecimalString(), $feeBack->toDecimalString(), $paymentId,
+                    $stripeRefund !== null ? 'stripe' : 'none', Row::strOrNull($original, 'processor_account'),
+                    $stripeRefund !== null ? Row::strOrNull($original, 'stripe_payment_intent') : null, $stripeRefund,
                     mb_substr(trim($reason), 0, 255), Row::intOrNull($original, 'facility_id'), $userId,
                 ]
             );
@@ -236,6 +310,9 @@ final readonly class PaymentService
         }
         if ($this->refunded($paymentId)->cents > 0) {
             throw new ValidationException(['payment' => 'This payment has refunds. It cannot be voided.']);
+        }
+        if (Row::str($row, 'processor') === 'stripe') {
+            throw new ValidationException(['payment' => 'Card payments taken through Stripe cannot be voided. Refund them instead.']);
         }
         if (trim($reason) === '') {
             throw new ValidationException(['reason' => 'Say why the entry is voided']);
