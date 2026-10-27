@@ -14,7 +14,9 @@ stay in OpenEMR's Fee Sheet / billing module, and no insurance data is migrated.
 
 ## Status
 
-**Phase 1 (catalog admin) is built** and ready for testing. Phases 2 to 4 are not started.
+**Phase 1 (catalog admin) is built and tested.** Phase 2 is being built in three parts;
+**part 1 (quotes and invoices) is ready for testing** (module version 0.2.0, run *Upgrade* in Module Manager).
+Phase 2 parts 2 and 3, and phases 3 and 4, are not started.
 
 Phase 1 adds **Admin > Cash-Pay Setup**:
 
@@ -28,6 +30,22 @@ Phase 1 adds **Admin > Cash-Pay Setup**:
 - Settings: Tax 1 and Tax 2, the credit card service charge (credit cards only, 0 to 3%), award points, quote and receipt text.
 - Price List (printable) with CSV export, and CSV import for bulk edits of procedures and products.
 - One-time import of the PatientNow catalog (`data/patientnow_catalog.json`).
+
+Phase 2 part 1 adds a **Cash-Pay** menu to the patient chart with **Invoices** and **Quotes**:
+
+- A shared editor: header (name, date, type, office, provider, seller, deposit; quotes also expiry, consult credit, active),
+  a search box that adds procedures, products and packages (packages explode into their lines), fee lines for
+  OR / anesthesia / recovery / assistant, per-line edits (quantity, price, discount in $ or %, reason, provider,
+  seller, office, service date), Discount All, and the totals matrix.
+- Pricing: provider + office fee, provider fee, office fee, then standard price; office prices for products;
+  the best matching promotional discount (members-only promos need an active membership); Tax 1 and Tax 2 on the net.
+- Immediate-sale, gift card and membership invoices are delivered when sold: stock comes out of the line's office
+  (the product, or the products a procedure uses). Prepaid and surgery lines wait: Receive, Edit received,
+  Clear received (stock goes back), Forfeit and Undo forfeit. The invoice list shows unearned income.
+- Lock / unlock (unlock needs the refunds-and-unlock permission and a reason, kept in the lock history), copy,
+  delete (only without payments), quote to invoice.
+- Print and PDF for quotes and receipts; email a quote as a PDF marked "for information only"; printed quotes
+  carry signature lines; upload the signed scan to the patient documents.
 
 Install and test steps are in [TESTING.md](TESTING.md).
 

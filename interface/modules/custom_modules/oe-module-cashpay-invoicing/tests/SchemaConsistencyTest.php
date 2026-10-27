@@ -120,4 +120,49 @@ final class SchemaConsistencyTest extends TestCase
             $this->assertNotSame('', $object->title());
         }
     }
+
+    public function testUpgradeFilesMatchTableSql(): void
+    {
+        foreach (glob(__DIR__ . '/../*_upgrade.sql') ?: [] as $file) {
+            $sql = (string) file_get_contents($file);
+            preg_match_all('/^#IfMissingColumn (cpi_[a-z_]+) ([a-z_0-9]+)$/m', $sql, $m, PREG_SET_ORDER);
+            $this->assertNotEmpty($m, basename($file));
+            foreach ($m as [, $table, $column]) {
+                $this->assertArrayHasKey($column, self::$schema[$table] ?? [], basename($file) . ': table.sql must also have ' . $table . '.' . $column);
+            }
+        }
+    }
+
+    /**
+     * Every column named in an INSERT column list or UPDATE ... SET in the
+     * module's code exists in table.sql.
+     */
+    public function testCodeOnlyUsesRealColumns(): void
+    {
+        $files = new \RecursiveIteratorIterator(new \RecursiveDirectoryIterator(__DIR__ . '/../src'));
+        $checked = 0;
+        foreach ($files as $file) {
+            if (!$file instanceof \SplFileInfo || $file->getExtension() !== 'php') {
+                continue;
+            }
+            // Join the concatenated SQL fragments so statements read as one string.
+            $code = (string) preg_replace("/'\\s*\\.\\s*(?:\"|')/", '', (string) file_get_contents($file->getPathname()));
+            preg_match_all('/INSERT (?:IGNORE )?INTO `(cpi_[a-z_]+)` \(([^)]*)\)/', $code, $inserts, PREG_SET_ORDER);
+            foreach ($inserts as [, $table, $list]) {
+                foreach (explode(',', str_replace(['`', ' '], '', $list)) as $column) {
+                    $this->assertArrayHasKey($column, self::$schema[$table] ?? [], $file->getFilename() . ': ' . $table . '.' . $column);
+                    $checked++;
+                }
+            }
+            preg_match_all('/UPDATE `(cpi_[a-z_]+)` SET (.*?) WHERE/', $code, $updates, PREG_SET_ORDER);
+            foreach ($updates as [, $table, $sets]) {
+                preg_match_all('/`([a-z_0-9]+)` =/', $sets, $columns);
+                foreach ($columns[1] as $column) {
+                    $this->assertArrayHasKey($column, self::$schema[$table] ?? [], $file->getFilename() . ': ' . $table . '.' . $column);
+                    $checked++;
+                }
+            }
+        }
+        $this->assertGreaterThan(150, $checked);
+    }
 }

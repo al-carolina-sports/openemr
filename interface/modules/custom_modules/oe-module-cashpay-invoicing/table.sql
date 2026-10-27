@@ -420,6 +420,8 @@ CREATE TABLE `cpi_line` (
     `item_id` INT NULL,
     `package_id` INT NULL COMMENT 'set when the line came from exploding a package',
     `description` VARCHAR(255) NOT NULL,
+    `code` VARCHAR(20) NULL COMMENT 'CPT or catalog code printed on the line',
+    `charge_category` VARCHAR(12) NOT NULL DEFAULT 'provider' COMMENT 'provider | product | or | anesthesia | recovery | assistant | other',
     `qty` DECIMAL(10,3) NOT NULL DEFAULT 1,
     `unit_price` DECIMAL(12,2) NOT NULL DEFAULT 0,
     `unit_cost` DECIMAL(12,2) NOT NULL DEFAULT 0 COMMENT 'cost to practice snapshot, for margin commissions/COGS',

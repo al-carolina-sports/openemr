@@ -24,8 +24,8 @@ use OpenEMR\Modules\CashpayInvoicing\Bootstrap;
 use OpenEMR\Modules\CashpayInvoicing\Database\QueryUtilsDatabase;
 use OpenEMR\Modules\CashpayInvoicing\Import\CsvCatalog;
 use OpenEMR\Modules\CashpayInvoicing\Inventory\StockService;
+use OpenEMR\Modules\CashpayInvoicing\ModuleTwig;
 use OpenEMR\Modules\CashpayInvoicing\Settings\SettingsRepository;
-use Twig\Loader\FilesystemLoader;
 
 final class AdminPagesFactory
 {
@@ -37,14 +37,7 @@ final class AdminPagesFactory
         $userId = $session->get('authUserID');
         $db = new QueryUtilsDatabase();
         $lookups = new LookupRepository($db);
-        $twig = ServiceContainer::getTwig();
-        $loader = $twig->getLoader();
-        if (!$loader instanceof FilesystemLoader) {
-            throw new \LogicException('Twig loader cannot take the module templates');
-        }
-        if (!in_array('cashpay', $loader->getNamespaces(), true)) {
-            $loader->addPath($moduleDir . '/templates', 'cashpay');
-        }
+        $twig = ModuleTwig::environment();
         return new AdminPages(
             request: CurrentRequest::get(),
             session: $session,

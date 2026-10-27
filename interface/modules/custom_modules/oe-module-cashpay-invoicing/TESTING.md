@@ -91,3 +91,61 @@ registered, check the PHP error log and tell Claude.
 
 Note anything that looks wrong, with the page and what you clicked. Phase 2 (quotes, invoices,
 payments and Stripe) starts after this passes.
+
+---
+
+# Phase 2, part 1 test script (quotes and invoices)
+
+## 1. Upgrade the module
+
+1. Update the module folder on the test server to the latest `feature/oe-module-cashpay-invoicing`.
+2. **Modules > Manage Modules > Registered**: Cash-Pay Invoicing now shows **Upgrade** (0.1.0 to 0.2.0). Click it.
+   It adds two columns to the line table. Nothing else changes and no data is touched.
+3. Log out and back in. Open a test patient: the chart's top menu has **Cash-Pay > Invoices / Quotes**.
+
+## 2. Quote
+
+- [ ] **Quotes > New quote**. Name it, pick office, provider and seller. Expiry defaults to 30 days out. Click **Create Quote**.
+- [ ] Search "laser", pick a line, Add. Search a package name (e.g. "Arm Laser") and Add: it explodes into its lines at the package price.
+- [ ] Add an **Anesthesia** fee of $400. The totals matrix shows Provider and Anesthesia rows.
+- [ ] Edit a line: give it 10% off with no reason. It is refused. Pick a reason and save.
+- [ ] **Print**: letterhead, lines, totals, quote footer text, signature and date lines.
+- [ ] **PDF** opens the same as a PDF.
+- [ ] **Email quote** (the patient needs an email, and Admin > Config > Notifications needs a sender email).
+      The PDF says "For information only - not a contract and not a bill" and has no signature lines.
+- [ ] Upload a scanned PDF as the signed copy. It appears in the patient's Documents under Patient Information,
+      and the quote shows "Signed copy on file".
+- [ ] **Create invoice**. You land on the new invoice with the same lines. The quote now shows **Open invoice**.
+
+## 3. Pricing
+
+- [ ] On a procedure with a provider override (Phase 1, step 4), add it to an invoice whose provider matches.
+      The override price is used. Change the invoice provider, save, add it again: the standard price is used.
+- [ ] Add a product with Tax 1 ticked: the Tax column shows 6.75% of the net (or your rate).
+- [ ] Give a test patient a membership row is not possible from the screen yet (part 3). Members-only promos
+      therefore do not apply yet; everyone-promos do. Make a 10% everyone-promo on one procedure and add that
+      procedure: the discount and promo name appear on the line.
+
+## 4. Immediate sale and stock
+
+- [ ] New invoice, type **Immediate Sale**, office Raleigh. Add 2 of a product. On the product's Stock panel
+      (Admin > Cash-Pay Setup > Products) Raleigh on-hand went down by 2 with a *sale* row.
+- [ ] Remove the line. Stock goes back up with a *return* row.
+
+## 5. Prepaid package
+
+- [ ] New invoice, type **Prepaid Packages**. Add *B12 Package 5 for 4*. Lines show *Not received*; the
+      invoice list shows the total as **Unearned**.
+- [ ] **Receive** one line today with a provider. Unearned drops by that line. **Delivery > Edit received item**
+      changes the date. **Clear received flag** puts it back to waiting.
+- [ ] **Forfeit** a line, then **Undo forfeit**.
+
+## 6. Lock, copy, delete
+
+- [ ] **Lock** the invoice. The header is greyed out and items can't be added. Receiving still works.
+- [ ] As a Front Office user, there is no Unlock button. As an administrator, **Unlock** asks for a reason;
+      *Lock history* lists both actions with user and reason.
+- [ ] **Copy** makes a new unlocked invoice dated today with the same lines.
+- [ ] **Delete** the copy. Stock taken by its delivered lines goes back.
+
+Payments are not in this part: balance due equals the total for now. Part 2 adds payments.

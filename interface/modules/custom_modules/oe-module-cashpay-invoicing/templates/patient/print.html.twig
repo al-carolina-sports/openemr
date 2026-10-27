@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<title>{{ kind == 'quote' ? 'Quote'|xlt : 'Receipt'|xlt }} #{{ doc.id|text }}</title>
+<style>
+    body { font-family: DejaVu Sans, Arial, sans-serif; font-size: 11pt; color: #222; margin: 24px; }
+    h1 { font-size: 18pt; margin: 0 0 4px; }
+    .muted { color: #666; }
+    .row { width: 100%; }
+    .left { float: left; width: 55%; }
+    .right { float: right; width: 40%; text-align: right; }
+    .clear { clear: both; }
+    table.lines { width: 100%; border-collapse: collapse; margin-top: 18px; }
+    table.lines th { text-align: left; border-bottom: 1px solid #999; padding: 4px; font-size: 9.5pt; }
+    table.lines td { border-bottom: 1px solid #ddd; padding: 4px; vertical-align: top; }
+    .num { text-align: right; white-space: nowrap; }
+    table.sum { margin-left: auto; margin-top: 10px; border-collapse: collapse; }
+    table.sum td { padding: 3px 6px; }
+    table.sum tr.total td { font-weight: bold; border-top: 1px solid #999; }
+    .banner { border: 2px solid #b00; color: #b00; padding: 6px 10px; margin: 12px 0; font-weight: bold; text-align: center; }
+    .sign { margin-top: 40px; }
+    .sign td { padding-top: 30px; }
+    .line { border-top: 1px solid #333; width: 260px; display: inline-block; }
+    .footer { margin-top: 24px; font-size: 9.5pt; }
+    @media print { body { margin: 0; } .noprint { display: none; } }
+</style>
+</head>
+<body>
+<div class="noprint" style="text-align:right"><button onclick="window.print()">{{ 'Print'|xlt }}</button></div>
+<div class="row">
+    <div class="left">
+        <h1>{{ practice.name|text }}</h1>
+        {% for l in practice.lines %}<div>{{ l|text }}</div>{% endfor %}
+        {% if practice.phone %}<div>{{ practice.phone|text }}</div>{% endif %}
+    </div>
+    <div class="right">
+        <h1>{{ kind == 'quote' ? 'Quote'|xlt : 'Receipt'|xlt }}</h1>
+        <div>#{{ doc.id|text }} · {{ doc.date.format('Y-m-d')|text }}</div>
+        {% if kind == 'quote' and doc.expiresOn %}<div>{{ 'Valid until'|xlt }} {{ doc.expiresOn.format('Y-m-d')|text }}</div>{% endif %}
+        <div class="muted">{{ doc.name|text }}</div>
+    </div>
+    <div class="clear"></div>
+</div>
+
+<div style="margin-top:14px">
+    <strong>{{ patient.name|text }}</strong>{% if patient.pubpid %} <span class="muted">#{{ patient.pubpid|text }}</span>{% endif %}
+    {% for l in patient.address %}<div>{{ l|text }}</div>{% endfor %}
+</div>
+
+{% if kind == 'quote' and forEmail %}
+    <div class="banner">{{ 'For information only - not a contract and not a bill'|xlt }}</div>
+{% endif %}
+
+<table class="lines">
+    <thead><tr>
+        <th>{{ 'Description'|xlt }}</th><th class="num">{{ 'Qty'|xlt }}</th><th class="num">{{ 'Price'|xlt }}</th>
+        <th class="num">{{ 'Discount'|xlt }}</th><th class="num">{{ 'Amount'|xlt }}</th>
+    </tr></thead>
+    <tbody>
+    {% for l in lines %}
+        <tr>
+            <td>{{ l.description|text }}{% if l.code %} <span class="muted">{{ l.code|text }}</span>{% endif %}
+                {% if kind == 'invoice' and l.received == '' %}<div class="muted">{{ 'Prepaid - not yet received'|xlt }}</div>{% endif %}</td>
+            <td class="num">{{ l.qty|text }}</td>
+            <td class="num">{{ l.unit|text }}</td>
+            <td class="num">{{ l.discount|text }}</td>
+            <td class="num">{{ l.net|text }}</td>
+        </tr>
+    {% endfor %}
+    </tbody>
+</table>
+
+<table class="sum">
+    <tr><td>{{ 'Subtotal'|xlt }}</td><td class="num">{{ gross|text }}</td></tr>
+    <tr><td>{{ 'Discounts'|xlt }}</td><td class="num">-{{ discount|text }}</td></tr>
+    {% if tax1 %}<tr><td>{{ tax1Name|text }}</td><td class="num">{{ tax1|text }}</td></tr>{% endif %}
+    {% if tax2 %}<tr><td>{{ tax2Name|text }}</td><td class="num">{{ tax2|text }}</td></tr>{% endif %}
+    <tr class="total"><td>{{ 'Total'|xlt }}</td><td class="num">{{ total|text }}</td></tr>
+    {% if kind == 'invoice' %}
+        <tr><td>{{ 'Paid'|xlt }}</td><td class="num">{{ paid|text }}</td></tr>
+        <tr class="total"><td>{{ 'Balance due'|xlt }}</td><td class="num">{{ due|text }}</td></tr>
+    {% else %}
+        {% if consultCredit %}<tr><td>{{ 'Consult credit'|xlt }}</td><td class="num">-{{ consultCredit|text }}</td></tr>{% endif %}
+        {% if deposit %}<tr><td>{{ 'Deposit to schedule'|xlt }}</td><td class="num">{{ deposit|text }}</td></tr>{% endif %}
+    {% endif %}
+</table>
+
+{% if cardFeeNote %}<p class="footer muted">{{ cardFeeNote|text }}</p>{% endif %}
+{% if footer %}<p class="footer">{{ footer|text|nl2br }}</p>{% endif %}
+
+{% if kind == 'quote' and not forEmail %}
+    <table class="sign">
+        <tr><td><span class="line"></span><br>{{ 'Patient signature'|xlt }}</td><td style="padding-left:40px"><span class="line" style="width:140px"></span><br>{{ 'Date'|xlt }}</td></tr>
+        <tr><td><span class="line"></span><br>{{ 'Practice representative'|xlt }}</td><td style="padding-left:40px"><span class="line" style="width:140px"></span><br>{{ 'Date'|xlt }}</td></tr>
+    </table>
+{% endif %}
+<p class="muted footer">{{ 'Printed'|xlt }} {{ printedOn|text }}</p>
+</body>
+</html>

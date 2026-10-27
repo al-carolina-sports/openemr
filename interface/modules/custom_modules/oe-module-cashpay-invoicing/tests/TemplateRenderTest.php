@@ -16,7 +16,11 @@ namespace OpenEMR\Modules\CashpayInvoicing\Tests;
 
 use OpenEMR\Modules\CashpayInvoicing\Admin\EntityRegistry;
 use OpenEMR\Modules\CashpayInvoicing\Admin\ListQuery;
+use OpenEMR\Modules\CashpayInvoicing\Billing\Document;
+use OpenEMR\Modules\CashpayInvoicing\Billing\DocumentKind;
+use OpenEMR\Modules\CashpayInvoicing\Billing\InvoiceType;
 use OpenEMR\Modules\CashpayInvoicing\Import\ImportReport;
+use OpenEMR\Modules\CashpayInvoicing\Patient\PatientInfo;
 use OpenEMR\Modules\CashpayInvoicing\Settings\Settings;
 use OpenEMR\Modules\CashpayInvoicing\Settings\TaxType;
 use PHPUnit\Framework\Attributes\DataProvider;
@@ -216,5 +220,127 @@ final class TemplateRenderTest extends TestCase
             $this->assertStringContainsString('row 2: price', $html);
             $this->assertSame(!$done, str_contains($html, 'name="office_0"'));
         }
+    }
+
+    private static function patient(): PatientInfo
+    {
+        return new PatientInfo(42, 'Patty Test', '1001', '1980-01-01', 'patty@example.com', '555-0100', ['1 Main St', 'Raleigh, NC 27615']);
+    }
+
+    /**
+     * @return array<string, mixed>
+     */
+    private static function patientBase(): array
+    {
+        return ['csrfField' => 'csrf_token_form', 'csrfToken' => 'tok', 'notice' => null, 'patientUrl' => '/p/'];
+    }
+
+    private static function doc(DocumentKind $kind, string $type, bool $locked = false): Document
+    {
+        return Document::fromRow($kind, [
+            'id' => '5', 'pid' => '42', 'name' => 'B 12 <b>', 'invoice_date' => '2026-10-27', 'quote_date' => '2026-10-27',
+            'invoice_type' => $type, 'income_facility_id' => '1', 'facility_id' => '1', 'provider_id' => '7', 'seller_id' => '8',
+            'comments' => '', 'deposit' => '0.00', 'locked' => $locked ? '1' : '0', 'voided' => '0', 'is_active' => '1',
+            'expires_on' => '2026-11-26', 'consult_credit' => '50.00', 'converted_invoice_id' => null, 'signed_scan_doc_id' => '9',
+        ]);
+    }
+
+    public function testPatientAccountTabs(): void
+    {
+        foreach (['invoices' => 'invoice', 'quotes' => 'quote'] as $tab => $kind) {
+            $html = self::twig()->render('@cashpay/patient/account.html.twig', self::patientBase() + [
+                'patient' => self::patient(), 'tab' => $tab, 'kind' => $kind, 'balance' => '$80.00', 'unearned' => '$100.00', 'canBill' => true,
+                'rows' => [[
+                    'id' => 5, 'date' => '2026-10-27', 'name' => 'B 12', 'type' => 'Prepaid Packages', 'facility' => 'Raleigh', 'provider' => 'Antony, Alvin',
+                    'total' => '$100.00', 'discount' => '$25.00', 'tax' => '$0.00', 'paid' => '$20.00', 'due' => '$80.00', 'unearned' => '$100.00',
+                    'locked' => true, 'active' => false, 'expires' => '2026-11-26', 'converted' => 6, 'lines' => 5,
+                ]],
+            ]);
+            $this->assertStringContainsString('document.php?kind=' . $kind . '&amp;id=5', $html);
+            $this->assertStringContainsString('Patty Test', $html);
+        }
+    }
+
+    /**
+     * @return array<string, mixed>
+     */
+    private static function editor(?Document $doc, string $kind, bool $deferred): array
+    {
+        $line = [
+            'id' => 11, 'itemType' => 'procedure', 'description' => 'B12 Lipo Injection', 'code' => '', 'category' => 'Provider', 'qty' => '5',
+            'qtyRaw' => '5.000', 'unitPrice' => '$25.00', 'unitPriceRaw' => '25.00', 'gross' => '$125.00', 'discount' => '$25.00', 'discountRaw' => '25.00',
+            'discountReasonId' => 4, 'discountReason' => 'Package', 'promo' => '', 'net' => '$100.00', 'tax' => '', 'total' => '$100.00',
+            'providerId' => 7, 'provider' => 'Antony, Alvin', 'sellerId' => 8, 'seller' => 'Yap, Jennifer', 'facilityId' => 1, 'facility' => 'Raleigh',
+            'serviceDate' => '2026-10-27', 'receivedDate' => '', 'forfeited' => false, 'outstanding' => true, 'fromPackage' => 'B12 Package 5 for 4',
+            'canDescribe' => false, 'deferred' => $deferred,
+        ];
+        $received = ['id' => 12, 'receivedDate' => '2026-10-27', 'outstanding' => false] + $line;
+        $forfeited = ['id' => 13, 'forfeited' => true, 'outstanding' => false] + $line;
+        return self::patientBase() + [
+            'patient' => self::patient(), 'kind' => $kind, 'kindLabel' => $kind === 'quote' ? 'Quote' : 'Invoice', 'doc' => $doc,
+            'header' => ['name' => 'B 12', 'date' => '2026-10-27', 'invoice_type' => 'prepaid', 'facility_id' => '1', 'provider_id' => '7',
+                'seller_id' => '8', 'comments' => '', 'deposit' => '0.00', 'expires_on' => '2026-11-26', 'consult_credit' => '0.00', 'is_active' => true],
+            'lines' => $doc === null ? [] : [$line, $received, $forfeited],
+            'totals' => [['label' => 'Provider', 'gross' => '$125.00', 'discount' => '$25.00', 'tax1' => '$0.00', 'tax2' => '$0.00', 'total' => '$100.00']],
+            'grand' => ['gross' => '$125.00', 'discount' => '$25.00', 'tax1' => '$0.00', 'tax2' => '$0.00', 'total' => '$100.00', 'paid' => '$0.00',
+                'due' => '$100.00', 'unearned' => '$100.00', 'deposit' => '$0.00'],
+            'taxNames' => [1 => 'NC Sales Tax', 2 => 'Tax 2'],
+            'errors' => ['reason' => 'Say why the invoice is being unlocked'],
+            'invoiceTypes' => InvoiceType::choices(),
+            'feeCategories' => [['value' => 'or', 'label' => 'OR Facility']],
+            'providers' => [7 => 'Antony, Alvin'], 'users' => [8 => 'Yap, Jennifer'], 'facilities' => [1 => 'Raleigh'], 'reasons' => [4 => 'Package'],
+            'canBill' => true, 'canUnlock' => true, 'editable' => $doc === null || $doc->editable(), 'defersDelivery' => $deferred,
+            'lockHistory' => [['created_at' => '2026-10-27 09:00:00', 'action' => 'lock', 'username' => 'admin', 'reason' => null]],
+            'today' => '2026-10-27', 'searchUrl' => '/p/search.php', 'printUrl' => '/p/print.php?kind=' . $kind . '&id=5', 'convertedInvoiceId' => null,
+        ];
+    }
+
+    public function testEditorRendersNewQuoteInvoiceAndLockedInvoice(): void
+    {
+        $twig = self::twig();
+        $html = $twig->render('@cashpay/patient/document.html.twig', self::editor(null, 'quote', false));
+        $this->assertStringContainsString('name="expires_on"', $html);
+        $this->assertStringNotContainsString('id="itemSearch"', $html, 'items are added after the header is saved');
+
+        $html = $twig->render('@cashpay/patient/document.html.twig', self::editor(self::doc(DocumentKind::Invoice, 'prepaid'), 'invoice', true));
+        $this->assertStringContainsString('id="itemSearch"', $html);
+        $this->assertStringContainsString('Receive item', $html);
+        $this->assertStringContainsString('Clear received flag', $html);
+        $this->assertStringContainsString('Undo forfeit', $html);
+        $this->assertStringContainsString('Package: B12 Package 5 for 4', $html);
+        $this->assertStringNotContainsString('<b>', $html);
+
+        $html = $twig->render('@cashpay/patient/document.html.twig', self::editor(self::doc(DocumentKind::Invoice, 'prepaid', true), 'invoice', true));
+        $this->assertStringContainsString('id="unlockBox"', $html);
+        $this->assertStringNotContainsString('id="itemSearch"', $html);
+        $this->assertStringContainsString('<fieldset disabled', $html);
+
+        $html = $twig->render('@cashpay/patient/document.html.twig', self::editor(self::doc(DocumentKind::Quote, 'immediate'), 'quote', false));
+        $this->assertStringContainsString('Create invoice', $html);
+        $this->assertStringContainsString('Signed copy on file', $html);
+        $this->assertStringContainsString('upload_signed', $html);
+    }
+
+    public function testPrintQuoteAndReceipt(): void
+    {
+        $base = [
+            'patient' => self::patient(),
+            'practice' => ['name' => 'True Radiance', 'lines' => ['8382 Six Forks Rd'], 'phone' => '919-555-0100'],
+            'lines' => [['description' => 'Serum', 'code' => 'S-1', 'qty' => '1', 'unit' => '$110.00', 'discount' => '', 'net' => '$110.00', 'received' => '']],
+            'gross' => '$110.00', 'discount' => '$0.00', 'tax1' => '$7.43', 'tax2' => '', 'tax1Name' => 'NC Sales Tax', 'tax2Name' => 'Tax 2',
+            'total' => '$117.43', 'paid' => '$0.00', 'due' => '$117.43', 'consultCredit' => '$50.00', 'deposit' => '',
+            'footer' => "Line one\nLine two", 'cardFeeNote' => 'Credit card service charge: 3.00% is added to payments by credit card.', 'printedOn' => '2026-10-27',
+        ];
+        $twig = self::twig();
+        $email = $twig->render('@cashpay/patient/print.html.twig', $base + ['doc' => self::doc(DocumentKind::Quote, 'immediate'), 'kind' => 'quote', 'forEmail' => true]);
+        $this->assertStringContainsString('For information only', $email);
+        $this->assertStringNotContainsString('Patient signature', $email);
+        $paper = $twig->render('@cashpay/patient/print.html.twig', $base + ['doc' => self::doc(DocumentKind::Quote, 'immediate'), 'kind' => 'quote', 'forEmail' => false]);
+        $this->assertStringContainsString('Patient signature', $paper);
+        $this->assertStringContainsString('Valid until 2026-11-26', $paper);
+        $receipt = $twig->render('@cashpay/patient/print.html.twig', $base + ['doc' => self::doc(DocumentKind::Invoice, 'prepaid'), 'kind' => 'invoice', 'forEmail' => false]);
+        $this->assertStringContainsString('Balance due', $receipt);
+        $this->assertStringContainsString('NC Sales Tax', $receipt);
+        $this->assertStringContainsString('Line one<br', $receipt);
     }
 }

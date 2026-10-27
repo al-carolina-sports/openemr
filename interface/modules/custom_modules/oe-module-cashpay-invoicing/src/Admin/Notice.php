@@ -27,6 +27,15 @@ enum Notice
     case CountRecorded;
     case SettingsSaved;
     case Imported;
+    case Created;
+    case Locked;
+    case Unlocked;
+    case Copied;
+    case Converted;
+    case Deleted;
+    case Received;
+    case Emailed;
+    case Uploaded;
 
     public function text(): string
     {
@@ -42,6 +51,15 @@ enum Notice
             self::CountRecorded => 'Count recorded.',
             self::SettingsSaved => 'Settings saved.',
             self::Imported => 'Import finished.',
+            self::Created => 'Created. Add items below.',
+            self::Locked => 'Invoice locked.',
+            self::Unlocked => 'Invoice unlocked. The reason was saved to the lock history.',
+            self::Copied => 'Copy created.',
+            self::Converted => 'Invoice created from the quote.',
+            self::Deleted => 'Deleted.',
+            self::Received => 'Item received.',
+            self::Emailed => 'Quote emailed to the patient.',
+            self::Uploaded => 'Signed copy saved to the patient documents.',
         };
     }
 

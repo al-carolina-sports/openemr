@@ -1,0 +1,368 @@
+{% extends '@cashpay/patient/base.html.twig' %}
+{% import '@cashpay/admin/macros.html.twig' as m %}
+{% set navTab = kind == 'quote' ? 'quotes' : 'invoices' %}
+{% block title %}{{ kindLabel|xlt }}{% endblock %}
+
+{% macro select(name, options, selected, emptyLabel, extra) %}
+    <select class="form-control form-control-sm" name="{{ name|attr }}" {{ extra|default('') }}>
+        <option value="">{{ emptyLabel|xlt }}</option>
+        {% for id, label in options %}<option value="{{ id|attr }}"{% if selected ~ '' == id ~ '' %} selected{% endif %}>{{ label|text }}</option>{% endfor %}
+    </select>
+{% endmacro %}
+
+{% block content %}
+    {% import _self as f %}
+    {% set editableNow = canBill and editable %}
+    <div class="d-flex flex-wrap justify-content-between align-items-center mb-2">
+        <h5 class="mb-0">
+            {{ doc ? kindLabel|xlt ~ ' #' ~ doc.id : ('New'|xlt ~ ' ' ~ kindLabel|xlt) }}
+            {% if doc and doc.locked %}<span class="badge badge-secondary">{{ 'Locked'|xlt }}</span>{% endif %}
+            {% if doc and kind == 'quote' and doc.signedScanDocId %}<span class="badge badge-success">{{ 'Signed copy on file'|xlt }}</span>{% endif %}
+        </h5>
+        {% if doc %}
+            <div class="btn-toolbar">
+                <a class="btn btn-outline-secondary btn-sm mr-1 mb-1" href="{{ printUrl|attr }}" target="_blank" rel="noopener">{{ 'Print'|xlt }}</a>
+                <a class="btn btn-outline-secondary btn-sm mr-1 mb-1" href="{{ printUrl|attr }}&amp;format=pdf" target="_blank" rel="noopener">{{ 'PDF'|xlt }}</a>
+                {% if canBill %}
+                    {% if kind == 'quote' %}
+                        <form method="post" class="d-inline">{{ m.csrf(csrfField, csrfToken) }}<input type="hidden" name="action" value="email_quote">
+                            <button class="btn btn-outline-secondary btn-sm mr-1 mb-1" onclick="return confirm({{ 'Email this quote to the patient as a PDF marked for information only?'|xlj }});">{{ 'Email quote'|xlt }}</button></form>
+                        {% if convertedInvoiceId %}
+                            <a class="btn btn-outline-info btn-sm mr-1 mb-1" href="{{ patientUrl|attr }}document.php?kind=invoice&amp;id={{ convertedInvoiceId|attr_url }}">{{ 'Open invoice'|xlt }}</a>
+                        {% else %}
+                            <form method="post" class="d-inline">{{ m.csrf(csrfField, csrfToken) }}<input type="hidden" name="action" value="convert">
+                                <button class="btn btn-primary btn-sm mr-1 mb-1">{{ 'Create invoice'|xlt }}</button></form>
+                        {% endif %}
+                    {% else %}
+                        {% if doc.locked %}
+                            {% if canUnlock %}
+                                <button type="button" class="btn btn-outline-warning btn-sm mr-1 mb-1" data-toggle="collapse" data-target="#unlockBox">{{ 'Unlock'|xlt }}</button>
+                            {% endif %}
+                        {% else %}
+                            <form method="post" class="d-inline">{{ m.csrf(csrfField, csrfToken) }}<input type="hidden" name="action" value="lock">
+                                <button class="btn btn-outline-secondary btn-sm mr-1 mb-1">{{ 'Lock'|xlt }}</button></form>
+                        {% endif %}
+                    {% endif %}
+                    <form method="post" class="d-inline">{{ m.csrf(csrfField, csrfToken) }}<input type="hidden" name="action" value="copy">
+                        <button class="btn btn-outline-secondary btn-sm mr-1 mb-1">{{ 'Copy'|xlt }}</button></form>
+                    {% if editable %}
+                        <form method="post" class="d-inline" data-confirm="{{ 'Delete this record? This cannot be undone.'|xla }}">{{ m.csrf(csrfField, csrfToken) }}<input type="hidden" name="action" value="delete">
+                            <button class="btn btn-outline-danger btn-sm mb-1">{{ 'Delete'|xlt }}</button></form>
+                    {% endif %}
+                {% endif %}
+            </div>
+        {% endif %}
+    </div>
+
+    {{ m.errors(errors) }}
+
+    {% if doc and doc.locked and canUnlock %}
+        <form method="post" class="collapse card card-body mb-3" id="unlockBox">
+            {{ m.csrf(csrfField, csrfToken) }}<input type="hidden" name="action" value="unlock">
+            <label for="unlock_reason">{{ 'Why is this invoice being unlocked? (saved to the lock history)'|xlt }}</label>
+            <div class="input-group"><input class="form-control" id="unlock_reason" name="reason" maxlength="255" required>
+                <div class="input-group-append"><button class="btn btn-warning">{{ 'Unlock'|xlt }}</button></div></div>
+        </form>
+    {% endif %}
+
+    {# ---------- Header ---------- #}
+    <form method="post" class="card card-body mb-3 py-2" novalidate>
+        {{ m.csrf(csrfField, csrfToken) }}
+        <input type="hidden" name="action" value="save_header">
+        <fieldset {{ editableNow ? '' : 'disabled' }}>
+        <div class="form-row">
+            <div class="form-group col-md-4 mb-2"><label class="small mb-0" for="h_name">{{ 'Name'|xlt }} *</label>
+                <input class="form-control form-control-sm" id="h_name" name="name" maxlength="255" value="{{ header.name|attr }}" required></div>
+            <div class="form-group col-md-2 mb-2"><label class="small mb-0" for="h_date">{{ 'Date'|xlt }}</label>
+                <input type="date" class="form-control form-control-sm" id="h_date" name="date" value="{{ header.date|attr }}"></div>
+            <div class="form-group col-md-2 mb-2"><label class="small mb-0" for="h_type">{{ 'Type'|xlt }}</label>
+                <select class="form-control form-control-sm" id="h_type" name="invoice_type">
+                    {% for v, l in invoiceTypes %}<option value="{{ v|attr }}"{% if header.invoice_type == v %} selected{% endif %}>{{ l|xlt }}</option>{% endfor %}
+                </select></div>
+            <div class="form-group col-md-2 mb-2"><label class="small mb-0">{{ kind == 'quote' ? 'Location'|xlt : 'Income facility'|xlt }}</label>
+                {{ f.select('facility_id', facilities, header.facility_id, '-- choose --') }}</div>
+            <div class="form-group col-md-2 mb-2"><label class="small mb-0">{{ 'Deposit'|xlt }}</label>
+                <input class="form-control form-control-sm text-right" name="deposit" value="{{ header.deposit|attr }}" inputmode="decimal"></div>
+            <div class="form-group col-md-3 mb-2"><label class="small mb-0">{{ 'Provider'|xlt }}</label>
+                {{ f.select('provider_id', providers, header.provider_id, '-- none --') }}</div>
+            <div class="form-group col-md-3 mb-2"><label class="small mb-0">{{ 'Seller'|xlt }}</label>
+                {{ f.select('seller_id', users, header.seller_id, '-- none --') }}</div>
+            {% if kind == 'quote' %}
+                <div class="form-group col-md-2 mb-2"><label class="small mb-0" for="h_exp">{{ 'Expires'|xlt }}</label>
+                    <input type="date" class="form-control form-control-sm" id="h_exp" name="expires_on" value="{{ header.expires_on|attr }}"></div>
+                <div class="form-group col-md-2 mb-2"><label class="small mb-0">{{ 'Consult credit'|xlt }}</label>
+                    <input class="form-control form-control-sm text-right" name="consult_credit" value="{{ header.consult_credit|attr }}" inputmode="decimal"></div>
+                <div class="form-group col-md-2 mb-2 form-check pl-4 pt-3"><input type="checkbox" class="form-check-input" id="h_active" name="is_active" value="1"{% if header.is_active %} checked{% endif %}>
+                    <label class="form-check-label small" for="h_active">{{ 'Active quote'|xlt }}</label></div>
+            {% endif %}
+            <div class="form-group col-md-12 mb-2"><label class="small mb-0" for="h_comments">{{ 'Comments'|xlt }}</label>
+                <textarea class="form-control form-control-sm" id="h_comments" name="comments" rows="1">{{ header.comments|text }}</textarea></div>
+        </div>
+        {% if editableNow %}
+            <div class="d-flex align-items-center">
+                <button class="btn btn-primary btn-sm mr-3">{{ doc ? 'Save header'|xlt : ('Create'|xlt ~ ' ' ~ kindLabel|xlt) }}</button>
+                {% if doc %}<div class="form-check"><input type="checkbox" class="form-check-input" id="h_apply" name="apply_to_lines" value="1">
+                    <label class="form-check-label small" for="h_apply">{{ 'Also set provider and seller on the lines (delivered lines keep their provider)'|xlt }}</label></div>{% endif %}
+            </div>
+        {% endif %}
+        </fieldset>
+    </form>
+
+    {% if doc %}
+        {# ---------- Add items ---------- #}
+        {% if editableNow %}
+            <div class="card card-body mb-3 py-2">
+                <form method="post" class="form-row align-items-end" id="addItemForm" autocomplete="off">
+                    {{ m.csrf(csrfField, csrfToken) }}
+                    <input type="hidden" name="action" value="add_item">
+                    <input type="hidden" name="item_type" id="addType">
+                    <input type="hidden" name="item_id" id="addId">
+                    <div class="col-md-7 mb-2 position-relative">
+                        <label class="small mb-0" for="itemSearch">{{ 'Search products, procedures and packages'|xlt }}</label>
+                        <input class="form-control form-control-sm" id="itemSearch" placeholder="{{ 'Type at least 2 letters, a code or scan a barcode'|xla }}" data-url="{{ searchUrl|attr }}">
+                        <div class="list-group position-absolute w-100 shadow-sm cpi-search-results" id="itemResults" role="listbox"></div>
+                    </div>
+                    <div class="col-md-1 mb-2"><label class="small mb-0" for="addQty">{{ 'Qty'|xlt }}</label>
+                        <input class="form-control form-control-sm text-right" id="addQty" name="qty" value="1" inputmode="decimal"></div>
+                    <div class="col-md-2 mb-2"><button class="btn btn-secondary btn-sm" id="addBtn" disabled>{{ 'Add'|xlt }}</button></div>
+                </form>
+                <div class="form-row">
+                    <div class="col-auto"><button type="button" class="btn btn-link btn-sm px-0 mr-3" data-toggle="collapse" data-target="#feeBox">{{ 'Add OR / anesthesia / recovery / assistant fee'|xlt }}</button></div>
+                    <div class="col-auto"><button type="button" class="btn btn-link btn-sm px-0" data-toggle="collapse" data-target="#discBox">{{ 'Discount all'|xlt }}</button></div>
+                </div>
+                <form method="post" class="collapse form-row align-items-end" id="feeBox">
+                    {{ m.csrf(csrfField, csrfToken) }}<input type="hidden" name="action" value="add_fee">
+                    <div class="col-md-2 mb-2"><label class="small mb-0">{{ 'Fee type'|xlt }}</label>
+                        <select class="form-control form-control-sm" name="charge_category">{% for c in feeCategories %}<option value="{{ c.value|attr }}">{{ c.label|xlt }}</option>{% endfor %}</select></div>
+                    <div class="col-md-5 mb-2"><label class="small mb-0">{{ 'Description'|xlt }}</label><input class="form-control form-control-sm" name="description" maxlength="255" required></div>
+                    <div class="col-md-2 mb-2"><label class="small mb-0">{{ 'Amount'|xlt }}</label><input class="form-control form-control-sm text-right" name="amount" inputmode="decimal" required></div>
+                    <div class="col-md-2 mb-2"><button class="btn btn-secondary btn-sm">{{ 'Add fee'|xlt }}</button></div>
+                </form>
+                <form method="post" class="collapse form-row align-items-end" id="discBox">
+                    {{ m.csrf(csrfField, csrfToken) }}<input type="hidden" name="action" value="discount_all">
+                    <div class="col-md-2 mb-2"><label class="small mb-0">{{ 'Percent off every line'|xlt }}</label><input class="form-control form-control-sm text-right" name="pct" inputmode="decimal" required></div>
+                    <div class="col-md-4 mb-2"><label class="small mb-0">{{ 'Reason'|xlt }}</label>{{ f.select('discount_reason_id', reasons, '', '-- choose --') }}</div>
+                    <div class="col-md-4 mb-2"><button class="btn btn-secondary btn-sm">{{ 'Apply to all lines'|xlt }}</button> <span class="small text-muted">{{ 'Replaces existing line discounts. 0 clears them.'|xlt }}</span></div>
+                </form>
+            </div>
+        {% endif %}
+
+        {# ---------- Lines ---------- #}
+        <div class="table-responsive" id="lines">
+            <table class="table table-sm cpi-table cpi-lines">
+                <thead class="thead-light"><tr>
+                    <th>{{ 'Service'|xlt }}</th>{% if defersDelivery %}<th>{{ 'Received'|xlt }}</th>{% endif %}
+                    <th>{{ 'Provider'|xlt }}</th><th>{{ 'Description'|xlt }}</th><th class="text-right">{{ 'Qty'|xlt }}</th>
+                    <th class="text-right">{{ 'Charge'|xlt }}</th><th class="text-right">{{ 'Discount'|xlt }}</th><th class="text-right">{{ 'Net'|xlt }}</th>
+                    <th class="text-right">{{ 'Tax'|xlt }}</th><th></th>
+                </tr></thead>
+                <tbody>
+                {% for l in lines %}
+                    <tr class="{{ l.forfeited ? 'text-muted cpi-inactive' : '' }}">
+                        <td class="text-nowrap small">{{ l.serviceDate|text }}<div class="text-muted">{{ l.facility|text }}</div></td>
+                        {% if defersDelivery %}
+                            <td class="text-nowrap small">
+                                {% if l.forfeited %}<span class="badge badge-dark">{{ 'Forfeited'|xlt }}</span>
+                                {% elseif l.receivedDate %}{{ l.receivedDate|text }}
+                                {% else %}<span class="badge badge-warning">{{ 'Not received'|xlt }}</span>{% endif %}
+                            </td>
+                        {% endif %}
+                        <td class="small">{{ l.provider|text }}{% if l.seller and l.seller != l.provider %}<div class="text-muted">{{ 'Seller'|xlt }}: {{ l.seller|text }}</div>{% endif %}</td>
+                        <td>
+                            {{ l.description|text }}{% if l.code %} <span class="small text-muted">{{ l.code|text }}</span>{% endif %}
+                            <div class="small text-muted">
+                                {{ l.category|xlt }}{% if l.fromPackage %} · {{ 'Package'|xlt }}: {{ l.fromPackage|text }}{% endif %}
+                                {% if l.promo %} · {{ 'Promo'|xlt }}: {{ l.promo|text }}{% elseif l.discountReason %} · {{ l.discountReason|text }}{% endif %}
+                            </div>
+                        </td>
+                        <td class="text-right">{{ l.qty|text }}</td>
+                        <td class="text-right text-nowrap">{{ l.unitPrice|text }}</td>
+                        <td class="text-right text-nowrap">{{ l.discount|text }}</td>
+                        <td class="text-right text-nowrap">{{ l.net|text }}</td>
+                        <td class="text-right text-nowrap">{{ l.tax|text }}</td>
+                        <td class="text-right text-nowrap">
+                            {% if canBill %}
+                                {% if editable %}<button type="button" class="btn btn-link btn-sm p-0" data-toggle="collapse" data-target="#edit_{{ l.id|attr }}">{{ 'Edit'|xlt }}</button>{% endif %}
+                                {% if l.deferred %}
+                                    <button type="button" class="btn btn-link btn-sm p-0 ml-2" data-toggle="collapse" data-target="#recv_{{ l.id|attr }}">{{ l.receivedDate ? 'Delivery'|xlt : 'Receive'|xlt }}</button>
+                                {% endif %}
+                            {% endif %}
+                        </td>
+                    </tr>
+                    {% if canBill and editable %}
+                        <tr class="collapse" id="edit_{{ l.id|attr }}"><td colspan="{{ defersDelivery ? 10 : 9 }}" class="bg-light">
+                            <form method="post" class="form-row align-items-end">
+                                {{ m.csrf(csrfField, csrfToken) }}<input type="hidden" name="action" value="update_line"><input type="hidden" name="line_id" value="{{ l.id|attr }}">
+                                {% if l.canDescribe %}<div class="col-md-4 mb-2"><label class="small mb-0">{{ 'Description'|xlt }}</label><input class="form-control form-control-sm" name="description" maxlength="255" value="{{ l.description|attr }}"></div>{% endif %}
+                                <div class="col-md-1 mb-2"><label class="small mb-0">{{ 'Qty'|xlt }}</label><input class="form-control form-control-sm text-right" name="qty" value="{{ l.qtyRaw|attr }}"></div>
+                                <div class="col-md-1 mb-2"><label class="small mb-0">{{ 'Unit price'|xlt }}</label><input class="form-control form-control-sm text-right" name="unit_price" value="{{ l.unitPriceRaw|attr }}"></div>
+                                <div class="col-md-1 mb-2"><label class="small mb-0">{{ 'Discount $'|xlt }}</label><input class="form-control form-control-sm text-right" name="discount_amt" value="{{ l.discountRaw|attr }}"></div>
+                                <div class="col-md-1 mb-2"><label class="small mb-0">{{ 'or %'|xlt }}</label><input class="form-control form-control-sm text-right" name="discount_pct" placeholder="%"></div>
+                                <div class="col-md-2 mb-2"><label class="small mb-0">{{ 'Discount reason'|xlt }}</label>{{ f.select('discount_reason_id', reasons, l.discountReasonId, '-- none --') }}</div>
+                                <div class="col-md-2 mb-2"><label class="small mb-0">{{ 'Provider'|xlt }}</label>{{ f.select('provider_id', providers, l.providerId, '-- none --') }}</div>
+                                <div class="col-md-2 mb-2"><label class="small mb-0">{{ 'Seller'|xlt }}</label>{{ f.select('seller_id', users, l.sellerId, '-- none --') }}</div>
+                                <div class="col-md-2 mb-2"><label class="small mb-0">{{ 'Service office'|xlt }}</label>{{ f.select('facility_id', facilities, l.facilityId, '-- none --') }}</div>
+                                <div class="col-md-2 mb-2"><label class="small mb-0">{{ 'Service date'|xlt }}</label><input type="date" class="form-control form-control-sm" name="service_date" value="{{ l.serviceDate|attr }}"></div>
+                                <div class="col-md-2 mb-2"><button class="btn btn-primary btn-sm">{{ 'Save line'|xlt }}</button></div>
+                            </form>
+                            <form method="post" class="d-inline" data-confirm="{{ 'Remove this line?'|xla }}">
+                                {{ m.csrf(csrfField, csrfToken) }}<input type="hidden" name="action" value="remove_line"><input type="hidden" name="line_id" value="{{ l.id|attr }}">
+                                <button class="btn btn-link btn-sm text-danger p-0">{{ 'Remove line'|xlt }}</button>
+                            </form>
+                        </td></tr>
+                    {% endif %}
+                    {% if canBill and l.deferred %}
+                        <tr class="collapse" id="recv_{{ l.id|attr }}"><td colspan="10" class="bg-light">
+                            {% if l.outstanding %}
+                                <form method="post" class="form-row align-items-end">
+                                    {{ m.csrf(csrfField, csrfToken) }}<input type="hidden" name="action" value="receive"><input type="hidden" name="line_id" value="{{ l.id|attr }}">
+                                    <div class="col-md-2 mb-2"><label class="small mb-0">{{ 'Received on'|xlt }}</label><input type="date" class="form-control form-control-sm" name="received_date" value="{{ today|attr }}"></div>
+                                    <div class="col-md-3 mb-2"><label class="small mb-0">{{ 'Delivered by'|xlt }}</label>{{ f.select('provider_id', providers, l.providerId, '-- keep --') }}</div>
+                                    <div class="col-md-3 mb-2"><label class="small mb-0">{{ 'At office (stock comes from here)'|xlt }}</label>{{ f.select('facility_id', facilities, l.facilityId, '-- keep --') }}</div>
+                                    <div class="col-md-2 mb-2"><button class="btn btn-success btn-sm">{{ 'Receive item'|xlt }}</button></div>
+                                </form>
+                                <form method="post" class="d-inline" data-confirm="{{ 'Forfeit this item? The patient will not receive it.'|xla }}">
+                                    {{ m.csrf(csrfField, csrfToken) }}<input type="hidden" name="action" value="forfeit"><input type="hidden" name="line_id" value="{{ l.id|attr }}">
+                                    <button class="btn btn-link btn-sm p-0 text-danger">{{ 'Forfeit item'|xlt }}</button>
+                                </form>
+                            {% elseif l.forfeited %}
+                                <form method="post" class="d-inline">
+                                    {{ m.csrf(csrfField, csrfToken) }}<input type="hidden" name="action" value="unforfeit"><input type="hidden" name="line_id" value="{{ l.id|attr }}">
+                                    <button class="btn btn-link btn-sm p-0">{{ 'Undo forfeit'|xlt }}</button>
+                                </form>
+                            {% else %}
+                                <form method="post" class="form-row align-items-end">
+                                    {{ m.csrf(csrfField, csrfToken) }}<input type="hidden" name="action" value="edit_received"><input type="hidden" name="line_id" value="{{ l.id|attr }}">
+                                    <div class="col-md-2 mb-2"><label class="small mb-0">{{ 'Received on'|xlt }}</label><input type="date" class="form-control form-control-sm" name="received_date" value="{{ l.receivedDate|attr }}"></div>
+                                    <div class="col-md-3 mb-2"><label class="small mb-0">{{ 'Delivered by'|xlt }}</label>{{ f.select('provider_id', providers, l.providerId, '-- keep --') }}</div>
+                                    <div class="col-md-2 mb-2"><button class="btn btn-secondary btn-sm">{{ 'Edit received item'|xlt }}</button></div>
+                                </form>
+                                <form method="post" class="d-inline" data-confirm="{{ 'Clear the received flag? Stock taken for it goes back.'|xla }}">
+                                    {{ m.csrf(csrfField, csrfToken) }}<input type="hidden" name="action" value="clear_received"><input type="hidden" name="line_id" value="{{ l.id|attr }}">
+                                    <button class="btn btn-link btn-sm p-0 text-danger">{{ 'Clear received flag'|xlt }}</button>
+                                </form>
+                            {% endif %}
+                        </td></tr>
+                    {% endif %}
+                {% else %}
+                    <tr><td colspan="10" class="text-muted">{{ 'No items yet. Search above to add procedures, products or packages.'|xlt }}</td></tr>
+                {% endfor %}
+                </tbody>
+            </table>
+        </div>
+
+        {# ---------- Totals ---------- #}
+        <div class="row">
+            <div class="col-lg-7">
+                {% if totals is not empty %}
+                    <table class="table table-sm table-bordered small cpi-totals">
+                        <thead class="thead-light"><tr><th></th><th class="text-right">{{ taxNames[1]|default('Tax 1')|text }}</th><th class="text-right">{{ taxNames[2]|default('Tax 2')|text }}</th>
+                            <th class="text-right">{{ 'Cost'|xlt }}</th><th class="text-right">{{ 'Discount'|xlt }}</th><th class="text-right">{{ 'Total'|xlt }}</th></tr></thead>
+                        <tbody>
+                        {% for t in totals %}
+                            <tr><th>{{ t.label|xlt }}</th><td class="text-right">{{ t.tax1|text }}</td><td class="text-right">{{ t.tax2|text }}</td>
+                                <td class="text-right">{{ t.gross|text }}</td><td class="text-right">{{ t.discount|text }}</td><td class="text-right">{{ t.total|text }}</td></tr>
+                        {% endfor %}
+                        </tbody>
+                        <tfoot><tr class="table-active"><th>{{ 'Total'|xlt }}</th><th class="text-right">{{ grand.tax1|text }}</th><th class="text-right">{{ grand.tax2|text }}</th>
+                            <th class="text-right">{{ grand.gross|text }}</th><th class="text-right">{{ grand.discount|text }}</th><th class="text-right">{{ grand.total|text }}</th></tr></tfoot>
+                    </table>
+                {% endif %}
+            </div>
+            <div class="col-lg-5">
+                <table class="table table-sm small">
+                    <tr><th>{{ 'Total'|xlt }}</th><td class="text-right">{{ grand.total|text }}</td></tr>
+                    {% if kind == 'invoice' %}
+                        <tr><th>{{ 'Paid'|xlt }}</th><td class="text-right">{{ grand.paid|text }}</td></tr>
+                        <tr class="table-active"><th>{{ 'Balance due'|xlt }}</th><th class="text-right">{{ grand.due|text }}</th></tr>
+                        {% if defersDelivery %}<tr><th>{{ 'Unearned (not yet received)'|xlt }}</th><td class="text-right">{{ grand.unearned|text }}</td></tr>{% endif %}
+                    {% endif %}
+                    <tr><th>{{ 'Deposit requested'|xlt }}</th><td class="text-right">{{ grand.deposit|text }}</td></tr>
+                </table>
+                {% if kind == 'invoice' %}<p class="small text-muted">{{ 'Payments are taken in the next update of the module.'|xlt }}</p>{% endif %}
+            </div>
+        </div>
+
+        {% if kind == 'quote' and canBill %}
+            <form method="post" enctype="multipart/form-data" class="card card-body py-2 mb-3">
+                {{ m.csrf(csrfField, csrfToken) }}<input type="hidden" name="action" value="upload_signed">
+                <label class="small mb-1" for="signed_file">{{ 'Upload the scanned, hand-signed quote (saved to the patient documents)'|xlt }}</label>
+                <div class="form-row"><div class="col-md-6"><input type="file" class="form-control-file" id="signed_file" name="signed_file" accept="application/pdf,image/jpeg,image/png" required></div>
+                    <div class="col-md-2"><button class="btn btn-secondary btn-sm">{{ 'Upload'|xlt }}</button></div></div>
+            </form>
+        {% endif %}
+
+        {% if lockHistory is not empty %}
+            <details class="mb-3"><summary class="small">{{ 'Lock history'|xlt }}</summary>
+                <table class="table table-sm small mt-2">
+                    {% for h in lockHistory %}<tr><td class="text-nowrap">{{ h.created_at|text }}</td><td>{{ h.action|xlt }}</td><td>{{ h.username|text }}</td><td>{{ h.reason|text }}</td></tr>{% endfor %}
+                </table>
+            </details>
+        {% endif %}
+    {% endif %}
+{% endblock %}
+
+{% block scripts %}
+<script>
+(function () {
+    document.querySelectorAll('form[data-confirm]').forEach(function (form) {
+        form.addEventListener('submit', function (e) {
+            if (!window.confirm(form.getAttribute('data-confirm'))) { e.preventDefault(); }
+        });
+    });
+    var input = document.getElementById('itemSearch');
+    if (!input) { return; }
+    var results = document.getElementById('itemResults');
+    var type = document.getElementById('addType');
+    var id = document.getElementById('addId');
+    var addBtn = document.getElementById('addBtn');
+    var timer = null;
+    var clear = function () { results.textContent = ''; };
+    var pick = function (item) {
+        type.value = item.type;
+        id.value = item.id;
+        input.value = item.name;
+        addBtn.disabled = false;
+        clear();
+        if (item.type === 'package') { document.getElementById('addQty').value = '1'; }
+    };
+    input.addEventListener('input', function () {
+        addBtn.disabled = true;
+        id.value = '';
+        clearTimeout(timer);
+        var q = input.value.trim();
+        if (q.length < 2) { clear(); return; }
+        timer = setTimeout(function () {
+            top.restoreSession && top.restoreSession();
+            fetch(input.getAttribute('data-url') + '?q=' + encodeURIComponent(q), {credentials: 'same-origin'})
+                .then(function (r) { return r.ok ? r.json() : []; })
+                .then(function (items) {
+                    clear();
+                    items.forEach(function (item) {
+                        var a = document.createElement('button');
+                        a.type = 'button';
+                        a.className = 'list-group-item list-group-item-action py-1 small';
+                        var badge = document.createElement('span');
+                        badge.className = 'badge badge-light mr-2';
+                        badge.textContent = item.type;
+                        var name = document.createElement('strong');
+                        name.textContent = item.name;
+                        var detail = document.createElement('span');
+                        detail.className = 'text-muted ml-2';
+                        detail.textContent = item.detail + (item.price ? '  ' + item.price : '');
+                        a.appendChild(badge); a.appendChild(name); a.appendChild(detail);
+                        a.addEventListener('click', function () { pick(item); });
+                        results.appendChild(a);
+                    });
+                    // A scanned barcode that matches one item adds it straight away.
+                    if (items.length === 1 && /^[A-Za-z0-9-]{6,}$/.test(q) && items[0].name.toLowerCase().indexOf(q.toLowerCase()) === -1) {
+                        pick(items[0]);
+                        document.getElementById('addItemForm').submit();
+                    }
+                });
+        }, 250);
+    });
+    document.addEventListener('click', function (e) { if (!results.contains(e.target) && e.target !== input) { clear(); } });
+})();
+</script>
+{% endblock %}

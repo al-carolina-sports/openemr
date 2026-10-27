@@ -10,3 +10,7 @@
     .cpi .breadcrumb, .cpi .alert { display: none; }
     .cpi .tab-content > .cpi-print-all { display: block !important; opacity: 1 !important; page-break-after: always; }
 }
+.cpi .cpi-search-results { z-index: 1050; max-height: 22rem; overflow-y: auto; }
+.cpi .cpi-lines td { vertical-align: top; }
+.cpi .cpi-totals td, .cpi .cpi-totals th { padding: .2rem .4rem; }
+.cpi .cpi-patient-nav .nav-link { padding: .25rem .75rem; }

@@ -14,7 +14,9 @@ declare(strict_types=1);
 
 namespace OpenEMR\Modules\CashpayInvoicing;
 
+use OpenEMR\Core\OEGlobalsBag;
 use OpenEMR\Menu\MenuEvent;
+use OpenEMR\Menu\PatientMenuEvent;
 use stdClass;
 use Symfony\Component\EventDispatcher\EventDispatcherInterface;
 
@@ -29,6 +31,7 @@ class Bootstrap
     public function subscribeToEvents(): void
     {
         $this->eventDispatcher->addListener(MenuEvent::MENU_UPDATE, $this->addMenuItems(...));
+        $this->eventDispatcher->addListener(PatientMenuEvent::MENU_UPDATE, $this->addPatientMenu(...));
     }
 
     public function addMenuItems(MenuEvent $event): MenuEvent
@@ -63,6 +66,46 @@ class Bootstrap
         }
         $event->setMenu($menu);
         return $event;
+    }
+
+    /**
+     * Adds a Cash-Pay dropdown to the patient chart's top menu.
+     */
+    public function addPatientMenu(PatientMenuEvent $event): PatientMenuEvent
+    {
+        $menu = $event->getMenu();
+        // Module URLs are added after core resolves its own, so they must be absolute.
+        $base = OEGlobalsBag::getInstance()->getWebRoot() . self::MODULE_PATH . '/public/patient/account.php';
+        $dropdown = new stdClass();
+        $dropdown->label = xlt('Cash-Pay');
+        $dropdown->menu_id = 'cpi_patient';
+        $dropdown->requirement = 0;
+        $dropdown->acl_req = ['cashpay', AclObject::View->value];
+        $dropdown->children = [
+            $this->patientItem('cpi_invoices', 'Invoices', $base . '?tab=invoices&pid='),
+            $this->patientItem('cpi_quotes', 'Quotes', $base . '?tab=quotes&pid='),
+        ];
+        $menu[] = $dropdown;
+        $event->setMenu($menu);
+        return $event;
+    }
+
+    /**
+     * @param literal-string $label
+     */
+    private function patientItem(string $menuId, string $label, string $url): stdClass
+    {
+        $item = new stdClass();
+        $item->label = xlt($label);
+        $item->menu_id = $menuId;
+        $item->target = 'main';
+        $item->on_click = 'top.restoreSession()';
+        $item->url = $url;
+        $item->pid = 'true';
+        $item->children = [];
+        $item->requirement = 0;
+        $item->acl_req = ['cashpay', AclObject::View->value];
+        return $item;
     }
 
     /**
