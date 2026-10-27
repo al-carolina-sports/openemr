@@ -44,6 +44,7 @@ class Bootstrap
             $setup = ['cashpay', AclObject::Setup->value];
             $settings = ['cashpay', AclObject::Settings->value];
             $view = ['cashpay', AclObject::View->value];
+            $billing = ['cashpay', AclObject::Billing->value];
             $submenu = new stdClass();
             $submenu->label = xlt('Cash-Pay Setup');
             $submenu->icon = 'fa-caret-right';
@@ -58,6 +59,8 @@ class Bootstrap
                 $this->item('cpiSetup6', 'Price List', '/public/admin/price_list.php', $view),
                 $this->item('cpiSetup7', 'Import Catalog', '/public/admin/import.php', $setup),
                 $this->item('cpiSetup8', 'Cash-Pay Settings', '/public/admin/settings.php', $settings),
+                $this->item('cpiSetup9', 'Gift Cards', '/public/admin/gift_cards.php', $billing),
+                $this->item('cpiSetup10', 'Cash Drawer', '/public/admin/cash_drawer.php', $billing),
             ];
             $children = is_array($menuItem->children ?? null) ? $menuItem->children : [];
             $children[] = $submenu;
@@ -84,6 +87,9 @@ class Bootstrap
         $dropdown->children = [
             $this->patientItem('cpi_invoices', 'Invoices', $base . '?tab=invoices&pid='),
             $this->patientItem('cpi_quotes', 'Quotes', $base . '?tab=quotes&pid='),
+            $this->patientItem('cpi_payments', 'Payments', str_replace('account.php', 'payments.php', $base) . '?pid='),
+            $this->patientItem('cpi_rewards', 'Rewards', str_replace('account.php', 'rewards.php', $base) . '?pid='),
+            $this->patientItem('cpi_notes', 'Financial Notes', str_replace('account.php', 'notes.php', $base) . '?pid='),
         ];
         $menu[] = $dropdown;
         $event->setMenu($menu);

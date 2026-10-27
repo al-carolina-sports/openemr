@@ -1,0 +1,23 @@
+{% extends '@cashpay/patient/base.html.twig' %}
+{% set headerAssets = ['common', 'summernote'] %}
+{% block title %}{{ 'Financial Notes'|xlt }}{% endblock %}
+{% block content %}
+    <p class="small text-muted">{{ 'Billing and payment notes for this patient. They are kept apart from clinical notes.'|xlt }}
+        {% if note.updatedAt %}{{ 'Last saved'|xlt }} {{ note.updatedAt|text }}{% if note.updatedBy %} {{ 'by'|xlt }} {{ note.updatedBy|text }}{% endif %}.{% endif %}</p>
+    {% if canBill %}
+        <form method="post">
+            <input type="hidden" name="{{ csrfField|attr }}" value="{{ csrfToken|attr }}">
+            <textarea id="financialNote" name="body_html" class="form-control" rows="14">{{ note.html|text }}</textarea>
+            <button class="btn btn-primary btn-sm mt-2">{{ 'Save notes'|xlt }}</button>
+        </form>
+    {% else %}
+        <div class="card card-body">{{ note.html }}</div>
+    {% endif %}
+{% endblock %}
+{% block scripts %}
+<script>
+    if (window.jQuery && jQuery.fn.summernote) {
+        jQuery('#financialNote').summernote({height: 320, toolbar: [['style', ['bold', 'italic', 'underline']], ['para', ['ul', 'ol']], ['insert', ['link']], ['view', ['codeview']]]});
+    }
+</script>
+{% endblock %}

@@ -27,9 +27,13 @@ use OpenEMR\Modules\CashpayInvoicing\Bootstrap;
 use OpenEMR\Modules\CashpayInvoicing\Database\QueryUtilsDatabase;
 use OpenEMR\Modules\CashpayInvoicing\Inventory\StockService;
 use OpenEMR\Modules\CashpayInvoicing\ModuleTwig;
+use OpenEMR\Modules\CashpayInvoicing\Payments\PaymentService;
 use OpenEMR\Modules\CashpayInvoicing\Pricing\CatalogLookup;
 use OpenEMR\Modules\CashpayInvoicing\Pricing\PromoRepository;
+use OpenEMR\Modules\CashpayInvoicing\Rewards\GiftCardService;
+use OpenEMR\Modules\CashpayInvoicing\Rewards\RewardsService;
 use OpenEMR\Modules\CashpayInvoicing\Settings\SettingsRepository;
+use OpenEMR\Modules\CashpayInvoicing\Web\PageKit;
 
 final class PatientPagesFactory
 {
@@ -65,6 +69,33 @@ final class PatientPagesFactory
             clock: ServiceContainer::getClock(),
             logger: ServiceContainer::getLogger(),
             patientUrl: $globals->getWebRoot() . Bootstrap::MODULE_PATH . '/public/patient/',
+            pid: is_numeric($pid) ? (int) $pid : 0,
+            userId: is_numeric($userId) ? (int) $userId : 0,
+        );
+    }
+
+    public static function accountPages(): AccountPages
+    {
+        $globals = OEGlobalsBag::getInstance();
+        $session = SessionWrapperFactory::getInstance()->getActiveSession();
+        $userId = $session->get('authUserID');
+        $pid = $session->get('pid');
+        $db = new QueryUtilsDatabase();
+        $settings = new SettingsRepository($db);
+        $rewards = new RewardsService($db);
+        $giftCards = GiftCardService::withSystemRandom($db);
+        $patientUrl = $globals->getWebRoot() . Bootstrap::MODULE_PATH . '/public/patient/';
+        return new AccountPages(
+            kit: new PageKit(CurrentRequest::get(), $session, ModuleTwig::environment(), new Access(), ['patientUrl' => $patientUrl]),
+            db: $db,
+            lookups: new LookupRepository($db),
+            payments: new PaymentService($db, $settings, $rewards, $giftCards),
+            rewards: $rewards,
+            giftCards: $giftCards,
+            notes: new FinancialNotes($db),
+            settings: $settings,
+            clock: ServiceContainer::getClock(),
+            patientUrl: $patientUrl,
             pid: is_numeric($pid) ? (int) $pid : 0,
             userId: is_numeric($userId) ? (int) $userId : 0,
         );

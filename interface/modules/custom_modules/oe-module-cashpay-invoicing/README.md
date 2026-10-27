@@ -15,8 +15,9 @@ stay in OpenEMR's Fee Sheet / billing module, and no insurance data is migrated.
 ## Status
 
 **Phase 1 (catalog admin) is built and tested.** Phase 2 is being built in three parts;
-**part 1 (quotes and invoices) is ready for testing** (module version 0.2.0, run *Upgrade* in Module Manager).
-Phase 2 parts 2 and 3, and phases 3 and 4, are not started.
+**parts 1 (quotes and invoices) and 2 (payments, points, gift cards, notes, cash drawer) are ready for testing**
+(module version 0.2.0, run *Upgrade* in Module Manager). Phase 2 part 3 (Stripe and memberships) and phases 3
+and 4 are not started.
 
 Phase 1 adds **Admin > Cash-Pay Setup**:
 
@@ -46,6 +47,23 @@ Phase 2 part 1 adds a **Cash-Pay** menu to the patient chart with **Invoices** a
   delete (only without payments), quote to invoice.
 - Print and PDF for quotes and receipts; email a quote as a PDF marked "for information only"; printed quotes
   carry signature lines; upload the signed scan to the patient documents.
+
+Phase 2 part 2 adds **Payments**, **Rewards** and **Financial Notes** to the patient menu, and **Gift Cards** and
+**Cash Drawer** to Admin > Cash-Pay Setup:
+
+- Apply patient payment or deposit (cash, check, card on another terminal, award points, gift card, financing),
+  spread over open invoices; anything not applied is credit and can be applied later. Card payments ask for the
+  card type and add the credit card service charge only for credit cards. Gratuity is recorded separately.
+- Refunds (unapplied credit first, then newest invoices; card charge and earned points reversed in proportion;
+  gift card value restored), write-offs and voids. Nothing is deleted. These need the refunds permission.
+- Patient totals: balance due, credit on account, lifetime paid, patient since.
+- Award points: admin enrolls the patient; points are earned on the eligible share of what is applied to invoices
+  (no tax, no card charge, only items marked to earn); points can pay at the set value; admin adjustments need a reason.
+- Gift cards: sold as a line on a Gift Cards invoice; the code is issued when that invoice is paid in full; lookup,
+  history, recipient, total owed.
+- Financial notes: one rich-text note per patient, cleaned before saving.
+- Cash drawer per office per day: opening balance, cash in and out, adjustment, counted close, over/short; reopen
+  needs the refunds permission.
 
 Install and test steps are in [TESTING.md](TESTING.md).
 

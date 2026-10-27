@@ -237,6 +237,9 @@ final readonly class PatientPages
                 }
                 $this->lines->addFee($document, $category, $form->string('description'), $form->money('amount') ?? Money::zero(), $defaults);
                 return $this->redirectTo($document, Notice::Added, 'lines');
+            case 'add_gift_card':
+                $this->lines->addGiftCard($document, $form->money('amount') ?? Money::zero(), $form->string('recipient'), $defaults);
+                return $this->redirectTo($document, Notice::Added, 'lines');
             case 'update_line':
                 $this->lines->update($document, $form->requiredId('line_id'), $this->lineEdit($form));
                 return $this->redirectTo($document, Notice::Updated, 'lines');
@@ -417,6 +420,7 @@ final readonly class PatientPages
             'printUrl' => $document !== null ? $this->patientUrl . 'print.php?kind=' . $kind->value . '&id=' . $document->id : '',
             'patientUrl' => $this->patientUrl,
             'convertedInvoiceId' => $document?->convertedInvoiceId,
+            'isGiftCardInvoice' => $document !== null && $kind === DocumentKind::Invoice && $document->invoiceType === InvoiceType::GiftCard,
         ];
     }
 

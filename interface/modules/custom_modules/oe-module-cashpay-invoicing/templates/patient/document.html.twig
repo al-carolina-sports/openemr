@@ -126,6 +126,15 @@
                         <input class="form-control form-control-sm text-right" id="addQty" name="qty" value="1" inputmode="decimal"></div>
                     <div class="col-md-2 mb-2"><button class="btn btn-secondary btn-sm" id="addBtn" disabled>{{ 'Add'|xlt }}</button></div>
                 </form>
+                {% if isGiftCardInvoice %}
+                    <form method="post" class="form-row align-items-end">
+                        {{ m.csrf(csrfField, csrfToken) }}<input type="hidden" name="action" value="add_gift_card">
+                        <div class="col-md-2 mb-2"><label class="small mb-0">{{ 'Gift card value'|xlt }}</label><input class="form-control form-control-sm text-right" name="amount" inputmode="decimal" required></div>
+                        <div class="col-md-4 mb-2"><label class="small mb-0">{{ 'For (recipient name)'|xlt }}</label><input class="form-control form-control-sm" name="recipient" maxlength="150"></div>
+                        <div class="col-md-3 mb-2"><button class="btn btn-secondary btn-sm">{{ 'Add gift card'|xlt }}</button></div>
+                        <div class="col-12 small text-muted">{{ 'The card code is issued when this invoice is paid in full.'|xlt }}</div>
+                    </form>
+                {% endif %}
                 <div class="form-row">
                     <div class="col-auto"><button type="button" class="btn btn-link btn-sm px-0 mr-3" data-toggle="collapse" data-target="#feeBox">{{ 'Add OR / anesthesia / recovery / assistant fee'|xlt }}</button></div>
                     <div class="col-auto"><button type="button" class="btn btn-link btn-sm px-0" data-toggle="collapse" data-target="#discBox">{{ 'Discount all'|xlt }}</button></div>
@@ -279,7 +288,7 @@
                     {% endif %}
                     <tr><th>{{ 'Deposit requested'|xlt }}</th><td class="text-right">{{ grand.deposit|text }}</td></tr>
                 </table>
-                {% if kind == 'invoice' %}<p class="small text-muted">{{ 'Payments are taken in the next update of the module.'|xlt }}</p>{% endif %}
+                {% if kind == 'invoice' and canBill %}<a class="btn btn-primary btn-sm" href="{{ patientUrl|attr }}payments.php?invoice={{ doc.id|attr_url }}">{{ 'Apply patient payment'|xlt }}</a>{% endif %}
             </div>
         </div>
 

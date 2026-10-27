@@ -122,9 +122,9 @@ payments and Stripe) starts after this passes.
 - [ ] On a procedure with a provider override (Phase 1, step 4), add it to an invoice whose provider matches.
       The override price is used. Change the invoice provider, save, add it again: the standard price is used.
 - [ ] Add a product with Tax 1 ticked: the Tax column shows 6.75% of the net (or your rate).
-- [ ] Give a test patient a membership row is not possible from the screen yet (part 3). Members-only promos
-      therefore do not apply yet; everyone-promos do. Make a 10% everyone-promo on one procedure and add that
-      procedure: the discount and promo name appear on the line.
+- [ ] Memberships can't be assigned to patients until part 3, so members-only promos don't apply yet;
+      everyone-promos do. Make a 10% everyone-promo on one procedure and add that procedure: the discount
+      and promo name appear on the line.
 
 ## 4. Immediate sale and stock
 
@@ -149,3 +149,50 @@ payments and Stripe) starts after this passes.
 - [ ] **Delete** the copy. Stock taken by its delivered lines goes back.
 
 Payments are not in this part: balance due equals the total for now. Part 2 adds payments.
+
+---
+
+# Phase 2, part 2 test script (payments and patient money)
+
+No upgrade step this time; just update the module folder and reload. The patient's Cash-Pay menu now also has
+**Payments**, **Rewards** and **Financial Notes**; Admin > Cash-Pay Setup has **Gift Cards** and **Cash Drawer**.
+
+## 1. Payments
+
+- [ ] Open an invoice with a balance and click **Apply patient payment**. The invoice is highlighted.
+- [ ] Pay **Cash** $50 more than is due, click *Spread the amount over the oldest invoices*, post. The invoice
+      is paid, the extra shows as **Credit on account**, and the ledger shows where it went.
+- [ ] Turn on the card service charge at 3% in Settings. Pay with **Card (other terminal)**: pick *Credit card*
+      and the yellow note shows the charge and the total to run on the terminal. Switch to *Debit card*: the note
+      disappears. Post a credit payment; the ledger shows the card charge.
+- [ ] On another invoice, **Apply credit** from the account.
+- [ ] **Refund** part of the credit card payment with a reason. The refund line shows the card charge refunded in
+      proportion; credit on account is used up before any invoice is reopened.
+- [ ] **Void** a payment you entered by mistake (reason required). It stays in the ledger, greyed out, and stops
+      counting. A refund cannot be voided.
+- [ ] **Write off** a small balance with a reason.
+- [ ] As a Front Office user: you can post payments but not refund, void or write off.
+
+## 2. Award points
+
+- [ ] Settings: turn the program on, 1 point per $1, point value $1.00.
+- [ ] Patient **Rewards**: **Enroll**. Pay an invoice in cash. Points appear for the eligible part only (no tax,
+      only items marked "Earns award points").
+- [ ] Pay another invoice with **Award Points**. Points go down; that payment earns nothing.
+- [ ] Refund the cash payment: the points it earned come back off.
+- [ ] **Adjust points** without a reason is refused; with a reason it is saved with your user name.
+
+## 3. Gift cards
+
+- [ ] New invoice, type **Gift Cards**. Use **Add gift card**: $100 for "Jane Doe".
+- [ ] Pay it in full. **Admin > Cash-Pay Setup > Gift Cards** lists the new code with a $100 balance; the
+      patient's Rewards page shows it too.
+- [ ] On another patient, pay $30 with **Gift Card** and that code. The card balance drops to $70 and its history
+      shows the redemption. Void that payment: the $30 goes back on the card.
+
+## 4. Financial notes and cash drawer
+
+- [ ] Financial Notes: type with bold and a list, save, reload. Pasted scripts or images are stripped.
+- [ ] Cash Drawer: pick an office, **Open drawer** with $200. Take a cash payment at that office. The drawer
+      shows it in *Cash taken*. **Close drawer** with the counted amount; *Over / short* shows the difference.
+- [ ] As an administrator, **Reopen this day**.

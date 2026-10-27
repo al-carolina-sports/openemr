@@ -152,10 +152,38 @@ final class LineService
         );
     }
 
+    /**
+     * A gift card line on a gift card invoice. The card itself is issued
+     * with its code once the invoice is fully paid.
+     */
+    public function addGiftCard(Document $document, Money $amount, string $recipient, LineDefaults $defaults): int
+    {
+        $this->assertEditable($document);
+        if ($document->kind !== DocumentKind::Invoice || $document->invoiceType !== InvoiceType::GiftCard) {
+            throw new ValidationException(['amount' => 'Gift cards are sold on a Gift Cards invoice']);
+        }
+        if ($amount->cents <= 0) {
+            throw new ValidationException(['amount' => 'Enter the gift card value']);
+        }
+        $recipient = trim($recipient);
+        $description = mb_substr('Gift card' . ($recipient !== '' ? ' for ' . $recipient : ''), 0, 255);
+        return $this->db->insert(
+            'INSERT INTO `cpi_line` (`parent_type`, `parent_id`, `item_type`, `description`, `charge_category`, `qty`, `unit_price`,'
+            . ' `net`, `service_date`, `received_date`, `seller_id`, `service_facility_id`, `sort_order`)'
+            . " VALUES ('invoice', ?, 'gift_card', ?, 'other', 1, ?, ?, ?, ?, ?, ?, ?)",
+            [
+                $document->id, $description, $amount->toDecimalString(), $amount->toDecimalString(),
+                $defaults->serviceDate->format('Y-m-d'), $defaults->serviceDate->format('Y-m-d'),
+                $defaults->sellerId, $defaults->facilityId, $this->nextSort($document),
+            ]
+        );
+    }
+
     public function update(Document $document, int $lineId, LineEdit $edit): void
     {
         $this->assertEditable($document);
         $line = $this->documents->line($document, $lineId) ?? throw new ValidationException(['line' => 'Line not found']);
+        $this->assertNotIssuedGiftCard($line);
         if ($edit->discount->cents > 0 && $edit->discountReasonId === null) {
             throw new ValidationException(['discount_reason_id' => 'Pick a discount reason']);
         }
@@ -208,6 +236,7 @@ final class LineService
     {
         $this->assertEditable($document);
         $line = $this->documents->line($document, $lineId) ?? throw new ValidationException(['line' => 'Line not found']);
+        $this->assertNotIssuedGiftCard($line);
         $this->db->transaction(function () use ($line, $userId): void {
             if ($line->receivedDate !== null) {
                 $this->delivery->returnStock($line, $userId);
@@ -357,6 +386,13 @@ final class LineService
         $this->taxes ??= $this->settings->taxTypes();
         $tax = $this->taxes[$slot] ?? null;
         return $tax !== null && $tax->active ? $tax : null;
+    }
+
+    private function assertNotIssuedGiftCard(Line $line): void
+    {
+        if ($line->itemType === 'gift_card' && $line->itemId !== null) {
+            throw new ValidationException(['line' => 'This gift card has been issued and cannot be changed']);
+        }
     }
 
     private function assertEditable(Document $document): void

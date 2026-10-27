@@ -36,6 +36,17 @@ enum Notice
     case Received;
     case Emailed;
     case Uploaded;
+    case PaymentPosted;
+    case Refunded;
+    case WrittenOff;
+    case Voided;
+    case CreditApplied;
+    case Enrolled;
+    case Unenrolled;
+    case PointsAdjusted;
+    case DrawerOpened;
+    case DrawerClosed;
+    case DrawerReopened;
 
     public function text(): string
     {
@@ -60,6 +71,17 @@ enum Notice
             self::Received => 'Item received.',
             self::Emailed => 'Quote emailed to the patient.',
             self::Uploaded => 'Signed copy saved to the patient documents.',
+            self::PaymentPosted => 'Payment posted.',
+            self::Refunded => 'Refund recorded.',
+            self::WrittenOff => 'Balance written off.',
+            self::Voided => 'Entry voided.',
+            self::CreditApplied => 'Credit applied to the invoice.',
+            self::Enrolled => 'Patient enrolled in award points.',
+            self::Unenrolled => 'Patient removed from award points. Their balance is kept.',
+            self::PointsAdjusted => 'Points adjusted.',
+            self::DrawerOpened => 'Cash drawer opened.',
+            self::DrawerClosed => 'Cash drawer closed.',
+            self::DrawerReopened => 'Cash drawer reopened.',
         };
     }
 

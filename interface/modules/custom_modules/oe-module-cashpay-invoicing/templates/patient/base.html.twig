@@ -2,7 +2,7 @@
 <html>
 <head>
     <title>{{ block('title')|text }}</title>
-    {{ setupHeader(['common']) }}
+    {{ setupHeader(headerAssets|default(['common'])) }}
     <link rel="stylesheet" href="{{ patientUrl|attr }}../assets/cashpay.css">
 </head>
 <body class="body_top cpi">
@@ -12,6 +12,9 @@
         <ul class="nav nav-pills cpi-patient-nav">
             <li class="nav-item"><a class="nav-link{{ navTab|default('') == 'invoices' ? ' active' : '' }}" href="{{ patientUrl|attr }}account.php?tab=invoices">{{ 'Invoices'|xlt }}</a></li>
             <li class="nav-item"><a class="nav-link{{ navTab|default('') == 'quotes' ? ' active' : '' }}" href="{{ patientUrl|attr }}account.php?tab=quotes">{{ 'Quotes'|xlt }}</a></li>
+            <li class="nav-item"><a class="nav-link{{ navTab|default('') == 'payments' ? ' active' : '' }}" href="{{ patientUrl|attr }}payments.php">{{ 'Payments'|xlt }}</a></li>
+            <li class="nav-item"><a class="nav-link{{ navTab|default('') == 'rewards' ? ' active' : '' }}" href="{{ patientUrl|attr }}rewards.php">{{ 'Rewards'|xlt }}</a></li>
+            <li class="nav-item"><a class="nav-link{{ navTab|default('') == 'notes' ? ' active' : '' }}" href="{{ patientUrl|attr }}notes.php">{{ 'Financial Notes'|xlt }}</a></li>
         </ul>
     </div>
     {% if notice %}

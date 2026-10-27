@@ -1,0 +1,202 @@
+{% extends '@cashpay/patient/base.html.twig' %}
+{% import '@cashpay/admin/macros.html.twig' as m %}
+{% block title %}{{ 'Payments'|xlt }}{% endblock %}
+{% block content %}
+    <div class="row mb-2">
+        <div class="col-6 col-md-3"><div class="small text-muted">{{ 'Balance due'|xlt }}</div><div class="h5">{{ totals.balance|text }}</div></div>
+        <div class="col-6 col-md-3"><div class="small text-muted">{{ 'Credit on account'|xlt }}</div><div class="h5">{{ totals.credit|text }}</div></div>
+        <div class="col-6 col-md-3"><div class="small text-muted">{{ 'Lifetime paid'|xlt }}</div><div class="h5">{{ totals.lifetime|text }}</div></div>
+        <div class="col-6 col-md-3"><div class="small text-muted">{{ 'Patient since'|xlt }}</div><div class="h5">{{ totals.since|default('-')|text }}</div></div>
+    </div>
+    {{ m.errors(errors) }}
+
+    {% if canBill %}
+    <form method="post" class="card card-body mb-3" id="payForm" novalidate>
+        {{ m.csrf(csrfField, csrfToken) }}<input type="hidden" name="action" value="pay">
+        <h6>{{ 'Apply patient payment'|xlt }}</h6>
+        <div class="form-row">
+            <div class="form-group col-md-2 mb-2"><label class="small mb-0">{{ 'Type'|xlt }}</label>
+                <select class="form-control form-control-sm" name="pay_type"><option value="payment">{{ 'Payment'|xlt }}</option><option value="deposit"{% if submitted.pay_type|default('') == 'deposit' %} selected{% endif %}>{{ 'Deposit'|xlt }}</option></select></div>
+            <div class="form-group col-md-2 mb-2"><label class="small mb-0">{{ 'Date'|xlt }}</label>
+                <input type="date" class="form-control form-control-sm" name="pay_date" value="{{ submitted.pay_date|default(today)|attr }}"></div>
+            <div class="form-group col-md-3 mb-2"><label class="small mb-0">{{ 'Method'|xlt }}</label>
+                <select class="form-control form-control-sm" name="method_id" id="payMethod" required>
+                    <option value="">{{ '-- choose --'|xlt }}</option>
+                    {% for mt in methods %}<option value="{{ mt.id|attr }}" data-kind="{{ mt.kind|attr }}"{% if submitted.method_id|default('') == mt.id ~ '' %} selected{% endif %}>{{ mt.name|text }}</option>{% endfor %}
+                </select></div>
+            <div class="form-group col-md-2 mb-2"><label class="small mb-0">{{ 'Amount'|xlt }}</label>
+                <input class="form-control form-control-sm text-right" name="amount" id="payAmount" inputmode="decimal" value="{{ submitted.amount|default('')|attr }}" required></div>
+            <div class="form-group col-md-1 mb-2"><label class="small mb-0">{{ 'Gratuity'|xlt }}</label>
+                <input class="form-control form-control-sm text-right" name="gratuity" id="payTip" inputmode="decimal" value="{{ submitted.gratuity|default('')|attr }}"></div>
+            <div class="form-group col-md-2 mb-2"><label class="small mb-0">{{ 'Office'|xlt }}</label>
+                <select class="form-control form-control-sm" name="facility_id">
+                    {% for fid, name in facilities %}<option value="{{ fid|attr }}"{% if (submitted.facility_id|default(defaultFacility ~ '')) == fid ~ '' %} selected{% endif %}>{{ name|text }}</option>{% endfor %}
+                </select></div>
+            <div class="form-group col-md-3 mb-2 d-none" data-kind-only="card"><label class="small mb-0">{{ 'Card type'|xlt }}</label>
+                <select class="form-control form-control-sm" name="funding" id="payFunding">
+                    <option value="">{{ '-- ask the patient / check the terminal --'|xlt }}</option>
+                    <option value="credit">{{ 'Credit card'|xlt }}</option><option value="debit">{{ 'Debit card'|xlt }}</option><option value="prepaid">{{ 'Prepaid card'|xlt }}</option>
+                </select></div>
+            <div class="form-group col-md-3 mb-2 d-none" data-kind-only="gift_card"><label class="small mb-0">{{ 'Gift card code'|xlt }}</label>
+                <input class="form-control form-control-sm" name="gift_card_code" value="{{ submitted.gift_card_code|default('')|attr }}"></div>
+            <div class="form-group col-md-3 mb-2 d-none" data-kind-only="points"><label class="small mb-0">{{ 'Award points'|xlt }}</label>
+                <div class="form-control-plaintext form-control-sm">{% if rewards.on %}{{ rewards.points|text }} {{ 'points'|xlt }} = {{ rewards.value|text }}{% else %}{{ 'Not enrolled or program off'|xlt }}{% endif %}</div></div>
+            <div class="form-group col-md-2 mb-2"><label class="small mb-0">{{ 'Check / reference #'|xlt }}</label>
+                <input class="form-control form-control-sm" name="reference" maxlength="100" value="{{ submitted.reference|default('')|attr }}"></div>
+            <div class="form-group col-md-4 mb-2"><label class="small mb-0">{{ 'Comments'|xlt }}</label>
+                <input class="form-control form-control-sm" name="comments" maxlength="255" value="{{ submitted.comments|default('')|attr }}"></div>
+        </div>
+        <div class="alert alert-warning py-1 small d-none" id="feeNote" data-bp="{{ cardFee.enabled ? cardFee.bp : 0 }}">
+            {{ cardFee.label|text }} ({{ cardFee.pct|text }}%): <strong id="feeAmt"></strong>. {{ 'Tell the patient before charging. Charge the card'|xlt }} <strong id="feeTotal"></strong>.
+        </div>
+
+        {% if openInvoices is not empty %}
+            <table class="table table-sm small mb-2">
+                <thead><tr><th>{{ 'Invoice'|xlt }}</th><th>{{ 'Date'|xlt }}</th><th class="text-right">{{ 'Total'|xlt }}</th><th class="text-right">{{ 'Paid'|xlt }}</th>
+                    <th class="text-right">{{ 'Due'|xlt }}</th><th class="text-right" style="width:9rem">{{ 'Apply'|xlt }}</th></tr></thead>
+                <tbody>
+                {% for inv in openInvoices %}
+                    <tr class="{{ inv.id == focusInvoice ? 'table-info' : '' }}">
+                        <td><a href="{{ patientUrl|attr }}document.php?kind=invoice&amp;id={{ inv.id|attr_url }}">#{{ inv.id|text }} {{ inv.name|text }}</a></td>
+                        <td>{{ inv.date|text }}</td><td class="text-right">{{ inv.total|text }}</td><td class="text-right">{{ inv.paid|text }}</td>
+                        <td class="text-right">{{ inv.due|text }}</td>
+                        <td><input class="form-control form-control-sm text-right cpi-alloc" name="alloc[{{ inv.id|attr }}]" data-due="{{ inv.dueRaw|attr }}"
+                                   value="{{ submitted.alloc[inv.id]|default('')|attr }}" inputmode="decimal" aria-label="{{ 'Apply to invoice'|xla }} {{ inv.id|attr }}"></td>
+                    </tr>
+                {% endfor %}
+                </tbody>
+            </table>
+            <button type="button" class="btn btn-link btn-sm px-0" id="autoAlloc">{{ 'Spread the amount over the oldest invoices'|xlt }}</button>
+            <span class="small text-muted ml-2">{{ 'Anything not applied stays as credit on the account.'|xlt }}</span>
+        {% else %}
+            <p class="small text-muted mb-2">{{ 'No invoices are due. The payment becomes credit on the account.'|xlt }}</p>
+        {% endif %}
+        <div><button class="btn btn-primary btn-sm mt-2">{{ 'Post payment'|xlt }}</button></div>
+    </form>
+
+    {% if totals.creditRaw != '0.00' and openInvoices is not empty %}
+        <form method="post" class="card card-body py-2 mb-3 form-row align-items-end">
+            {{ m.csrf(csrfField, csrfToken) }}<input type="hidden" name="action" value="apply_credit">
+            <div class="form-row w-100 align-items-end">
+                <div class="col-md-4 mb-2"><label class="small mb-0">{{ 'Apply credit on account to'|xlt }}</label>
+                    <select class="form-control form-control-sm" name="invoice_id">{% for inv in openInvoices %}<option value="{{ inv.id|attr }}">#{{ inv.id|text }} {{ inv.name|text }} ({{ inv.due|text }})</option>{% endfor %}</select></div>
+                <div class="col-md-2 mb-2"><label class="small mb-0">{{ 'Amount'|xlt }}</label><input class="form-control form-control-sm text-right" name="amount" value="{{ totals.creditRaw|attr }}" inputmode="decimal"></div>
+                <div class="col-md-2 mb-2"><button class="btn btn-secondary btn-sm">{{ 'Apply credit'|xlt }}</button></div>
+            </div>
+        </form>
+    {% endif %}
+
+    {% if canRefund and openInvoices is not empty %}
+        <details class="mb-3"><summary class="small">{{ 'Write off a balance'|xlt }}</summary>
+            <form method="post" class="form-row align-items-end mt-2">
+                {{ m.csrf(csrfField, csrfToken) }}<input type="hidden" name="action" value="write_off">
+                <div class="col-md-4 mb-2"><select class="form-control form-control-sm" name="invoice_id" aria-label="{{ 'Invoice'|xla }}">{% for inv in openInvoices %}<option value="{{ inv.id|attr }}">#{{ inv.id|text }} {{ inv.name|text }} ({{ inv.due|text }})</option>{% endfor %}</select></div>
+                <div class="col-md-2 mb-2"><input class="form-control form-control-sm text-right" name="amount" placeholder="{{ 'Amount'|xla }}" inputmode="decimal" required></div>
+                <div class="col-md-4 mb-2"><input class="form-control form-control-sm" name="reason" placeholder="{{ 'Reason'|xla }}" maxlength="255" required></div>
+                <div class="col-md-2 mb-2"><button class="btn btn-outline-danger btn-sm">{{ 'Write off'|xlt }}</button></div>
+            </form>
+        </details>
+    {% endif %}
+    {% endif %}
+
+    <h6>{{ 'Ledger'|xlt }}</h6>
+    <div class="table-responsive">
+        <table class="table table-sm small cpi-table">
+            <thead class="thead-light"><tr><th>{{ 'Date'|xlt }}</th><th>{{ 'Type'|xlt }}</th><th>{{ 'Method'|xlt }}</th><th class="text-right">{{ 'Amount'|xlt }}</th>
+                <th class="text-right">{{ 'Gratuity'|xlt }}</th><th class="text-right">{{ 'Card charge'|xlt }}</th><th>{{ 'Applied to'|xlt }}</th><th class="text-right">{{ 'Credit'|xlt }}</th>
+                <th>{{ 'Comments'|xlt }}</th><th>{{ 'Status'|xlt }}</th><th></th></tr></thead>
+            <tbody>
+            {% for p in ledger %}
+                <tr class="{{ p.status == 'void' ? 'text-muted cpi-inactive' : '' }}">
+                    <td class="text-nowrap">{{ p.date|text }}</td>
+                    <td>{{ p.type|xlt }}{% if p.refundOf %} <span class="text-muted">({{ 'of'|xlt }} #{{ p.refundOf|text }})</span>{% endif %}</td>
+                    <td>{{ p.method|text }}{% if p.funding %} <span class="text-muted">{{ p.funding|xlt }}</span>{% endif %}{% if p.reference %}<div class="text-muted">{{ p.reference|text }}</div>{% endif %}</td>
+                    <td class="text-right text-nowrap">{{ p.amount|text }}</td>
+                    <td class="text-right">{{ p.gratuity|text }}</td>
+                    <td class="text-right">{{ p.cardFee|text }}</td>
+                    <td>{% for a in p.allocations %}<div>#{{ a.invoice_id|text }} {{ a.amount|text }}</div>{% endfor %}</td>
+                    <td class="text-right">{{ p.unapplied != '$0.00' ? p.unapplied|text : '' }}</td>
+                    <td>{{ p.comments|text }}<div class="text-muted">{{ p.user|text }}{% if p.facility %} · {{ p.facility|text }}{% endif %}</div></td>
+                    <td>{{ p.status|xlt }}</td>
+                    <td class="text-nowrap">
+                        {% if canRefund and p.status == 'posted' %}
+                            {% if p.refundable %}<button type="button" class="btn btn-link btn-sm p-0" data-toggle="collapse" data-target="#refund_{{ p.id|attr }}">{{ 'Refund'|xlt }}</button>{% endif %}
+                            {% if p.typeValue != 'refund' %}<button type="button" class="btn btn-link btn-sm p-0 ml-2 text-danger" data-toggle="collapse" data-target="#void_{{ p.id|attr }}">{{ 'Void'|xlt }}</button>{% endif %}
+                        {% endif %}
+                    </td>
+                </tr>
+                {% if canRefund and p.status == 'posted' %}
+                    {% if p.refundable %}
+                        <tr class="collapse" id="refund_{{ p.id|attr }}"><td colspan="11" class="bg-light">
+                            <form method="post" class="form-row align-items-end">
+                                {{ m.csrf(csrfField, csrfToken) }}<input type="hidden" name="action" value="refund"><input type="hidden" name="payment_id" value="{{ p.id|attr }}">
+                                <div class="col-md-2 mb-2"><label class="small mb-0">{{ 'Amount'|xlt }}</label><input class="form-control form-control-sm text-right" name="amount" value="{{ p.refundable|attr }}" inputmode="decimal"></div>
+                                <div class="col-md-3 mb-2"><label class="small mb-0">{{ 'Refund by'|xlt }}</label>
+                                    <select class="form-control form-control-sm" name="method_id">{% for mt in refundMethods %}<option value="{{ mt.id|attr }}">{{ mt.name|text }}</option>{% endfor %}</select></div>
+                                <div class="col-md-5 mb-2"><label class="small mb-0">{{ 'Reason'|xlt }}</label><input class="form-control form-control-sm" name="reason" maxlength="255" required></div>
+                                <div class="col-md-2 mb-2"><button class="btn btn-warning btn-sm">{{ 'Record refund'|xlt }}</button></div>
+                            </form>
+                            <p class="small text-muted mb-0">{{ 'Refunds come out of unapplied credit first, then the newest invoices. The card charge and earned points are reversed in proportion. Card refunds through Stripe arrive in the next update; for now refund on the card terminal and record it here.'|xlt }}</p>
+                        </td></tr>
+                    {% endif %}
+                    <tr class="collapse" id="void_{{ p.id|attr }}"><td colspan="11" class="bg-light">
+                        <form method="post" class="form-row align-items-end" data-confirm="{{ 'Void this entry? It stays in the ledger marked void.'|xla }}">
+                            {{ m.csrf(csrfField, csrfToken) }}<input type="hidden" name="action" value="void"><input type="hidden" name="payment_id" value="{{ p.id|attr }}">
+                            <div class="col-md-6 mb-2"><label class="small mb-0">{{ 'Why is it voided?'|xlt }}</label><input class="form-control form-control-sm" name="reason" maxlength="200" required></div>
+                            <div class="col-md-2 mb-2"><button class="btn btn-danger btn-sm">{{ 'Void entry'|xlt }}</button></div>
+                        </form>
+                    </td></tr>
+                {% endif %}
+            {% else %}
+                <tr><td colspan="11" class="text-muted">{{ 'No payments yet.'|xlt }}</td></tr>
+            {% endfor %}
+            </tbody>
+        </table>
+    </div>
+{% endblock %}
+{% block scripts %}
+<script>
+(function () {
+    document.querySelectorAll('form[data-confirm]').forEach(function (form) {
+        form.addEventListener('submit', function (e) { if (!window.confirm(form.getAttribute('data-confirm'))) { e.preventDefault(); } });
+    });
+    var method = document.getElementById('payMethod');
+    if (!method) { return; }
+    var amount = document.getElementById('payAmount');
+    var tip = document.getElementById('payTip');
+    var funding = document.getElementById('payFunding');
+    var note = document.getElementById('feeNote');
+    var cents = function (v) { var n = parseFloat(String(v || '').replace(/[$,\s]/g, '')); return isNaN(n) ? 0 : Math.round(n * 100); };
+    var money = function (c) { return '$' + (c / 100).toFixed(2); };
+    var kind = function () { var o = method.options[method.selectedIndex]; return o ? o.getAttribute('data-kind') : ''; };
+    var refresh = function () {
+        var k = kind();
+        document.querySelectorAll('[data-kind-only]').forEach(function (el) { el.classList.toggle('d-none', el.getAttribute('data-kind-only') !== k); });
+        var bp = parseInt(note.getAttribute('data-bp'), 10) || 0;
+        var base = cents(amount.value) + cents(tip.value);
+        var show = k === 'card' && funding.value === 'credit' && bp > 0 && base > 0;
+        note.classList.toggle('d-none', !show);
+        if (show) {
+            // Same rounding as the server: half away from zero, per payment.
+            var fee = Math.round(base * bp / 10000);
+            document.getElementById('feeAmt').textContent = money(fee);
+            document.getElementById('feeTotal').textContent = money(base + fee);
+        }
+    };
+    [method, amount, tip, funding].forEach(function (el) { el.addEventListener('input', refresh); el.addEventListener('change', refresh); });
+    refresh();
+    var auto = document.getElementById('autoAlloc');
+    if (auto) {
+        auto.addEventListener('click', function () {
+            var left = cents(amount.value);
+            document.querySelectorAll('.cpi-alloc').forEach(function (input) {
+                var due = cents(input.getAttribute('data-due'));
+                var take = Math.min(due, left);
+                input.value = take > 0 ? (take / 100).toFixed(2) : '';
+                left -= take;
+            });
+        });
+    }
+})();
+</script>
+{% endblock %}

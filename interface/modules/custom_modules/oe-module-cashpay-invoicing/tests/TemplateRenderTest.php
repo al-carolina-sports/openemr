@@ -292,6 +292,7 @@ final class TemplateRenderTest extends TestCase
             'canBill' => true, 'canUnlock' => true, 'editable' => $doc === null || $doc->editable(), 'defersDelivery' => $deferred,
             'lockHistory' => [['created_at' => '2026-10-27 09:00:00', 'action' => 'lock', 'username' => 'admin', 'reason' => null]],
             'today' => '2026-10-27', 'searchUrl' => '/p/search.php', 'printUrl' => '/p/print.php?kind=' . $kind . '&id=5', 'convertedInvoiceId' => null,
+            'isGiftCardInvoice' => $doc !== null && $doc->invoiceType === InvoiceType::GiftCard,
         ];
     }
 
@@ -342,5 +343,70 @@ final class TemplateRenderTest extends TestCase
         $this->assertStringContainsString('Balance due', $receipt);
         $this->assertStringContainsString('NC Sales Tax', $receipt);
         $this->assertStringContainsString('Line one<br', $receipt);
+    }
+
+    public function testPaymentsRewardsNotesPages(): void
+    {
+        $twig = self::twig();
+        $ledgerRow = [
+            'id' => 1, 'date' => '2026-10-27', 'type' => 'Payment', 'typeValue' => 'payment', 'method' => 'Card (other terminal)', 'amount' => '$150.00',
+            'gratuity' => '', 'cardFee' => '$4.50', 'funding' => 'credit', 'reference' => '', 'comments' => 'x', 'status' => 'posted',
+            'allocations' => [['invoice_id' => 5, 'amount' => '$100.00']], 'unapplied' => '$50.00', 'refundable' => '150.00', 'refundOf' => null,
+            'user' => 'admin', 'facility' => 'Raleigh',
+        ];
+        $html = $twig->render('@cashpay/patient/payments.html.twig', self::patientBase() + [
+            'patient' => self::patient(), 'navTab' => 'payments', 'errors' => [], 'submitted' => [],
+            'totals' => ['balance' => '$20.00', 'credit' => '$50.00', 'creditRaw' => '50.00', 'lifetime' => '$150.00', 'since' => '2026-10-01'],
+            'openInvoices' => [['id' => 5, 'date' => '2026-10-01', 'name' => 'Visit', 'total' => '$120.00', 'paid' => '$100.00', 'due' => '$20.00', 'dueRaw' => '20.00']],
+            'focusInvoice' => 5, 'ledger' => [$ledgerRow, ['id' => 2, 'type' => 'Refund', 'typeValue' => 'refund', 'status' => 'void', 'refundable' => '', 'refundOf' => 1] + $ledgerRow],
+            'methods' => [['id' => 3, 'name' => 'Cash', 'kind' => 'cash'], ['id' => 4, 'name' => 'Card', 'kind' => 'card']],
+            'refundMethods' => [['id' => 8, 'name' => 'Refund Cash', 'kind' => 'cash']], 'facilities' => [1 => 'Raleigh'], 'defaultFacility' => 1,
+            'today' => '2026-10-27', 'cardFee' => ['enabled' => true, 'bp' => 300, 'label' => 'Credit card service charge', 'pct' => '3.00'],
+            'rewards' => ['on' => true, 'points' => '75', 'value' => '$75.00'], 'canBill' => true, 'canRefund' => true,
+        ]);
+        $this->assertStringContainsString('name="alloc[5]"', $html);
+        $this->assertStringContainsString('Record refund', $html);
+        $this->assertStringContainsString('Apply credit', $html);
+        $this->assertStringContainsString('data-bp="300"', $html);
+
+        $html = $twig->render('@cashpay/patient/rewards.html.twig', self::patientBase() + [
+            'patient' => self::patient(), 'navTab' => 'rewards', 'errors' => [], 'programOn' => false, 'enrolled' => true, 'points' => '75',
+            'value' => '$75.00', 'rate' => '1.00', 'pointValue' => '$1.00', 'canAdmin' => true,
+            'ledger' => [['date' => '2026-10-27', 'description' => 'Earned', 'points' => '75', 'dollars' => '$75.00', 'source' => 'payment', 'reason' => '', 'user' => 'admin']],
+            'giftCards' => [['code' => 'ABCD-EFGH-JKLM', 'initial' => '$100.00', 'balance' => '$80.00', 'issued' => '2026-10-27', 'recipient' => 'Jane', 'purchaser' => 42]],
+        ]);
+        $this->assertStringContainsString('program is turned off', $html);
+        $this->assertStringContainsString('Remove from award points', $html);
+        $this->assertStringContainsString('ABCD-EFGH-JKLM', $html);
+
+        $html = $twig->render('@cashpay/patient/notes.html.twig', self::patientBase() + [
+            'patient' => self::patient(), 'navTab' => 'notes', 'canBill' => true,
+            'note' => ['html' => '<p>Paid half</p>', 'updatedAt' => '2026-10-27 10:00:00', 'updatedBy' => 'admin'],
+        ]);
+        $this->assertStringContainsString('&lt;p&gt;Paid half&lt;/p&gt;</textarea>', $html);
+    }
+
+    public function testFrontDeskPages(): void
+    {
+        $twig = self::twig();
+        $html = $twig->render('@cashpay/frontdesk/gift_cards.html.twig', self::base() + [
+            'code' => 'ABCD', 'searched' => true, 'errors' => [], 'liability' => '$785.00',
+            'card' => ['code' => 'ABCD-EFGH-JKLM', 'initial' => '$100.00', 'balance' => '$80.00', 'issued' => '2026-10-27', 'active' => true,
+                'purchaser' => 'Patty Test', 'recipientName' => 'Jane', 'recipientPid' => null, 'recipientPatient' => ''],
+            'history' => [['date' => '2026-10-27', 'action' => 'issue', 'amount' => '$100.00', 'invoice' => 9, 'user' => 'admin']],
+            'outstanding' => [['code' => 'ABCD-EFGH-JKLM', 'balance' => '$80.00', 'initial' => '$100.00', 'issued' => '2026-10-27', 'recipient' => 'Jane', 'purchaser' => 'Patty']],
+        ]);
+        $this->assertStringContainsString('$785.00', $html);
+        $this->assertStringContainsString('Save recipient', $html);
+
+        foreach ([[false, false], [true, false], [true, true]] as [$open, $closed]) {
+            $html = $twig->render('@cashpay/frontdesk/cash_drawer.html.twig', self::base() + [
+                'facilities' => [1 => 'Raleigh'], 'facilityId' => 1, 'date' => '2026-10-27', 'errors' => [], 'canReopen' => true,
+                'day' => ['open' => $open, 'closed' => $closed, 'opening' => '$200.00', 'cashIn' => '$235.00', 'cashOut' => '$25.00', 'adjustment' => '$0.00',
+                    'expected' => '$410.00', 'closing' => '$400.00', 'variance' => '-$10.00', 'varianceCents' => -1000, 'openedBy' => 'a', 'closedBy' => 'b',
+                    'openedAt' => 'x', 'closedAt' => 'y', 'entries' => [['time' => '10:00', 'patient' => 'Patty', 'type' => 'payment', 'amount' => '$160.00', 'status' => 'posted', 'user' => 'a']]],
+            ]);
+            $this->assertStringContainsString(!$open ? 'Open drawer' : ($closed ? 'Reopen this day' : 'Close drawer'), $html);
+        }
     }
 }
