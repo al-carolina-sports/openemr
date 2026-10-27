@@ -1,5 +1,5 @@
-{% extends 'admin/base.html.twig' %}
-{% import 'admin/macros.html.twig' as m %}
+{% extends '@cashpay/admin/base.html.twig' %}
+{% import '@cashpay/admin/macros.html.twig' as m %}
 {% block title %}{{ entity.title|xlt }}{% endblock %}
 {% block crumbs %}<li class="breadcrumb-item active">{{ entity.title|xlt }}</li>{% endblock %}
 {% block content %}

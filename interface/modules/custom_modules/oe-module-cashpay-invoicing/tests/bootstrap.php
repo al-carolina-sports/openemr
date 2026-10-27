@@ -29,11 +29,3 @@ spl_autoload_register(static function (string $class): void {
         }
     }
 });
-
-// Translation helpers used by a few classes; identity functions are enough here.
-if (!function_exists('xlt')) {
-    function xlt(string $text): string
-    {
-        return htmlspecialchars($text, ENT_QUOTES);
-    }
-}

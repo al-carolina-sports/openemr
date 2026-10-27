@@ -1,5 +1,5 @@
-{% extends 'admin/base.html.twig' %}
-{% import 'admin/macros.html.twig' as m %}
+{% extends '@cashpay/admin/base.html.twig' %}
+{% import '@cashpay/admin/macros.html.twig' as m %}
 {% block title %}{{ entity.singular|xlt }}{% endblock %}
 {% block crumbs %}
     <li class="breadcrumb-item"><a href="{{ adminUrl|attr }}list.php?entity={{ entity.key|attr_url }}">{{ entity.title|xlt }}</a></li>
@@ -34,7 +34,7 @@
             <div class="card-header"><strong>{{ panel.title|xlt }}</strong></div>
             <div class="card-body">
                 {{ m.errors(panel.errors) }}
-                {% include 'admin/panels/' ~ panel.key ~ '.html.twig' with {'p': panel.data, 'key': panel.key} %}
+                {% include '@cashpay/admin/panels/' ~ panel.key ~ '.html.twig' with {'p': panel.data, 'key': panel.key} %}
             </div>
         </section>
     {% endfor %}

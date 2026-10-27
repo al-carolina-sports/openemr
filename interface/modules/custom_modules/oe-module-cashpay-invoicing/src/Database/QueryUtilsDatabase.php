@@ -21,9 +21,6 @@ final class QueryUtilsDatabase implements Database
     {
         $rows = [];
         foreach (QueryUtils::fetchRecords($sql, $binds) as $row) {
-            if (!is_array($row)) {
-                continue;
-            }
             $clean = [];
             foreach ($row as $key => $value) {
                 if (is_string($key) && (is_scalar($value) || $value === null)) {
@@ -47,23 +44,11 @@ final class QueryUtilsDatabase implements Database
 
     public function insert(string $sql, array $binds = []): int
     {
-        $id = QueryUtils::sqlInsert($sql, $binds);
-        if (!is_numeric($id)) {
-            throw new \RuntimeException('Insert did not return an id');
-        }
-        return (int) $id;
+        return QueryUtils::sqlInsert($sql, $binds);
     }
 
     public function transaction(callable $work): mixed
     {
-        QueryUtils::startTransaction();
-        try {
-            $result = $work();
-            QueryUtils::commitTransaction();
-            return $result;
-        } catch (\Throwable $e) {
-            QueryUtils::rollbackTransaction();
-            throw $e;
-        }
+        return QueryUtils::inTransaction($work);
     }
 }

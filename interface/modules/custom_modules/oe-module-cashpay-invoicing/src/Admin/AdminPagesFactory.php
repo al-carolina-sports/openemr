@@ -17,7 +17,6 @@ namespace OpenEMR\Modules\CashpayInvoicing\Admin;
 use OpenEMR\BC\ServiceContainer;
 use OpenEMR\Common\Http\CurrentRequest;
 use OpenEMR\Common\Session\SessionWrapperFactory;
-use OpenEMR\Common\Twig\TwigContainer;
 use OpenEMR\Core\OEGlobalsBag;
 use OpenEMR\Modules\CashpayInvoicing\Access;
 use OpenEMR\Modules\CashpayInvoicing\Admin\Panels\PanelFactory;
@@ -26,6 +25,7 @@ use OpenEMR\Modules\CashpayInvoicing\Database\QueryUtilsDatabase;
 use OpenEMR\Modules\CashpayInvoicing\Import\CsvCatalog;
 use OpenEMR\Modules\CashpayInvoicing\Inventory\StockService;
 use OpenEMR\Modules\CashpayInvoicing\Settings\SettingsRepository;
+use Twig\Loader\FilesystemLoader;
 
 final class AdminPagesFactory
 {
@@ -37,7 +37,14 @@ final class AdminPagesFactory
         $userId = $session->get('authUserID');
         $db = new QueryUtilsDatabase();
         $lookups = new LookupRepository($db);
-        $twig = (new TwigContainer($moduleDir . '/templates', $globals->getKernel()))->getTwig();
+        $twig = ServiceContainer::getTwig();
+        $loader = $twig->getLoader();
+        if (!$loader instanceof FilesystemLoader) {
+            throw new \LogicException('Twig loader cannot take the module templates');
+        }
+        if (!in_array('cashpay', $loader->getNamespaces(), true)) {
+            $loader->addPath($moduleDir . '/templates', 'cashpay');
+        }
         return new AdminPages(
             request: CurrentRequest::get(),
             session: $session,

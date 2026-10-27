@@ -14,9 +14,14 @@ declare(strict_types=1);
 namespace OpenEMR\Modules\CashpayInvoicing\Tests;
 
 use OpenEMR\Modules\CashpayInvoicing\Admin\ValidationException;
+use OpenEMR\Modules\CashpayInvoicing\Catalog\PackageLine;
+use OpenEMR\Modules\CashpayInvoicing\Catalog\PackageTotals;
 use OpenEMR\Modules\CashpayInvoicing\Catalog\PromoScope;
+use OpenEMR\Modules\CashpayInvoicing\Decimal;
 use OpenEMR\Modules\CashpayInvoicing\Import\CsvCatalog;
 use OpenEMR\Modules\CashpayInvoicing\Import\PatientNowImporter;
+use OpenEMR\Modules\CashpayInvoicing\Import\Rec;
+use OpenEMR\Modules\CashpayInvoicing\Money;
 use OpenEMR\Modules\CashpayInvoicing\Tests\Support\FakeDatabase;
 use PHPUnit\Framework\TestCase;
 
@@ -62,12 +67,16 @@ final class ImportTest extends TestCase
         $data = json_decode((string) file_get_contents(self::CATALOG), true, 16, JSON_THROW_ON_ERROR);
         $this->assertIsArray($data);
         $byName = [];
-        foreach ($data['packages'] as $package) {
-            $total = 0;
-            foreach ($package['items'] as $item) {
-                $total += (int) round((float) $item['qty'] * (int) round((float) $item['unit_price'] * 100)) - (int) round((float) $item['discount'] * 100);
+        foreach (Rec::records($data, 'packages') as $package) {
+            $lines = [];
+            foreach (Rec::records($package, 'items') as $item) {
+                $lines[] = new PackageLine(
+                    Decimal::parse(Rec::str($item, 'qty'), 3),
+                    Money::parse(Rec::str($item, 'unit_price')),
+                    Money::parse(Rec::str($item, 'discount')),
+                );
             }
-            $byName[$package['name']] = $total;
+            $byName[Rec::str($package, 'name')] = PackageTotals::of($lines)->net->cents;
         }
         $this->assertSame(240000, $byName['Advanced Sculpt']);
         $this->assertSame(160000, $byName['Full Back Laser Pkg 4 get 2 free']);

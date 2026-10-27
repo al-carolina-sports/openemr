@@ -20,7 +20,7 @@ use Symfony\Component\HttpFoundation\InputBag;
 final readonly class FormInput
 {
     /**
-     * @param InputBag<string> $bag
+     * @param InputBag<bool|float|int|string|null> $bag
      */
     public function __construct(private InputBag $bag)
     {

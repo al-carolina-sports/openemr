@@ -30,7 +30,9 @@ final class TemplateRenderTest extends TestCase
 {
     private static function twig(): Environment
     {
-        $twig = new Environment(new FilesystemLoader(__DIR__ . '/../templates'), ['autoescape' => false, 'strict_variables' => true]);
+        $loader = new FilesystemLoader();
+        $loader->addPath(__DIR__ . '/../templates', 'cashpay');
+        $twig = new Environment($loader, ['autoescape' => false, 'strict_variables' => true]);
         $esc = static fn (mixed $v): string => htmlspecialchars(is_scalar($v) ? (string) $v : '', ENT_QUOTES);
         foreach (['xlt', 'xla', 'text', 'attr'] as $name) {
             $twig->addFilter(new TwigFilter($name, $esc));
@@ -53,7 +55,7 @@ final class TemplateRenderTest extends TestCase
 
     public function testIndex(): void
     {
-        $html = self::twig()->render('admin/index.html.twig', self::base() + [
+        $html = self::twig()->render('@cashpay/admin/index.html.twig', self::base() + [
             'groups' => ['Catalog' => [['entity' => EntityRegistry::get('procedure'), 'count' => 309]]],
             'canSettings' => true,
         ]);
@@ -71,7 +73,7 @@ final class TemplateRenderTest extends TestCase
             $cells[$field->name] = 'v';
             $values[$field->name] = $field->default;
         }
-        $html = self::twig()->render('admin/list.html.twig', self::base() + [
+        $html = self::twig()->render('@cashpay/admin/list.html.twig', self::base() + [
             'entity' => $entity,
             'fields' => $entity->listFields(),
             'rows' => [['id' => 3, 'active' => false, 'cells' => $cells]],
@@ -84,7 +86,7 @@ final class TemplateRenderTest extends TestCase
         $this->assertStringContainsString('edit.php?entity=' . $key . '&amp;id=3', $html);
         $this->assertStringNotContainsString('<b>', $html, 'search text is escaped');
 
-        $html = self::twig()->render('admin/edit.html.twig', self::base() + [
+        $html = self::twig()->render('@cashpay/admin/edit.html.twig', self::base() + [
             'entity' => $entity,
             'id' => 0,
             'record' => null,
@@ -153,7 +155,7 @@ final class TemplateRenderTest extends TestCase
         foreach ($entity->fields as $field) {
             $values[$field->name] = '';
         }
-        $html = self::twig()->render('admin/edit.html.twig', self::base() + [
+        $html = self::twig()->render('@cashpay/admin/edit.html.twig', self::base() + [
             'entity' => $entity, 'id' => 5, 'record' => ['source' => 'patientnow_import'], 'values' => $values,
             'errors' => [], 'options' => [], 'panels' => $panels, 'openPanel' => 'product_stock',
         ]);
@@ -167,7 +169,7 @@ final class TemplateRenderTest extends TestCase
 
     public function testSettings(): void
     {
-        $html = self::twig()->render('admin/settings.html.twig', self::base() + [
+        $html = self::twig()->render('@cashpay/admin/settings.html.twig', self::base() + [
             'settings' => new Settings(cardFeeEnabled: true, cardFeeBasisPoints: 275),
             'taxes' => [1 => new TaxType(1, 'NC Sales Tax', 67500, true), 2 => new TaxType(2, 'Tax 2', 0, false)],
             'errors' => [],
@@ -183,7 +185,7 @@ final class TemplateRenderTest extends TestCase
 
     public function testPriceListAndImport(): void
     {
-        $html = self::twig()->render('admin/price_list.html.twig', self::base() + [
+        $html = self::twig()->render('@cashpay/admin/price_list.html.twig', self::base() + [
             'procedures' => ['BHRT' => [['name' => 'Consult', 'cpt_code' => '99203', 'price_display' => '$300.00', 'tax1' => '0', 'tax2' => '0']]],
             'products' => ['Skin' => [['name' => 'Serum', 'style' => '1 oz', 'manufacturer' => 'X', 'price_display' => '$92.00', 'tax1' => '1', 'tax2' => '0']]],
             'packages' => [['name' => 'Laser 6', 'type' => 'Prepaid', 'total' => '$900.00']],
@@ -198,7 +200,7 @@ final class TemplateRenderTest extends TestCase
         $report->count('procedures', 309);
         $report->warn('Office "Wilson" was not matched');
         foreach ([false, true] as $done) {
-            $html = self::twig()->render('admin/import.html.twig', self::base() + [
+            $html = self::twig()->render('@cashpay/admin/import.html.twig', self::base() + [
                 'alreadyImported' => $done,
                 'summary' => ['procedures' => 309, 'products' => 504, 'packages' => 37, 'promos' => 10, 'memberships' => 4],
                 'review' => ['Check tax flags'],

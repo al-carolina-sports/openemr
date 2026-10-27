@@ -56,7 +56,9 @@ class Bootstrap
                 $this->item('cpiSetup7', 'Import Catalog', '/public/admin/import.php', $setup),
                 $this->item('cpiSetup8', 'Cash-Pay Settings', '/public/admin/settings.php', $settings),
             ];
-            $menuItem->children[] = $submenu;
+            $children = is_array($menuItem->children ?? null) ? $menuItem->children : [];
+            $children[] = $submenu;
+            $menuItem->children = $children;
             break;
         }
         $event->setMenu($menu);
@@ -64,6 +66,7 @@ class Bootstrap
     }
 
     /**
+     * @param literal-string $label
      * @param array{string, string} $aclReq
      */
     private function item(string $menuId, string $label, string $path, array $aclReq): stdClass

@@ -152,9 +152,9 @@ final class CsvCatalog
                 continue;
             }
             $lookupNames = [];
-            foreach ($lookups as $column => [$header]) {
+            foreach ($lookups as $column => [$header, $table]) {
                 if (array_key_exists($header, $row)) {
-                    $lookupNames[$column] = trim($row[$header]);
+                    $lookupNames[$column] = [$table, trim($row[$header])];
                 }
             }
             $planned[] = [$id === '' ? null : (int) $id, $values, $lookupNames];
@@ -170,10 +170,10 @@ final class CsvCatalog
         if ($dryRun) {
             return $report;
         }
-        $this->db->transaction(function () use ($entity, $lookups, $planned): void {
+        $this->db->transaction(function () use ($entity, $planned): void {
             foreach ($planned as [$id, $values, $lookupNames]) {
-                foreach ($lookupNames as $column => $name) {
-                    $values[$column] = $name === '' ? null : $this->lookupId($lookups[$column][1], $name);
+                foreach ($lookupNames as $column => [$table, $name]) {
+                    $values[$column] = $name === '' ? null : $this->lookupId($table, $name);
                 }
                 $this->write($entity, $id, $values);
             }

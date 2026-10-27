@@ -1,5 +1,5 @@
-{% extends 'admin/base.html.twig' %}
-{% import 'admin/macros.html.twig' as m %}
+{% extends '@cashpay/admin/base.html.twig' %}
+{% import '@cashpay/admin/macros.html.twig' as m %}
 {% block title %}{{ 'Cash-Pay Settings'|xlt }}{% endblock %}
 {% block crumbs %}<li class="breadcrumb-item active">{{ 'Settings'|xlt }}</li>{% endblock %}
 {% macro val(submitted, key, current) %}{{ (submitted[key] is defined ? submitted[key] : current)|attr }}{% endmacro %}

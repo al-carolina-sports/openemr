@@ -17,6 +17,7 @@
  * @license   https://github.com/openemr/openemr/blob/master/LICENSE GNU General Public License 3
  */
 
+use OpenEMR\BC\ServiceContainer;
 use OpenEMR\Core\AbstractModuleActionListener;
 use OpenEMR\Modules\CashpayInvoicing\AclRegistrar;
 
@@ -52,8 +53,8 @@ class ModuleManagerListener extends AbstractModuleActionListener
         require_once __DIR__ . '/src/AclRegistrar.php';
         try {
             (new AclRegistrar())->register();
-        } catch (\Throwable $e) {
-            error_log('oe-module-cashpay-invoicing: ' . $e::class . ' while registering access controls');
+        } catch (\RuntimeException $e) {
+            ServiceContainer::getLogger()->error('Cash-Pay access controls could not be registered', ['exception' => $e]);
             return 'Cash-Pay access controls could not be registered; check the PHP error log.';
         }
         return $currentActionStatus;

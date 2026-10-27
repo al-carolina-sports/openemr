@@ -75,7 +75,7 @@ final readonly class AdminPages
                 'count' => is_numeric($row['n'] ?? null) ? (int) $row['n'] : 0,
             ];
         }
-        return $this->render('admin/index.html.twig', [
+        return $this->render('@cashpay/admin/index.html.twig', [
             'groups' => $groups,
             'canSettings' => $this->access->can(AclObject::Settings),
         ]);
@@ -120,7 +120,7 @@ final readonly class AdminPages
                 $filterOptions[$field->name] = $lookupNames[$field->name];
             }
         }
-        return $this->render('admin/list.html.twig', [
+        return $this->render('@cashpay/admin/list.html.twig', [
             'entity' => $entity,
             'fields' => $entity->listFields(),
             'rows' => array_map(fn (array $row): array => $this->displayRow($entity, $row, $lookupNames), $result['rows']),
@@ -210,7 +210,7 @@ final readonly class AdminPages
                 ];
             }
         }
-        return $this->render('admin/edit.html.twig', [
+        return $this->render('@cashpay/admin/edit.html.twig', [
             'entity' => $entity,
             'id' => $id,
             'record' => $record,
@@ -252,7 +252,7 @@ final readonly class AdminPages
             }
         }
         $example = Money::parse('100.00');
-        return $this->render('admin/settings.html.twig', [
+        return $this->render('@cashpay/admin/settings.html.twig', [
             'settings' => $current,
             'taxes' => $taxes,
             'errors' => $errors,
@@ -305,7 +305,7 @@ final readonly class AdminPages
             'SELECT k.`id`, k.`name`, k.`package_type`, i.`qty`, i.`unit_price`, i.`discount` FROM `cpi_package` k'
             . ' LEFT JOIN `cpi_package_item` i ON i.`package_id` = k.`id` WHERE k.`active` = 1 ORDER BY k.`name`, i.`sort_order`'
         );
-        return $this->render('admin/price_list.html.twig', [
+        return $this->render('@cashpay/admin/price_list.html.twig', [
             'procedures' => $this->groupBy($procedures, 'category'),
             'products' => $this->groupBy($products, 'category'),
             'packages' => $this->packageTotals($packages),
@@ -344,7 +344,7 @@ final readonly class AdminPages
                     $this->logger->info('PatientNow catalog imported', ['counts' => $report->counts, 'user_id' => $this->userId]);
                 } catch (\DomainException) {
                     $errors['import'] = 'The PatientNow catalog has already been imported.';
-                } catch (\Throwable $e) {
+                } catch (\RuntimeException | \InvalidArgumentException | \JsonException $e) {
                     $this->logger->error('PatientNow catalog import failed', ['exception' => $e]);
                     $errors['import'] = 'The import failed and nothing was changed. Details are in the PHP error log.';
                 }
@@ -362,14 +362,14 @@ final readonly class AdminPages
                         $csvReport->warn($form->bool('apply') ? 'Changes saved.' : 'Checked only. Nothing was changed; tick "Save changes" to load the file.');
                     } catch (ValidationException $e) {
                         $csvErrors = $e->errors;
-                    } catch (\Throwable $e) {
+                    } catch (\RuntimeException | \InvalidArgumentException | \JsonException $e) {
                         $this->logger->error('Cash-pay CSV import failed', ['entity' => $entityKey, 'exception' => $e]);
                         $csvErrors['file'] = 'The file could not be loaded and nothing was changed. Details are in the PHP error log.';
                     }
                 }
             }
         }
-        return $this->render('admin/import.html.twig', [
+        return $this->render('@cashpay/admin/import.html.twig', [
             'alreadyImported' => $importer->alreadyImported(),
             'summary' => $importer->summary(),
             'review' => $importer->reviewNotes(),
