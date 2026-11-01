@@ -1,0 +1,20 @@
+{
+    "name": "carolina-sports/oe-module-ai-assistant",
+    "description": "Staff-facing AI scheduling assistant for OpenEMR, on Amazon Bedrock under the practice's AWS BAA",
+    "type": "openemr-module",
+    "license": "GPL-3.0-or-later",
+    "require": {
+        "php": ">=8.3"
+    },
+    "autoload": {
+        "psr-4": {
+            "OpenEMR\\Modules\\AiAssistant\\": "src/"
+        }
+    },
+    "extra": {
+        "openemr": {
+            "type": "custom-module",
+            "directory": "oe-module-ai-assistant"
+        }
+    }
+}

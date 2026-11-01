@@ -1,0 +1,118 @@
+/*
+ * AI Assistant chat panel. Uses the theme's Bootstrap colours where they
+ * exist (compact themes included) and plain fallbacks otherwise.
+ */
+.aia-panel {
+    position: fixed;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    z-index: 1060;
+    display: flex;
+    flex-direction: column;
+    width: min(400px, 100vw);
+    background: var(--white, #fff);
+    color: var(--dark, #212529);
+    border-left: 1px solid var(--gray-300, #dee2e6);
+    box-shadow: -2px 0 8px rgba(0, 0, 0, 0.12);
+    font-size: 0.9rem;
+}
+
+.aia-panel[hidden] {
+    display: none;
+}
+
+.aia-header {
+    display: flex;
+    align-items: center;
+    gap: 0.25rem;
+    padding: 0.5rem 0.75rem;
+    border-bottom: 1px solid var(--gray-300, #dee2e6);
+}
+
+.aia-title {
+    flex: 1;
+}
+
+.aia-close {
+    font-size: 1.25rem;
+    line-height: 1;
+    text-decoration: none;
+}
+
+.aia-notice {
+    padding: 0.25rem 0.75rem;
+    font-size: 0.75rem;
+    color: var(--gray-600, #6c757d);
+    background: var(--light, #f8f9fa);
+}
+
+.aia-notice:empty {
+    display: none;
+}
+
+.aia-log {
+    flex: 1;
+    overflow-y: auto;
+    padding: 0.75rem;
+}
+
+.aia-msg {
+    max-width: 90%;
+    margin-bottom: 0.5rem;
+    padding: 0.4rem 0.6rem;
+    border-radius: 0.5rem;
+}
+
+.aia-text {
+    white-space: pre-wrap;
+    overflow-wrap: anywhere;
+}
+
+.aia-user {
+    margin-left: auto;
+    background: var(--primary, #007bff);
+    color: var(--white, #fff);
+}
+
+.aia-assistant {
+    background: var(--light, #f1f3f5);
+    border: 1px solid var(--gray-200, #e9ecef);
+}
+
+.aia-pending {
+    color: var(--gray-600, #6c757d);
+    font-style: italic;
+}
+
+.aia-error {
+    background: #fdecea;
+    border: 1px solid #f5c2c7;
+    color: #842029;
+}
+
+.aia-tools {
+    margin-top: 0.25rem;
+    font-size: 0.7rem;
+    color: var(--gray-600, #6c757d);
+}
+
+.aia-form {
+    display: flex;
+    gap: 0.5rem;
+    align-items: flex-end;
+    padding: 0.5rem 0.75rem;
+    border-top: 1px solid var(--gray-300, #dee2e6);
+}
+
+.aia-input {
+    flex: 1;
+    resize: none;
+    font-size: 0.9rem;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+    .aia-panel {
+        transition: transform 0.15s ease-out;
+    }
+}
