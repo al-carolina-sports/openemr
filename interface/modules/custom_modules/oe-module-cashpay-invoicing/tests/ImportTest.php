@@ -1,7 +1,7 @@
 <?php
 
 /**
- * The bundled PatientNow catalog and the CSV round trip.
+ * The bundled ZeroDoc catalog and the CSV round trip.
  *
  * @package   OpenEMR
  * @link      https://www.open-emr.org
@@ -19,7 +19,7 @@ use OpenEMR\Modules\CashpayInvoicing\Catalog\PackageTotals;
 use OpenEMR\Modules\CashpayInvoicing\Catalog\PromoScope;
 use OpenEMR\Modules\CashpayInvoicing\Decimal;
 use OpenEMR\Modules\CashpayInvoicing\Import\CsvCatalog;
-use OpenEMR\Modules\CashpayInvoicing\Import\PatientNowImporter;
+use OpenEMR\Modules\CashpayInvoicing\Import\ZerodocCatalogImporter;
 use OpenEMR\Modules\CashpayInvoicing\Import\Rec;
 use OpenEMR\Modules\CashpayInvoicing\Money;
 use OpenEMR\Modules\CashpayInvoicing\Tests\Support\FakeDatabase;
@@ -27,7 +27,7 @@ use PHPUnit\Framework\TestCase;
 
 final class ImportTest extends TestCase
 {
-    private const CATALOG = __DIR__ . '/../data/patientnow_catalog.json';
+    private const CATALOG = __DIR__ . '/../data/zerodoc_catalog.json';
 
     private static function emptyDb(): FakeDatabase
     {
@@ -37,7 +37,7 @@ final class ImportTest extends TestCase
     public function testCatalogFileLoadsEverything(): void
     {
         $db = self::emptyDb();
-        $importer = PatientNowImporter::fromFile($db, self::CATALOG);
+        $importer = ZerodocCatalogImporter::fromFile($db, self::CATALOG);
         $this->assertFalse($importer->alreadyImported());
         $this->assertSame(['procedures' => 309, 'products' => 504, 'packages' => 37, 'promos' => 10, 'memberships' => 4], $importer->summary());
 
@@ -53,7 +53,7 @@ final class ImportTest extends TestCase
         $this->assertSame([], array_filter($report->warnings, static fn (string $w): bool => str_contains($w, 'not found')));
         $this->assertStringContainsString('Wilson', implode(' ', $report->warnings));
         foreach ($db->inserts('cpi_procedure') as [, $binds]) {
-            $this->assertSame(PatientNowImporter::SOURCE, $binds[11]);
+            $this->assertSame(ZerodocCatalogImporter::SOURCE, $binds[11]);
         }
         foreach ($db->inserts('cpi_stock') as [, $binds]) {
             $this->assertContains($binds[1], [1, 2], 'stock rows only for mapped offices');
@@ -62,7 +62,7 @@ final class ImportTest extends TestCase
         $this->assertCount(7 + 1 + 1, $db->inserts('cpi_membership_plan_promo'));
     }
 
-    public function testImportedPackagePricesMatchPatientNow(): void
+    public function testImportedPackagePricesMatchLegacyCatalog(): void
     {
         $data = json_decode((string) file_get_contents(self::CATALOG), true, 16, JSON_THROW_ON_ERROR);
         $this->assertIsArray($data);
@@ -87,7 +87,7 @@ final class ImportTest extends TestCase
     public function testPromoScopesAreValid(): void
     {
         $db = self::emptyDb();
-        PatientNowImporter::fromFile($db, self::CATALOG)->run(['Raleigh' => 1, 'Rocky Mount' => 2, 'Wilson' => 3]);
+        ZerodocCatalogImporter::fromFile($db, self::CATALOG)->run(['Raleigh' => 1, 'Rocky Mount' => 2, 'Wilson' => 3]);
         foreach ($db->inserts('cpi_promo_discount') as [, $binds]) {
             $scope = PromoScope::fromJson(is_string($binds[7]) ? $binds[7] : null);
             $this->assertSame($binds[7], $scope->toJson());
@@ -97,7 +97,7 @@ final class ImportTest extends TestCase
     public function testRefusesSecondImport(): void
     {
         $db = new FakeDatabase(static fn (): array => [['n' => '309']]);
-        $importer = PatientNowImporter::fromFile($db, self::CATALOG);
+        $importer = ZerodocCatalogImporter::fromFile($db, self::CATALOG);
         $this->assertTrue($importer->alreadyImported());
         $this->expectException(\DomainException::class);
         $importer->run([]);
@@ -105,7 +105,7 @@ final class ImportTest extends TestCase
 
     public function testGuessesOfficesByName(): void
     {
-        $guess = PatientNowImporter::guessOffices([4 => 'Raleigh Office', 7 => 'RockyMount Clinic', 9 => 'Wilson A', 10 => 'Wilson B']);
+        $guess = ZerodocCatalogImporter::guessOffices([4 => 'Raleigh Office', 7 => 'RockyMount Clinic', 9 => 'Wilson A', 10 => 'Wilson B']);
         $this->assertSame(['Raleigh' => 4, 'Rocky Mount' => 7, 'Wilson' => null], $guess);
     }
 

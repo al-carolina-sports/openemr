@@ -23,7 +23,7 @@ use OpenEMR\Modules\CashpayInvoicing\Catalog\PackageTotals;
 use OpenEMR\Modules\CashpayInvoicing\Database\Database;
 use OpenEMR\Modules\CashpayInvoicing\Decimal;
 use OpenEMR\Modules\CashpayInvoicing\Import\CsvCatalog;
-use OpenEMR\Modules\CashpayInvoicing\Import\PatientNowImporter;
+use OpenEMR\Modules\CashpayInvoicing\Import\ZerodocCatalogImporter;
 use OpenEMR\Modules\CashpayInvoicing\Money;
 use OpenEMR\Modules\CashpayInvoicing\Settings\CardFunding;
 use OpenEMR\Modules\CashpayInvoicing\Settings\Settings;
@@ -322,7 +322,7 @@ final readonly class AdminPages
         if (($denied = $this->deny(AclObject::Setup)) !== null) {
             return $denied;
         }
-        $importer = PatientNowImporter::fromFile($this->db, $this->catalogFile);
+        $importer = ZerodocCatalogImporter::fromFile($this->db, $this->catalogFile);
         $facilities = $this->lookups->options(LookupSource::Facility);
         $report = null;
         $csvReport = null;
@@ -333,19 +333,19 @@ final readonly class AdminPages
                 return $bad;
             }
             $form = new FormInput($this->request->request);
-            if ($form->string('action') === 'patientnow') {
+            if ($form->string('action') === 'zerodoc') {
                 $map = [];
-                foreach (PatientNowImporter::OFFICES as $index => $office) {
+                foreach (ZerodocCatalogImporter::OFFICES as $index => $office) {
                     $facilityId = $form->optionalId('office_' . $index);
                     $map[$office] = $facilityId !== null && isset($facilities[$facilityId]) ? $facilityId : null;
                 }
                 try {
                     $report = $importer->run($map);
-                    $this->logger->info('PatientNow catalog imported', ['counts' => $report->counts, 'user_id' => $this->userId]);
+                    $this->logger->info('ZeroDoc catalog imported', ['counts' => $report->counts, 'user_id' => $this->userId]);
                 } catch (\DomainException) {
-                    $errors['import'] = 'The PatientNow catalog has already been imported.';
+                    $errors['import'] = 'The ZeroDoc catalog has already been imported.';
                 } catch (\RuntimeException | \InvalidArgumentException | \JsonException $e) {
-                    $this->logger->error('PatientNow catalog import failed', ['exception' => $e]);
+                    $this->logger->error('ZeroDoc catalog import failed', ['exception' => $e]);
                     $errors['import'] = 'The import failed and nothing was changed. Details are in the PHP error log.';
                 }
             } elseif ($form->string('action') === 'csv') {
@@ -373,8 +373,8 @@ final readonly class AdminPages
             'alreadyImported' => $importer->alreadyImported(),
             'summary' => $importer->summary(),
             'review' => $importer->reviewNotes(),
-            'offices' => PatientNowImporter::OFFICES,
-            'officeGuess' => PatientNowImporter::guessOffices($facilities),
+            'offices' => ZerodocCatalogImporter::OFFICES,
+            'officeGuess' => ZerodocCatalogImporter::guessOffices($facilities),
             'facilities' => $facilities,
             'report' => $report,
             'errors' => $errors,

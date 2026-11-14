@@ -1,7 +1,7 @@
 # oe-module-cashpay-invoicing
 
 Cash-pay quoting, invoicing, packages, memberships, rewards, gift cards, inventory and
-provider/seller commissions for OpenEMR 8.5, modeled on PatientNow and built for
+provider/seller commissions for OpenEMR 8.5, modeled on the practice's previous cash-pay system and built for
 Carolina Sports and Spine / BioFunctional Med / True Radiance MediSpa.
 
 Everything lives in this module. No OpenEMR core file is edited; the module hooks in
@@ -30,7 +30,7 @@ Phase 1 adds **Admin > Cash-Pay Setup**:
 - Lists: categories, manufacturers, vendors, discount reasons, stock reasons, payment methods.
 - Settings: Tax 1 and Tax 2, the credit card service charge (credit cards only, 0 to 3%), award points, quote and receipt text.
 - Price List (printable) with CSV export, and CSV import for bulk edits of procedures and products.
-- One-time import of the PatientNow catalog (`data/patientnow_catalog.json`).
+- One-time import of the ZeroDoc catalog (`data/zerodoc_catalog.json`).
 
 Phase 2 part 1 adds a **Cash-Pay** menu to the patient chart with **Invoices** and **Quotes**:
 
@@ -92,7 +92,7 @@ Install and test steps are in [TESTING.md](TESTING.md).
 - Uninstalling (unregistering) the module does **not** drop its tables, because they will hold invoices,
   payments and commission history. `cleanup.sql` removes them by hand if that is ever wanted.
 - Records are deactivated, not deleted, so old invoices keep their items.
-- The PatientNow import runs once, in one transaction, and refuses to run again.
+- The catalog import runs once, in one transaction, and refuses to run again.
 
 ## Decisions baked in
 
@@ -100,7 +100,7 @@ Install and test steps are in [TESTING.md](TESTING.md).
 | --- | --- |
 | Taxes | Tax 1 and Tax 2 are two true taxes, set by admin, applied by item flag. |
 | Card service charge | Separate setting (1% / 2% / 3%), credit cards only - never debit or prepaid. Own receipt line and report. |
-| Card processor | Stripe (Checkout / Payment Links, Terminal readers, saved cards, refunds, webhooks). Saved cards are not migrated from PatientNow - patients re-enter them. |
+| Card processor | Stripe (Checkout / Payment Links, Terminal readers, saved cards, refunds, webhooks). Saved cards are not migrated from the previous system - patients re-enter them. |
 | Commissions | Cash-pay only. Seller credited at sale (invoice date), provider at delivery (received date). Category scoping, tie-break, overlap warning, role templates, rule preview, audit log. Rates set by admin later. |
 | Rewards | Admin turns the program on, enrolls patients, sets points per dollar paid and redemption value. |
 | Quotes | No e-signature. Emailed "for information only"; printed for a hand signature; signed scan can be uploaded. |
@@ -149,7 +149,7 @@ oe-module-cashpay-invoicing/
     (default tax types, discount reasons, payment methods and stock reasons are #IfNotRow blocks at the end of table.sql)
 
   data/
-    patientnow_catalog.json     Procedures, products, packages, memberships, promos captured from PatientNow
+    zerodoc_catalog.json     Procedures, products, packages, memberships, promos captured from the previous system
 
   tests/                        Isolated PHPUnit tests (no database): pricing, tax, card fee,
                                 prepaid/unearned income, points, commission matching and tie-break
@@ -158,9 +158,9 @@ oe-module-cashpay-invoicing/
 ## Build phases (each one stops for testing on the test system)
 
 1. **Catalog admin** - procedures, products, inventory, packages, memberships, discounts,
-   payment methods, taxes, settings, and import of the PatientNow catalog.
+   payment methods, taxes, settings, and import of the ZeroDoc catalog.
 2. **Quotes, invoices, payments** - patient tabs, pricing and taxes, prepaid packages,
    memberships, Stripe payments and card fee, rewards, gift cards, financial notes, cash drawer.
-3. **Commissions** - rule editor with the improvements over PatientNow, engine, commission runs.
+3. **Commissions** - rule editor with the improvements over the previous system, engine, commission runs.
 4. **Reports** - sales, commissions, unearned income, taxes and card fees, gift cards,
    memberships, inventory.

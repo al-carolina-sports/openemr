@@ -51,7 +51,7 @@
         {% if stripeOn %}
             <form method="post" class="mt-3">
                 {{ m.csrf(csrfField, csrfToken) }}
-                <button class="btn btn-link btn-sm px-0" name="action" value="needs_card_on">{{ 'Flag: patient needs to give a card (had one saved in PatientNow)'|xlt }}</button>
+                <button class="btn btn-link btn-sm px-0" name="action" value="needs_card_on">{{ 'Flag: patient needs to give a card (had one saved in the previous system)'|xlt }}</button>
                 <button class="btn btn-link btn-sm px-0 ml-3" name="action" value="needs_card_off">{{ 'Clear the flag'|xlt }}</button>
             </form>
         {% endif %}

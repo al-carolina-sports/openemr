@@ -5,7 +5,7 @@
 {% block content %}
     <h3>{{ 'Import Catalog'|xlt }}</h3>
 
-    <section class="card mb-4"><div class="card-header"><strong>{{ 'PatientNow catalog'|xlt }}</strong></div><div class="card-body">
+    <section class="card mb-4"><div class="card-header"><strong>{{ 'ZeroDoc catalog'|xlt }}</strong></div><div class="card-body">
         {{ m.errors(errors) }}
         {% if report %}
             <div class="alert alert-success">
@@ -17,17 +17,17 @@
             {% endif %}
         {% endif %}
         {% if alreadyImported %}
-            <p class="mb-0">{{ 'The PatientNow catalog is already loaded. It can only be imported once, so it is never duplicated. Use the CSV import below for changes.'|xlt }}</p>
+            <p class="mb-0">{{ 'The ZeroDoc catalog is already loaded. It can only be imported once, so it is never duplicated. Use the CSV import below for changes.'|xlt }}</p>
         {% else %}
-            <p>{{ 'Loads what was captured from PatientNow on 2026-10-26:'|xlt }}
+            <p>{{ 'Loads what was captured on 2026-10-26:'|xlt }}
                 {{ summary.procedures|text }} {{ 'procedures'|xlt }}, {{ summary.products|text }} {{ 'products'|xlt }},
                 {{ summary.packages|text }} {{ 'sales packages'|xlt }}, {{ summary.promos|text }} {{ 'promotional discounts'|xlt }},
                 {{ summary.memberships|text }} {{ 'membership plans'|xlt }}.
                 {{ 'Stock starts at zero in every office. Patient balances, saved cards and insurance are not imported.'|xlt }}</p>
             <form method="post">
                 {{ m.csrf(csrfField, csrfToken) }}
-                <input type="hidden" name="action" value="patientnow">
-                <p class="mb-1">{{ 'Which OpenEMR facility is each PatientNow office?'|xlt }}</p>
+                <input type="hidden" name="action" value="zerodoc">
+                <p class="mb-1">{{ 'Which OpenEMR facility is each legacy office?'|xlt }}</p>
                 <div class="form-row">
                     {% for office in offices %}
                         <div class="form-group col-md-4">
@@ -39,7 +39,7 @@
                         </div>
                     {% endfor %}
                 </div>
-                <button type="submit" class="btn btn-primary" onclick="return confirm({{ 'Import the PatientNow catalog now? This can only be done once.'|xlj }});">{{ 'Import PatientNow catalog'|xlt }}</button>
+                <button type="submit" class="btn btn-primary" onclick="return confirm({{ 'Import the ZeroDoc catalog now? This can only be done once.'|xlj }});">{{ 'Import ZeroDoc catalog'|xlt }}</button>
             </form>
         {% endif %}
         <details class="mt-3">

@@ -24,7 +24,7 @@
     </table>
     <h5 class="mt-3">{{ 'Patients who need a card on file'|xlt }}</h5>
     {% if not stripeOn %}<p class="small text-warning">{{ 'Stripe is not set up yet, so card links cannot be sent.'|xlt }}</p>{% endif %}
-    <p class="small text-muted">{{ 'Patients flagged during the move from PatientNow, and patients on autopay with no saved card. Open the patient, go to Cash-Pay > Payments, and use "Send card-on-file link", or collect the card on a reader at check-in.'|xlt }}</p>
+    <p class="small text-muted">{{ 'Patients flagged during the move from the previous system, and patients on autopay with no saved card. Open the patient, go to Cash-Pay > Payments, and use "Send card-on-file link", or collect the card on a reader at check-in.'|xlt }}</p>
     <table class="table table-sm small cpi-table">
         <thead class="thead-light"><tr><th>{{ 'Patient'|xlt }}</th><th>{{ 'Email'|xlt }}</th><th>{{ 'Cell'|xlt }}</th><th>{{ 'Why'|xlt }}</th><th>{{ 'Last link sent'|xlt }}</th></tr></thead>
         <tbody>

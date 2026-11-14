@@ -1,11 +1,11 @@
 <?php
 
 /**
- * One-time load of the catalog captured from PatientNow
- * (data/patientnow_catalog.json): categories, manufacturers, procedures,
+ * One-time load of the catalog captured from the previous system
+ * (data/zerodoc_catalog.json): categories, manufacturers, procedures,
  * products, sales packages, promotional discounts and membership plans.
  *
- * Runs in a single transaction. Rows are marked source = 'patientnow_import'
+ * Runs in a single transaction. Rows are marked source = 'zerodoc_import'
  * and the import refuses to run a second time, so it can never duplicate
  * the catalog. Lookup lists (categories, manufacturers, reasons) are reused
  * by name if an admin already created them.
@@ -25,11 +25,11 @@ use OpenEMR\Modules\CashpayInvoicing\Database\Database;
 use OpenEMR\Modules\CashpayInvoicing\Decimal;
 use OpenEMR\Modules\CashpayInvoicing\Money;
 
-final class PatientNowImporter
+final class ZerodocCatalogImporter
 {
-    public const SOURCE = 'patientnow_import';
+    public const SOURCE = 'zerodoc_import';
 
-    /** PatientNow office names in the captured data. */
+    /** Legacy office names in the captured data. */
     public const OFFICES = ['Raleigh', 'Rocky Mount', 'Wilson'];
 
     /** @var array<string, array<string, int>> table => lower(name) => id */
@@ -93,7 +93,7 @@ final class PatientNowImporter
     }
 
     /**
-     * Best guess of which OpenEMR facility is each PatientNow office.
+     * Best guess of which OpenEMR facility is each legacy office.
      *
      * @param array<int, string> $facilities id => name
      * @return array<string, int|null> office => facility id
@@ -118,7 +118,7 @@ final class PatientNowImporter
     public function run(array $officeFacility): ImportReport
     {
         if ($this->alreadyImported()) {
-            throw new \DomainException('The PatientNow catalog has already been imported');
+            throw new \DomainException('The ZeroDoc catalog has already been imported');
         }
         $report = new ImportReport();
         $this->db->transaction(function () use ($officeFacility, $report): void {
@@ -245,7 +245,7 @@ final class PatientNowImporter
                 if ($facilityId === null) {
                     continue;
                 }
-                // Counts in PatientNow were unreliable (many negative), so every office starts at zero.
+                // Counts in the previous system were unreliable (many negative), so every office starts at zero.
                 $this->db->execute(
                     'INSERT IGNORE INTO `cpi_stock` (`product_id`, `facility_id`, `on_hand`) VALUES (?, ?, 0)',
                     [$id, $facilityId]

@@ -160,13 +160,13 @@ final class TemplateRenderTest extends TestCase
             $values[$field->name] = '';
         }
         $html = self::twig()->render('@cashpay/admin/edit.html.twig', self::base() + [
-            'entity' => $entity, 'id' => 5, 'record' => ['source' => 'patientnow_import'], 'values' => $values,
+            'entity' => $entity, 'id' => 5, 'record' => ['source' => 'zerodoc_import'], 'values' => $values,
             'errors' => [], 'options' => [], 'panels' => $panels, 'openPanel' => 'product_stock',
         ]);
         foreach ($panels as $panel) {
             $this->assertStringContainsString('id="' . $panel['key'] . '"', $html);
         }
-        $this->assertStringContainsString('Imported from PatientNow', $html);
+        $this->assertStringContainsString('Imported from the ZeroDoc catalog', $html);
         $this->assertStringContainsString('Make default', $html);
         $this->assertStringContainsString('$750.00', $html);
     }

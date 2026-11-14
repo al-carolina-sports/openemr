@@ -305,7 +305,7 @@ final class StripePayments implements AutopayCharger, ProcessorRefunder
     }
 
     /**
-     * Patients flagged to give a card (PatientNow migration) or on autopay without a card.
+     * Patients flagged to give a card (migration from the previous system) or on autopay without a card.
      *
      * @return list<array<string, scalar|null>>
      */

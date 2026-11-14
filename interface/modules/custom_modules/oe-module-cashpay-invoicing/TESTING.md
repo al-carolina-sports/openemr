@@ -26,19 +26,19 @@ registered, check the PHP error log and tell Claude.
       card payment carries **$3.00**.
 - [ ] Turn the award points program on, set points per $1 and the value of one point, save, reload. Values stay.
 
-## 3. Import the PatientNow catalog (Admin > Cash-Pay Setup > Import Catalog)
+## 3. Import the ZeroDoc catalog (Admin > Cash-Pay Setup > Import Catalog)
 
 - [ ] Open **Items to check after import** and read the list (21 notes from the capture).
-- [ ] Match each PatientNow office (Raleigh, Rocky Mount, Wilson) to an OpenEMR facility.
+- [ ] Match each legacy office (Raleigh, Rocky Mount, Wilson) to an OpenEMR facility.
       Leave one as *skip* if it is not set up yet.
-- [ ] Click **Import PatientNow catalog**. Expected: 309 procedures, 504 products, 37 packages,
+- [ ] Click **Import ZeroDoc catalog**. Expected: 309 procedures, 504 products, 37 packages,
       10 promotional discounts, 4 membership plans, plus categories and manufacturers.
 - [ ] Reload the page: the button is gone and the page says the catalog is already loaded.
 
 ## 4. Procedures
 
 - [ ] **Procedures** list shows 309 rows over 4 pages. Search "laser" and filter by category.
-- [ ] Open *Pellet FEMALE single insertion*. Fields match PatientNow (price, category, tax and
+- [ ] Open *Pellet FEMALE single insertion*. Fields match the legacy catalog (price, category, tax and
       award flags).
 - [ ] Add a price override for one provider at one office. Add a second for the office only.
       Saving the same provider/office again updates the row instead of adding one.
@@ -68,7 +68,7 @@ registered, check the PHP error log and tell Claude.
 - [ ] **Membership Plans** shows Prescription Membership (101), Wellness, Regenerative Wellness, Core (1234).
 - [ ] Core's **Member discounts** has the seven $37.25 device discounts ticked.
 - [ ] Open the promo *Regenerative Wellness membership free VitD / NAD / B12*. Its scope lists
-      Vit D3 50,000 inj, B12 Lipo Injection and NAD Injection. PatientNow cut this list off on
+      Vit D3 50,000 inj, B12 Lipo Injection and NAD Injection. The legacy system cut this list off on
       screen, so add any others it should have.
 - [ ] Open *PMF Device*. *Never apply to products* is ticked. Confirm with the front desk what it is for.
 

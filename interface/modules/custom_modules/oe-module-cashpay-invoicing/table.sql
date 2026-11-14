@@ -62,7 +62,7 @@ CREATE TABLE `cpi_procedure` (
     `award_points_eligible` TINYINT(1) NOT NULL DEFAULT 0,
     `allow_manual_desc` TINYINT(1) NOT NULL DEFAULT 0,
     `active` TINYINT(1) NOT NULL DEFAULT 1,
-    `source` VARCHAR(20) NOT NULL DEFAULT 'manual' COMMENT 'manual | patientnow_import',
+    `source` VARCHAR(20) NOT NULL DEFAULT 'manual' COMMENT 'manual | zerodoc_import',
     `created_at` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
     `updated_at` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
     PRIMARY KEY (`id`),
@@ -148,7 +148,7 @@ CREATE TABLE `cpi_product` (
     `allow_manual_desc` TINYINT(1) NOT NULL DEFAULT 0,
     `no_print` TINYINT(1) NOT NULL DEFAULT 0,
     `active` TINYINT(1) NOT NULL DEFAULT 1,
-    `source` VARCHAR(20) NOT NULL DEFAULT 'manual' COMMENT 'manual | patientnow_import',
+    `source` VARCHAR(20) NOT NULL DEFAULT 'manual' COMMENT 'manual | zerodoc_import',
     `created_at` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
     `updated_at` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
     PRIMARY KEY (`id`),
@@ -168,7 +168,7 @@ CREATE TABLE `cpi_product_vendor` (
 ) ENGINE=InnoDB;
 #EndIf
 
--- Optional per-facility retail price (PatientNow had a few office-specific prices).
+-- Optional per-facility retail price (the previous system had a few office-specific prices).
 #IfNotTable cpi_product_facility_price
 CREATE TABLE `cpi_product_facility_price` (
     `product_id` INT NOT NULL,
@@ -268,7 +268,7 @@ CREATE TABLE `cpi_membership_plan` (
 ) ENGINE=InnoDB;
 #EndIf
 
--- A plan can carry several member-only discounts (PatientNow's Core plan had 7).
+-- A plan can carry several member-only discounts (the legacy Core plan had 7).
 #IfNotTable cpi_membership_plan_promo
 CREATE TABLE `cpi_membership_plan_promo` (
     `plan_id` INT NOT NULL,
@@ -501,7 +501,7 @@ CREATE TABLE `cpi_stripe_customer` (
     `account_key` VARCHAR(40) NOT NULL DEFAULT 'default' COMMENT 'which Stripe account (one per income entity)',
     `stripe_customer_id` VARCHAR(64) NOT NULL,
     `default_payment_method` VARCHAR(64) NULL,
-    `needs_card_on_file` TINYINT(1) NOT NULL DEFAULT 0 COMMENT 'set for patients who had a saved card in PatientNow',
+    `needs_card_on_file` TINYINT(1) NOT NULL DEFAULT 0 COMMENT 'set for patients who had a saved card in the previous system',
     `updated_at` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
     PRIMARY KEY (`pid`, `account_key`),
     UNIQUE KEY `uq_customer` (`stripe_customer_id`)

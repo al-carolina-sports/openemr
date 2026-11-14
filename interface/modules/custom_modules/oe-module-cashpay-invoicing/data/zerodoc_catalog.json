@@ -1,5 +1,5 @@
 {
- "source": "PatientNow exports and screens, captured 2026-10-26",
+ "source": "Legacy system exports and screens, captured 2026-10-26",
  "version": 1,
  "procedure_categories": [
   "BHRT",
@@ -14783,12 +14783,12 @@
   "Stock starts at 0 in every office. Do a physical count, then record it on each product's Stock panel.",
   "Package \"B12 Package 5 for 4\": Line item read as 'B-12' on screen; mapped to B12 Lipo Injection. Line discount assumed $25 total (5 x $25 - $25 = $100).",
   "Package \"LHR - Underarms Pkg of 6 (Example)\": Line item read as 'LHR - Underarms' on screen; mapped to Laser Removal Underarms.",
-  "Package \"Male Test Inj 4months\": PatientNow shows availability dates 07/16/2021 to 07/23/2021, so the package is outside its dates.",
-  "Package \"Wellness membership\": PatientNow showed a 'Tesla Chair' line; mapped to the procedure Ultra Telsa Chair (1) treatment. Check it.",
-  "Promo \"Regenerative Wellness membership free VitD / NAD / B12\": PatientNow cut the procedure list off on screen. Imported Vit D3 50,000 inj, B12 Lipo Injection, NAD Injection; add any others.",
-  "Promo \"Regenerative Pellet Insertion membership discount\": PatientNow cut the procedure list off on screen. Imported Pellet FEMALE single insertion, Pellet MALE single insertion (REGULAR Dosing), Pellet MALE single insertion (XL Dosing); add any others.",
-  "Promo \"PMF Device\": PatientNow set Products to \"No Products\" with vendor/manufacturer/category ZRT. Imported as \"never applies to products\"; confirm the intent.",
-  "Membership discounts: Wellness and Regenerative Wellness were linked to the VitD / NAD / B12 promo, and Core to the seven $37.25 device promos. PatientNow showed these lists cut off; check each plan's Member discounts panel. \"B12 injection\" and the pellet promo are not linked to a plan.",
-  "No monthly package is linked to any plan yet (PatientNow showed none), although Wellness, Regenerative Wellness and Core add a package monthly."
+  "Package \"Male Test Inj 4months\": the legacy system shows availability dates 07/16/2021 to 07/23/2021, so the package is outside its dates.",
+  "Package \"Wellness membership\": the legacy system showed a 'Tesla Chair' line; mapped to the procedure Ultra Telsa Chair (1) treatment. Check it.",
+  "Promo \"Regenerative Wellness membership free VitD / NAD / B12\": the legacy system cut the procedure list off on screen. Imported Vit D3 50,000 inj, B12 Lipo Injection, NAD Injection; add any others.",
+  "Promo \"Regenerative Pellet Insertion membership discount\": the legacy system cut the procedure list off on screen. Imported Pellet FEMALE single insertion, Pellet MALE single insertion (REGULAR Dosing), Pellet MALE single insertion (XL Dosing); add any others.",
+  "Promo \"PMF Device\": the legacy system set Products to \"No Products\" with vendor/manufacturer/category ZRT. Imported as \"never applies to products\"; confirm the intent.",
+  "Membership discounts: Wellness and Regenerative Wellness were linked to the VitD / NAD / B12 promo, and Core to the seven $37.25 device promos. The legacy system showed these lists cut off; check each plan's Member discounts panel. \"B12 injection\" and the pellet promo are not linked to a plan.",
+  "No monthly package is linked to any plan yet (the legacy system showed none), although Wellness, Regenerative Wellness and Core add a package monthly."
  ]
 }

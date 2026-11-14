@@ -7,8 +7,8 @@
 {% endblock %}
 {% block content %}
     <h3>{{ id > 0 ? ('Edit'|xlt) : ('Add'|xlt) }} {{ entity.singular|xlt }}</h3>
-    {% if record and record.source is defined and record.source == 'patientnow_import' %}
-        <p class="small text-muted">{{ 'Imported from PatientNow.'|xlt }}</p>
+    {% if record and record.source is defined and record.source == 'zerodoc_import' %}
+        <p class="small text-muted">{{ 'Imported from the ZeroDoc catalog.'|xlt }}</p>
     {% endif %}
     {{ m.errors(errors) }}
     <form method="post" class="card card-body mb-4" novalidate>

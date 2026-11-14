@@ -56,7 +56,7 @@ final class CatalogRulesTest extends TestCase
         $this->assertTrue($scope->noProducts);
     }
 
-    public function testPackageTotalsMatchPatientNow(): void
+    public function testPackageTotalsMatchLegacyCatalog(): void
     {
         // Full Back Laser Pkg 4 get 2 free: 6 x 266.67 less 0.02 = 1600.00
         $line = PackageItemsPanel::lineOf(['qty' => '6.000', 'unit_price' => '266.67', 'discount' => '0.02']);

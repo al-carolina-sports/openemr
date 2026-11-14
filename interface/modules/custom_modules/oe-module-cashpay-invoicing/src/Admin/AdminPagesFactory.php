@@ -51,7 +51,7 @@ final class AdminPagesFactory
             csv: new CsvCatalog($db),
             logger: ServiceContainer::getLogger(),
             adminUrl: $globals->getWebRoot() . Bootstrap::MODULE_PATH . '/public/admin/',
-            catalogFile: $moduleDir . '/data/patientnow_catalog.json',
+            catalogFile: $moduleDir . '/data/zerodoc_catalog.json',
             userId: is_numeric($userId) ? (int) $userId : 0,
         );
     }

@@ -2,7 +2,7 @@
 
 /**
  * Totals matrix for a quote or invoice: one row per charge category with
- * Tax 1, Tax 2, gross ("cost" in PatientNow), discount and total.
+ * Tax 1, Tax 2, gross (legacy "cost"), discount and total.
  *
  * @package   OpenEMR
  * @link      https://www.open-emr.org
