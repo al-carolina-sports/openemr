@@ -1,0 +1,63 @@
+{% macro csrf(csrfField, csrfToken) %}
+    <input type="hidden" name="{{ csrfField|attr }}" value="{{ csrfToken|attr }}">
+{% endmacro %}
+
+{% macro errors(errors) %}
+    {% if errors is not empty %}
+        <div class="alert alert-danger py-2" role="alert">
+            <ul class="mb-0 pl-3">
+                {% for field, message in errors %}
+                    <li>{% if field matches '/^row \\d/' %}{{ field|text }}: {% endif %}{{ message|xlt }}</li>
+                {% endfor %}
+            </ul>
+        </div>
+    {% endif %}
+{% endmacro %}
+
+{% macro field(field, value, error, options) %}
+    {% set id = 'f_' ~ field.name %}
+    {% if field.type.name == 'Boolean' %}
+        <div class="form-group form-check col-md-4">
+            <input type="checkbox" class="form-check-input" id="{{ id|attr }}" name="{{ field.name|attr }}" value="1"{% if value == '1' %} checked{% endif %}>
+            <label class="form-check-label" for="{{ id|attr }}">{{ field.label|xlt }}</label>
+        </div>
+    {% else %}
+        <div class="form-group {{ field.type.name == 'LongText' ? 'col-md-12' : 'col-md-4' }}">
+            <label for="{{ id|attr }}">{{ field.label|xlt }}{% if field.required %} <span class="text-danger">*</span>{% endif %}</label>
+            {% if field.type.name == 'LongText' %}
+                <textarea class="form-control{{ error ? ' is-invalid' : '' }}" id="{{ id|attr }}" name="{{ field.name|attr }}" rows="3">{{ value|text }}</textarea>
+            {% elseif field.type.name == 'Lookup' %}
+                <select class="form-control{{ error ? ' is-invalid' : '' }}" id="{{ id|attr }}" name="{{ field.name|attr }}">
+                    <option value="">{{ '-- none --'|xlt }}</option>
+                    {% for optId, label in options %}
+                        <option value="{{ optId|attr }}"{% if value == optId ~ '' %} selected{% endif %}>{{ label|text }}</option>
+                    {% endfor %}
+                </select>
+            {% elseif field.type.name == 'Choice' %}
+                <select class="form-control{{ error ? ' is-invalid' : '' }}" id="{{ id|attr }}" name="{{ field.name|attr }}">
+                    {% for optValue, label in field.choices %}
+                        <option value="{{ optValue|attr }}"{% if value == optValue %} selected{% endif %}>{{ label|xlt }}</option>
+                    {% endfor %}
+                </select>
+            {% else %}
+                {% set inputType = field.type.name == 'Date' ? 'date' : 'text' %}
+                <div class="{{ field.type.name == 'Money' ? 'input-group' : '' }}">
+                    {% if field.type.name == 'Money' %}<div class="input-group-prepend"><span class="input-group-text">$</span></div>{% endif %}
+                    <input type="{{ inputType|attr }}" class="form-control{{ error ? ' is-invalid' : '' }}{{ field.type.name in ['Money', 'Decimal', 'Integer'] ? ' text-right' : '' }}"
+                           id="{{ id|attr }}" name="{{ field.name|attr }}" value="{{ value|attr }}"
+                           {% if field.type.name in ['Text'] %}maxlength="{{ field.maxLength|attr }}"{% endif %}
+                           {% if field.type.name in ['Money', 'Decimal', 'Integer'] %}inputmode="decimal"{% endif %}
+                           {% if field.required %}required{% endif %}>
+                </div>
+            {% endif %}
+            {% if error %}<div class="invalid-feedback d-block">{{ error|xlt }}</div>{% endif %}
+        </div>
+    {% endif %}
+{% endmacro %}
+
+{% macro panelForm(key, op, csrfField, csrfToken) %}
+    <input type="hidden" name="{{ csrfField|attr }}" value="{{ csrfToken|attr }}">
+    <input type="hidden" name="action" value="panel">
+    <input type="hidden" name="panel" value="{{ key|attr }}">
+    <input type="hidden" name="op" value="{{ op|attr }}">
+{% endmacro %}

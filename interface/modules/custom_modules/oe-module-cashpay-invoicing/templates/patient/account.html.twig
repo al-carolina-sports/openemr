@@ -1,0 +1,60 @@
+{% extends '@cashpay/patient/base.html.twig' %}
+{% set navTab = tab %}
+{% block title %}{{ tab == 'quotes' ? 'Quotes'|xlt : 'Invoices'|xlt }}{% endblock %}
+{% block content %}
+    <div class="d-flex flex-wrap justify-content-between align-items-center mb-2">
+        <div>
+            {% if tab == 'invoices' %}
+                <span class="mr-3">{{ 'Balance due'|xlt }}: <strong>{{ balance|text }}</strong></span>
+                <span>{{ 'Unearned (prepaid not yet delivered)'|xlt }}: <strong>{{ unearned|text }}</strong></span>
+            {% endif %}
+        </div>
+        {% if canBill %}
+            <a class="btn btn-primary btn-sm" href="{{ patientUrl|attr }}document.php?kind={{ kind|attr_url }}">{{ tab == 'quotes' ? 'New quote'|xlt : 'New invoice'|xlt }}</a>
+        {% endif %}
+    </div>
+    <div class="table-responsive">
+        <table class="table table-sm table-hover cpi-table">
+            <thead class="thead-light">
+            <tr>
+                <th>{{ 'Date'|xlt }}</th><th>{{ 'Name'|xlt }}</th><th>{{ 'Type'|xlt }}</th><th>{{ 'Office'|xlt }}</th><th>{{ 'Provider'|xlt }}</th>
+                <th class="text-right">{{ 'Total'|xlt }}</th>
+                {% if tab == 'invoices' %}
+                    <th class="text-right">{{ 'Paid'|xlt }}</th><th class="text-right">{{ 'Balance due'|xlt }}</th><th class="text-right">{{ 'Unearned'|xlt }}</th>
+                {% else %}
+                    <th>{{ 'Expires'|xlt }}</th>
+                {% endif %}
+                <th class="text-right">{{ 'Discount'|xlt }}</th><th class="text-right">{{ 'Tax'|xlt }}</th><th></th>
+            </tr>
+            </thead>
+            <tbody>
+            {% for r in rows %}
+                <tr class="{{ tab == 'quotes' and not r.active ? 'text-muted' : '' }}">
+                    <td class="text-nowrap">{{ r.date|text }}</td>
+                    <td><a href="{{ patientUrl|attr }}document.php?kind={{ kind|attr_url }}&amp;id={{ r.id|attr_url }}">{{ r.name|text }}</a></td>
+                    <td>{{ r.type|xlt }}</td>
+                    <td>{{ r.facility|text }}</td>
+                    <td>{{ r.provider|text }}</td>
+                    <td class="text-right">{{ r.total|text }}</td>
+                    {% if tab == 'invoices' %}
+                        <td class="text-right">{{ r.paid|text }}</td>
+                        <td class="text-right">{{ r.due|text }}</td>
+                        <td class="text-right">{{ r.unearned|text }}</td>
+                    {% else %}
+                        <td class="text-nowrap">{{ r.expires|text }}</td>
+                    {% endif %}
+                    <td class="text-right">{{ r.discount|text }}</td>
+                    <td class="text-right">{{ r.tax|text }}</td>
+                    <td class="text-nowrap">
+                        {% if r.locked %}<span class="badge badge-secondary">{{ 'Locked'|xlt }}</span>{% endif %}
+                        {% if tab == 'quotes' and r.converted %}<span class="badge badge-info">{{ 'Invoiced'|xlt }}</span>{% endif %}
+                        {% if tab == 'quotes' and not r.active %}<span class="badge badge-light">{{ 'Inactive'|xlt }}</span>{% endif %}
+                    </td>
+                </tr>
+            {% else %}
+                <tr><td colspan="12" class="text-muted">{{ tab == 'quotes' ? 'No quotes yet.'|xlt : 'No invoices yet.'|xlt }}</td></tr>
+            {% endfor %}
+            </tbody>
+        </table>
+    </div>
+{% endblock %}

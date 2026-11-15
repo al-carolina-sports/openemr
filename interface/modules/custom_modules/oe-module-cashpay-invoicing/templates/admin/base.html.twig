@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>{{ block('title')|text }}</title>
+    {{ setupHeader(['common']) }}
+    <link rel="stylesheet" href="{{ adminUrl|attr }}../assets/cashpay.css">
+</head>
+<body class="body_top cpi">
+<div class="container-fluid mt-3 mb-5">
+    <nav aria-label="breadcrumb">
+        <ol class="breadcrumb cpi-crumbs">
+            <li class="breadcrumb-item"><a href="{{ adminUrl|attr }}index.php">{{ 'Cash-Pay Setup'|xlt }}</a></li>
+            {% block crumbs %}{% endblock %}
+        </ol>
+    </nav>
+    {% if notice %}
+        <div class="alert alert-success py-2" role="status">{{ notice|xlt }}</div>
+    {% endif %}
+    {% block content %}{% endblock %}
+</div>
+{% block scripts %}{% endblock %}
+</body>
+</html>
