@@ -1,0 +1,29 @@
+/* Ported from Annie's Compact Themes (oe-module-compact-theme) theme pack 'slate' by Carolina Sports and Spine; --cmt-* tokens mapped to --aet-*. */
+/* Slate Night - dark and dense, teal accent */
+:root {
+  --aet-bg: #0D1015; --aet-panel: #151A21; --aet-side: #11151B; --aet-sidetx: #C3CBD6;
+  --aet-text: #E6E9EE; --aet-muted: #9AA4B2; --aet-border: #222A33;
+  --aet-accent: #2DD4BF; --aet-link: #5EEAD4; --aet-accent2: #60A5FA; --aet-warn: #FCA5A5;
+  --aet-on-accent: #06201C; --aet-focus: #2DD4BF;
+  --aet-head-bg: #11151B; --aet-stripe: rgba(255, 255, 255, .025); --aet-hover: #1C232C; --aet-input: #11151B;
+  --aet-nav-hover: rgba(45, 212, 191, .16); --aet-side-border: #222A33;
+  --aet-font: Inter, "Segoe UI", system-ui, -apple-system, Roboto, Arial, sans-serif;
+  --aet-base: 12.5px; --aet-pad: 7px; --aet-rad: 8px;
+  color-scheme: dark;
+}
+.aet-ico { color: #2DD4BF; }
+#mainMenu .appMenu .menuSection.show > .menuLabel { color: #5EEAD4 !important; }
+.card { box-shadow: none !important; margin-bottom: 6px !important; }
+.card-header, .card-header .btn-link { text-transform: uppercase; font-size: 11px !important; letter-spacing: .06em; font-weight: 600; color: #9AA4B2 !important; }
+.table thead th { color: #C3CBD6 !important; }
+.form-control, select, textarea { border-color: #3A4552 !important; }
+.btn-secondary, .btn-default, .btn-light { border-color: #3A4552 !important; }
+.text-dark, .text-body, .text-black-50 { color: #E6E9EE !important; }
+.table-light, .table-light td, .table-light th, .thead-light th { background: #11151B !important; color: #E6E9EE !important; }
+.alert-danger { background: #3A1418 !important; color: #FCA5A5 !important; border-color: #5A1F25 !important; }
+#attendantData { background: #11151B !important; }
+/* calendar events sit on light category colours: force dark text */
+#bigCal [style*="background"].event, #bigCal [style*="background"].event *, #bigCal [style*="background"] .event, #bigCal [style*="background"] .event *, #bigCal .event_appointment, #bigCal .event_appointment * { color: #111 !important; text-shadow: none !important; }
+#bigCal .event_in, #bigCal .event_in *, #bigCal .event_out, #bigCal .event_out * { color: var(--aet-text) !important; }
+/* inline-styled light rows (vitals metric rows etc.) */
+tr[style*="background"] td, td[style*="background"], tr.bg-light td, .table-secondary td, tr[bgcolor] td, td[bgcolor] { color: #111 !important; }
