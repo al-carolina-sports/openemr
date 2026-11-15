@@ -1,0 +1,15 @@
+/* Annie's Elegant Calendar Style: Custom Views */
+.ecs-views { margin: 0 0 0.5rem; }
+.ecs-views-label { display: block; font-size: 0.8rem; font-weight: 600; margin-bottom: 0.2rem; }
+.ecs-views-row { display: flex; gap: 0.25rem; align-items: center; }
+.ecs-views-row select { flex: 1 1 auto; min-width: 0; }
+.ecs-views-row .btn { padding: 0.15rem 0.45rem; line-height: 1.2; }
+.ecs-modal-backdrop { position: fixed; inset: 0; background: rgba(0, 0, 0, 0.45); z-index: 2000; display: flex; align-items: center; justify-content: center; }
+.ecs-modal { background: #fff; color: #212529; border-radius: 0.4rem; width: 22rem; max-width: 95vw; max-height: 90vh; display: flex; flex-direction: column; box-shadow: 0 0.5rem 1.5rem rgba(0, 0, 0, 0.35); }
+.ecs-modal header { padding: 0.6rem 0.9rem; font-weight: 600; border-bottom: 1px solid #dee2e6; }
+.ecs-modal .ecs-body { padding: 0.75rem 0.9rem; overflow-y: auto; font-size: 0.9rem; }
+.ecs-modal .ecs-body label { display: block; margin-bottom: 0.3rem; }
+.ecs-modal .ecs-members { border: 1px solid #dee2e6; border-radius: 0.25rem; padding: 0.4rem 0.6rem; max-height: 14rem; overflow-y: auto; }
+.ecs-modal .ecs-hint { font-size: 0.75rem; color: #6c757d; }
+.ecs-modal .ecs-error { color: #b02a37; font-size: 0.8rem; min-height: 1rem; }
+.ecs-modal footer { padding: 0.6rem 0.9rem; border-top: 1px solid #dee2e6; display: flex; justify-content: flex-end; gap: 0.4rem; }
