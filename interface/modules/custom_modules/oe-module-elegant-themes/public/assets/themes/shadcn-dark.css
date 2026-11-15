@@ -1,0 +1,19 @@
+@import url("shadcn.css");
+/* shadcn (dark) - zinc-950 surfaces, zinc-800 borders, white primary buttons (dark OpenEMR base underneath) */
+:root {
+  --aet-bg: #09090B; --aet-panel: #0C0C0E; --aet-side: #09090B; --aet-sidetx: #D4D4D8;
+  --aet-text: #FAFAFA; --aet-muted: #A1A1AA; --aet-border: #27272A;
+  --aet-accent: #FAFAFA; --aet-accent-hover: #D4D4D8; --aet-on-accent: #18181B; --aet-accent2: #22C55E; --aet-warn: #F87171;
+  --aet-link: #FAFAFA; --aet-ring: #71717A; --aet-focus: #A1A1AA;
+  --aet-head-bg: #111113; --aet-stripe: #0C0C0E; --aet-hover: #27272A; --aet-input: #09090B;
+  --aet-nav-hover: #27272A; --aet-nav-active: #27272A; --aet-nav-active-tx: #FAFAFA; --aet-rail-ico: #D4D4D8;
+  --aet-fly-tx: #FAFAFA; --aet-fly-hover: #27272A; --aet-fly-open: #3F3F46; --aet-fly-open-tx: #FAFAFA;
+  --aet-chip: #27272A; --aet-chip-hover: #3F3F46;
+  --aet-pill-green-bg: #052E16; --aet-pill-green-tx: #86EFAC; --aet-pill-blue-bg: #172554; --aet-pill-blue-tx: #93C5FD;
+  --aet-pill-amber-bg: #451A03; --aet-pill-amber-tx: #FCD34D; --aet-pill-red-bg: #450A0A; --aet-pill-red-tx: #FCA5A5;
+  --aet-card-shadow: none; --aet-logo-filter: invert(1) brightness(1.1);
+  color-scheme: dark;
+}
+.btn-danger { color: #18181B !important; }
+/* calendar events with a light category colour: dark text on them (dark base paints it light); IN/OUT markers without a fill stay light */
+#bigCal .event[style*="background"], #bigCal .event[style*="background"] * { color: #09090B !important; }

@@ -1,0 +1,23 @@
+/* Radiance Atelier - ivory, plum, champagne gold (True Radiance spa look) */
+:root {
+  --aet-bg: #FBF8F4; --aet-panel: #FFFFFF; --aet-side: #4A2C40; --aet-sidetx: #F3E9EE;
+  --aet-text: #2B2326; --aet-muted: #6E5E64; --aet-border: #E8DFD3;
+  --aet-accent: #8A6A35; /* champagne gold, darkened for AA text contrast */
+  --aet-link: #6B3D5C; --aet-accent2: #6F8B7E; --aet-warn: #B44A30;
+  --aet-on-accent: #FFFFFF; --aet-focus: #B08D57;
+  --aet-head-bg: #F6F0E8; --aet-stripe: #FDFBF8; --aet-hover: #F3ECE2;
+  --aet-input: #FFFFFF; --aet-nav-hover: rgba(176, 141, 87, .28);
+  --aet-font: Inter, "Segoe UI", system-ui, -apple-system, Roboto, Arial, sans-serif;
+  --aet-head: "Cormorant Garamond", Garamond, "Palatino Linotype", Georgia, serif;
+  --aet-base: 13.5px; --aet-pad: 14px; --aet-rad: 10px;
+  --aet-card-shadow: 0 1px 3px rgba(74, 44, 64, .06);
+}
+#mainBox > nav.navbar { border-bottom: 2px solid #B08D57 !important; }
+#mainMenu .appMenu .menuSection.show > .menuLabel, #mainMenu .appMenu > div > .menuLabel:hover { color: #FFF !important; }
+.aet-ico { color: #D9BE8C; }
+.btn-primary, .btn-save { background-color: #8F6F39 !important; background-image: linear-gradient(180deg, #9C7A43, #86662F) !important; border-color: #86662F !important; }
+.card-header, .modal-header { border-bottom: 1px solid #E8DFD3 !important; }
+h1, h2, h3, .title, .card-title, #bigCalHeader .title { font-weight: 600; letter-spacing: .2px; }
+.card-title, .card-header h6, .card-header .btn-link { font-family: var(--aet-head) !important; font-size: 1.15em; font-weight: 700; }
+#attendantData { background: #FFFDF9 !important; border-bottom: 1px solid #E8DFD3 !important; }
+#bigCal .currentDay { background: #FBF3E6 !important; }

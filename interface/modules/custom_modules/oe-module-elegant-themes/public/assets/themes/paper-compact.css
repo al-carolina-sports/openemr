@@ -1,0 +1,20 @@
+/* Ported from Annie's Compact Themes (oe-module-compact-theme) theme pack 'paper' by Carolina Sports and Spine; --cmt-* tokens mapped to --aet-*. */
+/* Paper Compact - light, hairline borders, table-like cards */
+:root {
+  --aet-bg: #F4F5F7; --aet-panel: #FFFFFF; --aet-side: #FFFFFF; --aet-sidetx: #3D4550;
+  --aet-text: #1B1F24; --aet-muted: #5B6470; --aet-border: #E3E6EA;
+  --aet-accent: #2563EB; --aet-accent2: #0E7490; --aet-warn: #A11D1D;
+  --aet-head-bg: #FAFBFC; --aet-stripe: #FAFBFC; --aet-hover: #F1F3F6; --aet-input: #FFFFFF;
+  --aet-nav-hover: #F1F3F6; --aet-side-border: #E3E6EA;
+  --aet-font: Inter, "Segoe UI", system-ui, -apple-system, Roboto, Arial, sans-serif;
+  --aet-base: 13px; --aet-pad: 7px; --aet-rad: 6px;
+}
+#mainBox > nav.navbar { box-shadow: 0 1px 0 #E3E6EA; }
+#mainMenu .appMenu > div > .menuLabel:hover, #mainMenu .appMenu > div > .menuSection > .menuLabel:hover { color: #2563EB !important; }
+.aet-ico { color: #2563EB; }
+.card { box-shadow: none !important; border: 1px solid #E3E6EA !important; border-radius: 6px !important; margin-bottom: 4px !important; }
+.card-header { background: #FFFFFF !important; border-bottom: 1px solid #EEF0F3 !important; font-weight: 600; font-size: 13px; }
+.card-body { padding: 6px 10px !important; }
+.table td, .table th { border-top-color: #EEF0F3 !important; }
+.alert-danger { background: #FDECEC !important; color: #A11D1D !important; }
+#attendantData { background: #FFFFFF !important; }

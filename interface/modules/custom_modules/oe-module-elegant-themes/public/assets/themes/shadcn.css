@@ -1,0 +1,22 @@
+@import url("_modern-rail.css");
+/* shadcn - modelled on ui.shadcn.com examples/dashboard: neutral zinc greys, black primary buttons,
+   thin borders, rounded cards, Inter, stat-style cards, status pills. Light; toggle to shadcn-dark. */
+:root {
+  --aet-modern: shadcn;
+  --aet-bg: #FFFFFF; --aet-panel: #FFFFFF; --aet-side: #FAFAFA; --aet-sidetx: #3F3F46;
+  --aet-text: #09090B; --aet-muted: #71717A; --aet-border: #E4E4E7;
+  --aet-accent: #18181B; --aet-accent-hover: #3F3F46; --aet-on-accent: #FAFAFA; --aet-accent2: #16A34A; --aet-warn: #DC2626;
+  --aet-link: #18181B; --aet-ring: #A1A1AA; --aet-focus: #71717A;
+  --aet-head-bg: #FAFAFA; --aet-stripe: #FFFFFF; --aet-hover: #F4F4F5; --aet-input: #FFFFFF;
+  --aet-nav-hover: #F4F4F5; --aet-nav-active: #E4E4E7; --aet-nav-active-tx: #09090B; --aet-rail-ico: #52525B;
+  --aet-fly-tx: #09090B; --aet-fly-hover: #F4F4F5; --aet-fly-open: #E4E4E7; --aet-fly-open-tx: #09090B;
+  --aet-chip: #F4F4F5; --aet-chip-hover: #E4E4E7;
+  --aet-pill-green-bg: #DCFCE7; --aet-pill-green-tx: #166534; --aet-pill-blue-bg: #DBEAFE; --aet-pill-blue-tx: #1E40AF;
+  --aet-pill-amber-bg: #FEF3C7; --aet-pill-amber-tx: #92400E; --aet-pill-red-bg: #FEE2E2; --aet-pill-red-tx: #991B1B;
+  --aet-card-shadow: 0 1px 2px rgba(0, 0, 0, .05);
+  --aet-font: Inter, "InterVariable", "Geist", -apple-system, "Segoe UI", system-ui, Roboto, Arial, sans-serif;
+  --aet-base: 12.5px; --aet-pad: 8px; --aet-rad: 10px; --aet-rail-w: 68px;
+}
+a { text-underline-offset: 2px; }
+.card-header { font-size: 13px; letter-spacing: -.01em; }
+.card-body .h3, .card-body h3, .card-body .h4 { font-weight: 700; letter-spacing: -.02em; }

@@ -1,0 +1,32 @@
+/* Solar Noir HC - high-contrast refresh of the dark Solar theme */
+:root {
+  --aet-bg: #0B0D10; --aet-panel: #13171C; --aet-side: #07090B; --aet-sidetx: #E2E9F0;
+  --aet-text: #EEF3F8; --aet-muted: #AAB7C4; --aet-border: #3A4450;
+  --aet-accent: #FFB020; --aet-link: #FFC34D; --aet-accent2: #2DD4BF; --aet-warn: #FF6B6B;
+  --aet-on-accent: #0B0D10; --aet-focus: #FFB020;
+  --aet-head-bg: #1A2027; --aet-stripe: #161B21; --aet-hover: #222A33; --aet-input: #0E1115;
+  --aet-nav-hover: rgba(255, 176, 32, .18);
+  --aet-font: "IBM Plex Sans", "Segoe UI", system-ui, -apple-system, Roboto, Arial, sans-serif;
+  --aet-base: 12.5px; --aet-pad: 9px; --aet-rad: 5px;
+  --aet-scroll: #4A5563;
+  color-scheme: dark;
+}
+#mainBox > nav.navbar { border-bottom: 2px solid #FFB020 !important; }
+#mainMenu .appMenu .menuSection.show > .menuLabel { color: #FFB020 !important; }
+.aet-ico { color: #FFB020; }
+.table thead th, .card-header { color: #E2E9F0 !important; }
+.table td, .table th { border-color: #303842 !important; }
+.btn-secondary, .btn-default, .btn-light { border-color: #56606C !important; }
+.form-control, select, textarea { border-color: #56606C !important; }
+.dropdown-menu { box-shadow: 0 8px 24px rgba(0, 0, 0, .6) !important; }
+a:not(.btn) { text-decoration-color: rgba(255, 195, 77, .5); }
+.text-muted { color: #AAB7C4 !important; }
+.text-dark, .text-body, .text-black-50 { color: #EEF3F8 !important; }
+.table-light, .table-light td, .table-light th, .thead-light th { background: #1A2027 !important; color: #EEF3F8 !important; }
+#attendantData { background: #101419 !important; }
+
+/* calendar events sit on light category colours: force dark text */
+#bigCal [style*="background"].event, #bigCal [style*="background"].event *, #bigCal [style*="background"] .event, #bigCal [style*="background"] .event *, #bigCal .event_appointment, #bigCal .event_appointment * { color: #111 !important; text-shadow: none !important; }
+#bigCal .event_in, #bigCal .event_in *, #bigCal .event_out, #bigCal .event_out * { color: var(--aet-text) !important; }
+/* inline-styled light rows (vitals metric rows etc.) */
+tr[style*="background"] td, td[style*="background"], tr.bg-light td, .table-secondary td, tr[bgcolor] td, td[bgcolor] { color: #111 !important; }
