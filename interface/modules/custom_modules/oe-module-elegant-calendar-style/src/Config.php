@@ -19,6 +19,6 @@ namespace OpenEMR\Modules\ElegantCalendarStyle;
 
 final class Config
 {
-    /** Cache-busting version appended to the stylesheet URL. */
-    public const VERSION = '1.0.0';
+    /** Cache-busting version appended to the module's asset URLs. */
+    public const VERSION = '1.3.1';
 }
