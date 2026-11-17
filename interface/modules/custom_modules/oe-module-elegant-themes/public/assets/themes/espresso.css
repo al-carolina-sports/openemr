@@ -1,0 +1,23 @@
+@import url("_modern-rail.css");
+/* Espresso - modelled on Frappe / ERPNext "Espresso" UI: white workspace, light-grey hairlines,
+   thin light icon rail + collapsible tree flyouts with chevrons, breadcrumb header, black "+ Add",
+   grey pill filter controls, green/blue pill status tags, compact grey-header list tables. */
+:root {
+  --aet-modern: espresso;
+  --aet-bg: #F8F8F8; --aet-panel: #FFFFFF; --aet-side: #FBFBFB; --aet-sidetx: #383838;
+  --aet-text: #1F272E; --aet-muted: #5E6670; --aet-border: #EBEEF0;
+  --aet-accent: #171717; --aet-accent-hover: #383838; --aet-on-accent: #FFFFFF; --aet-accent2: #278F5E; --aet-warn: #C4322B;
+  --aet-link: #2563C9; --aet-ring: #2490EF; --aet-focus: #2490EF;
+  --aet-head-bg: #F8F8F8; --aet-stripe: #FFFFFF; --aet-hover: #F3F3F3; --aet-input: #F3F3F3;
+  --aet-nav-hover: #EDEDED; --aet-nav-active: #E5E5E5; --aet-nav-active-tx: #171717; --aet-rail-ico: #525252;
+  --aet-fly-tx: #1F272E; --aet-fly-hover: #F3F3F3; --aet-fly-open: #EDEDED; --aet-fly-open-tx: #171717;
+  --aet-chip: #F3F3F3; --aet-chip-hover: #E6E6E6;
+  --aet-pill-green-bg: #E4F5E9; --aet-pill-green-tx: #16794C; --aet-pill-blue-bg: #E6F1FD; --aet-pill-blue-tx: #1C5BB0;
+  --aet-pill-amber-bg: #FFF3DC; --aet-pill-amber-tx: #8A5300; --aet-pill-red-bg: #FDE8E7; --aet-pill-red-tx: #B0251F;
+  --aet-card-shadow: 0 1px 2px rgba(25, 39, 52, .05);
+  --aet-font: Inter, "InterVariable", -apple-system, "Segoe UI", system-ui, Roboto, Arial, sans-serif;
+  --aet-base: 12.5px; --aet-pad: 8px; --aet-rad: 8px; --aet-rail-w: 64px;
+}
+.form-control, .custom-select, select, input[type="text"], input[type="search"] { border-color: transparent !important; }
+.form-control:focus, input:focus, select:focus { background: #FFFFFF !important; }
+.card-header { font-size: 13px; }

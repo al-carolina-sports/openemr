@@ -1,0 +1,46 @@
+{% extends '@cashpay/admin/base.html.twig' %}
+{% import '@cashpay/admin/macros.html.twig' as m %}
+{% block title %}{{ 'Gift Cards'|xlt }}{% endblock %}
+{% block crumbs %}<li class="breadcrumb-item active">{{ 'Gift Cards'|xlt }}</li>{% endblock %}
+{% block content %}
+    <h3>{{ 'Gift Cards'|xlt }}</h3>
+    <form method="get" class="form-inline mb-3">
+        <input class="form-control form-control-sm mr-2 text-monospace" name="code" value="{{ code|attr }}" placeholder="{{ 'Card code'|xla }}" aria-label="{{ 'Card code'|xla }}">
+        <button class="btn btn-secondary btn-sm">{{ 'Look up'|xlt }}</button>
+    </form>
+    {{ m.errors(errors) }}
+    {% if searched and card is null %}<div class="alert alert-warning py-2">{{ 'No gift card with that code.'|xlt }}</div>{% endif %}
+    {% if card %}
+        <div class="card card-body mb-3">
+            <div class="row">
+                <div class="col-md-3"><div class="small text-muted">{{ 'Code'|xlt }}</div><div class="h5 text-monospace">{{ card.code|text }}</div></div>
+                <div class="col-md-2"><div class="small text-muted">{{ 'Balance'|xlt }}</div><div class="h5">{{ card.balance|text }}</div></div>
+                <div class="col-md-2"><div class="small text-muted">{{ 'Original value'|xlt }}</div><div>{{ card.initial|text }}</div></div>
+                <div class="col-md-2"><div class="small text-muted">{{ 'Issued'|xlt }}</div><div>{{ card.issued|text }}</div></div>
+                <div class="col-md-3"><div class="small text-muted">{{ 'Bought by'|xlt }}</div><div>{{ card.purchaser|text }}</div></div>
+            </div>
+            <form method="post" class="form-row align-items-end mt-2">
+                {{ m.csrf(csrfField, csrfToken) }}<input type="hidden" name="code" value="{{ card.code|attr }}">
+                <div class="col-md-4 mb-2"><label class="small mb-0">{{ 'Recipient name'|xlt }}</label><input class="form-control form-control-sm" name="recipient_name" maxlength="150" value="{{ card.recipientName|attr }}"></div>
+                <div class="col-md-2 mb-2"><label class="small mb-0">{{ 'Recipient patient ID (pid)'|xlt }}</label><input class="form-control form-control-sm" name="recipient_pid" value="{{ card.recipientPid|attr }}" inputmode="numeric"></div>
+                <div class="col-md-3 mb-2 small text-muted">{{ card.recipientPatient|text }}</div>
+                <div class="col-md-2 mb-2"><button class="btn btn-secondary btn-sm">{{ 'Save recipient'|xlt }}</button></div>
+            </form>
+            <table class="table table-sm small mt-2">
+                <thead><tr><th>{{ 'Date'|xlt }}</th><th>{{ 'Action'|xlt }}</th><th class="text-right">{{ 'Amount'|xlt }}</th><th>{{ 'Invoice'|xlt }}</th><th>{{ 'By'|xlt }}</th></tr></thead>
+                <tbody>{% for t in history %}<tr><td>{{ t.date|text }}</td><td>{{ t.action|xlt }}</td><td class="text-right">{{ t.amount|text }}</td><td>{{ t.invoice ? '#' ~ t.invoice : '' }}</td><td>{{ t.user|text }}</td></tr>{% endfor %}</tbody>
+            </table>
+        </div>
+    {% endif %}
+    <h5>{{ 'Cards with a balance'|xlt }} <small class="text-muted">{{ 'Total owed'|xlt }} {{ liability|text }}</small></h5>
+    <table class="table table-sm small cpi-table">
+        <thead class="thead-light"><tr><th>{{ 'Code'|xlt }}</th><th>{{ 'Issued'|xlt }}</th><th>{{ 'Bought by'|xlt }}</th><th>{{ 'For'|xlt }}</th><th class="text-right">{{ 'Value'|xlt }}</th><th class="text-right">{{ 'Balance'|xlt }}</th></tr></thead>
+        <tbody>
+        {% for g in outstanding %}
+            <tr><td class="text-monospace"><a href="?code={{ g.code|attr_url }}">{{ g.code|text }}</a></td><td>{{ g.issued|text }}</td><td>{{ g.purchaser|text }}</td><td>{{ g.recipient|text }}</td>
+                <td class="text-right">{{ g.initial|text }}</td><td class="text-right">{{ g.balance|text }}</td></tr>
+        {% else %}<tr><td colspan="6" class="text-muted">{{ 'No gift cards with a balance.'|xlt }}</td></tr>{% endfor %}
+        </tbody>
+    </table>
+    <p class="small text-muted">{{ 'Gift cards are sold on a Gift Cards invoice in the patient chart. The code is issued when that invoice is paid in full.'|xlt }}</p>
+{% endblock %}

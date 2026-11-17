@@ -1,0 +1,69 @@
+{% extends '@cashpay/admin/base.html.twig' %}
+{% import '@cashpay/admin/macros.html.twig' as m %}
+{% block title %}{{ 'Stripe'|xlt }}{% endblock %}
+{% block crumbs %}<li class="breadcrumb-item active">{{ 'Stripe'|xlt }}</li>{% endblock %}
+{% block content %}
+    <h3>{{ 'Stripe'|xlt }}</h3>
+    <p class="text-muted small">{{ 'One Stripe account per income entity, so each settles to its own bank account. Payments at an office go to the account that lists the office, otherwise to the default account. Secret keys are stored encrypted; leave a secret field blank to keep the saved one.'|xlt }}</p>
+    {{ m.errors(errors) }}
+    {% if tested %}
+        <div class="alert {{ tested.ok ? 'alert-success' : 'alert-danger' }} py-2">
+            {{ tested.ok ? 'Stripe accepted the key for'|xlt : 'Stripe did not accept the key for'|xlt }} {{ tested.key|text }}.
+        </div>
+    {% endif %}
+    <div class="card card-body mb-3 small">
+        <strong>{{ 'Webhook'|xlt }}</strong>
+        <div>{{ 'In the Stripe dashboard (Developers > Webhooks) add this endpoint for each account, then paste its signing secret below:'|xlt }}</div>
+        <code class="d-block my-1">{{ webhookUrl|text }}</code>
+        <div>{{ 'Events'|xlt }}: {% for e in events %}<code>{{ e|text }}</code>{% if not loop.last %}, {% endif %}{% endfor %}</div>
+        <div class="text-muted mt-1">{{ 'Stripe must be able to reach this server over HTTPS for pay links and autopay to be posted automatically.'|xlt }}</div>
+    </div>
+    <form method="post" novalidate>
+        {{ m.csrf(csrfField, csrfToken) }}<input type="hidden" name="action" value="save">
+        {% for a in accounts|merge([{'key': '', 'label': '', 'live': false, 'publishable': '', 'hasSecret': false, 'secretHint': '', 'hasWebhook': false, 'location': '', 'facilityIds': [], 'default': accounts is empty, 'modeWarning': false, 'new': true}]) %}
+            {% set i = loop.index0 %}
+            <section class="card mb-3">
+                <div class="card-header d-flex justify-content-between">
+                    <strong>{{ a.new is defined ? 'Add an account'|xlt : a.label|default(a.key)|text }}</strong>
+                    {% if a.new is not defined %}
+                        <span>
+                            <label class="mb-0 mr-3"><input type="radio" name="default_account" value="{{ a.key|attr }}"{% if a.default %} checked{% endif %}> {{ 'Default'|xlt }}</label>
+                            <label class="mb-0 text-danger"><input type="checkbox" name="accounts[{{ i|attr }}][remove]" value="1"> {{ 'Remove'|xlt }}</label>
+                        </span>
+                    {% endif %}
+                </div>
+                <div class="card-body form-row">
+                    {% if a.modeWarning %}<div class="col-12 alert alert-warning py-1 small">{{ 'The secret key is for the other mode (test vs live) than this account is set to.'|xlt }}</div>{% endif %}
+                    <div class="form-group col-md-2"><label class="small mb-0">{{ 'Key (short id)'|xlt }}</label>
+                        <input class="form-control form-control-sm" name="accounts[{{ i|attr }}][key]" value="{{ a.key|attr }}" placeholder="trm" {{ a.new is defined ? '' : 'readonly' }}></div>
+                    <div class="form-group col-md-4"><label class="small mb-0">{{ 'Name'|xlt }}</label>
+                        <input class="form-control form-control-sm" name="accounts[{{ i|attr }}][label]" value="{{ a.label|attr }}" placeholder="True Radiance MediSpa"></div>
+                    <div class="form-group col-md-2 form-check pl-4 pt-3"><input type="checkbox" class="form-check-input" id="live_{{ i|attr }}" name="accounts[{{ i|attr }}][live]" value="1"{% if a.live %} checked{% endif %}>
+                        <label class="form-check-label small" for="live_{{ i|attr }}">{{ 'Live mode'|xlt }}</label></div>
+                    <div class="form-group col-md-4"><label class="small mb-0">{{ 'Terminal location id (optional)'|xlt }}</label>
+                        <input class="form-control form-control-sm" name="accounts[{{ i|attr }}][terminal_location_id]" value="{{ a.location|attr }}" placeholder="tml_..."></div>
+                    <div class="form-group col-md-4"><label class="small mb-0">{{ 'Publishable key'|xlt }}</label>
+                        <input class="form-control form-control-sm" name="accounts[{{ i|attr }}][publishable_key]" value="{{ a.publishable|attr }}" placeholder="pk_test_..."></div>
+                    <div class="form-group col-md-4"><label class="small mb-0">{{ 'Secret key'|xlt }} {% if a.hasSecret %}<span class="text-muted">({{ 'saved'|xlt }}: {{ a.secretHint|text }})</span>{% endif %}</label>
+                        <input type="password" autocomplete="new-password" class="form-control form-control-sm" name="accounts[{{ i|attr }}][secret_key]" placeholder="sk_test_..."></div>
+                    <div class="form-group col-md-4"><label class="small mb-0">{{ 'Webhook signing secret'|xlt }} {% if a.hasWebhook %}<span class="text-muted">({{ 'saved'|xlt }})</span>{% endif %}</label>
+                        <input type="password" autocomplete="new-password" class="form-control form-control-sm" name="accounts[{{ i|attr }}][webhook_secret]" placeholder="whsec_..."></div>
+                    <div class="form-group col-md-6"><label class="small mb-0">{{ 'Offices that settle to this account'|xlt }}</label>
+                        <select multiple size="3" class="form-control form-control-sm" name="accounts[{{ i|attr }}][facility_ids][]">
+                            {% for fid, name in facilities %}<option value="{{ fid|attr }}"{% if fid in a.facilityIds %} selected{% endif %}>{{ name|text }}</option>{% endfor %}
+                        </select></div>
+                </div>
+            </section>
+        {% endfor %}
+        <button class="btn btn-primary">{{ 'Save Stripe accounts'|xlt }}</button>
+    </form>
+    {% for a in accounts %}
+        {% if a.hasSecret %}
+            <form method="post" class="d-inline-block mt-3 mr-2">
+                {{ m.csrf(csrfField, csrfToken) }}<input type="hidden" name="action" value="test"><input type="hidden" name="key" value="{{ a.key|attr }}">
+                <button class="btn btn-outline-secondary btn-sm">{{ 'Test the key for'|xlt }} {{ a.label|default(a.key)|text }}</button>
+            </form>
+        {% endif %}
+    {% endfor %}
+    <p class="small text-muted mt-3">{{ 'Before going live, confirm the card networks\' surcharge rules and register for surcharging with Stripe. The credit card service charge is only added on card readers and saved cards, where the card type is known before charging; pay links are charged without it.'|xlt }}</p>
+{% endblock %}

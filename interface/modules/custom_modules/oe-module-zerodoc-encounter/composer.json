@@ -1,0 +1,20 @@
+{
+    "name": "carolina-sports/oe-module-zerodoc-encounter",
+    "description": "ZeroDoc Clinical Encounter Workflow: clinical documentation through to billing, as OpenEMR encounter forms",
+    "type": "openemr-module",
+    "license": "GPL-3.0-or-later",
+    "require": {
+        "php": ">=8.3"
+    },
+    "autoload": {
+        "psr-4": {
+            "OpenEMR\\Modules\\ZeroDoc\\": "src/"
+        }
+    },
+    "extra": {
+        "openemr": {
+            "type": "custom-module",
+            "directory": "oe-module-zerodoc-encounter"
+        }
+    }
+}

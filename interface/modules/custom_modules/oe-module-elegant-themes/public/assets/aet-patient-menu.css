@@ -1,0 +1,88 @@
+/*
+ * Annie's Elegant Themes v1.5.3/1.5.4 - pinned patient menu and aligned content (see aet-patient-menu.js).
+ * One fixed bar at the top of the patient tab: same height, left edge and order on every
+ * patient page. Colours come from the theme's --aet-* variables.
+ */
+:root { --aet-pm-h: 36px; --aet-pm-pad: 12px; }
+
+html.aet-pm body { padding-top: var(--aet-pm-h) !important; }
+/* the page's own copy is hidden until the script moves it into the bar (no flash, no shift) */
+html.aet-pm nav.navbar:not(.aet-pm-nav):has(#myNavbar a[href*="/patient_file/summary/demographics.php"]) { display: none !important; }
+
+#aet-pmenu {
+  position: fixed; top: 0; left: 0; right: 0; z-index: 1035;
+  height: var(--aet-pm-h); box-sizing: border-box;
+  background: var(--aet-panel, var(--aet-bg, #fff)) !important;
+  border-bottom: 1px solid var(--aet-border, #dee2e6);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, .06);
+  font-family: var(--aet-font, system-ui, sans-serif);
+  margin: 0 !important;
+}
+#aet-pmenu > nav.aet-pm-nav {
+  display: block !important; position: static !important;
+  height: 100%; margin: 0 !important; padding: 0 !important;
+  background: transparent !important; border: 0 !important; box-shadow: none !important;
+  min-height: 0 !important; max-width: none !important; width: 100% !important;
+}
+#aet-pmenu #myNavbar {
+  display: block !important; height: 100%; flex: none !important; padding: 0 !important; margin: 0 !important;
+}
+#aet-pmenu .navbar-nav {
+  display: flex !important; flex-direction: row !important; flex-wrap: nowrap !important;
+  align-items: stretch; gap: 2px;
+  height: 100%; margin: 0 !important; padding: 0 var(--aet-pm-pad) !important;
+  overflow-x: auto; overflow-y: hidden; scrollbar-width: thin;
+  list-style: none;
+}
+#aet-pmenu .navbar-nav > li { position: static !important; flex: 0 0 auto; display: flex; align-items: stretch; margin: 0 !important; padding: 0 !important; float: none !important; }
+#aet-pmenu .navbar-nav > li > a {
+  display: inline-flex !important; align-items: center; gap: 6px;
+  height: 100%; margin: 0 !important; padding: 0 10px !important;
+  font-size: 12.5px !important; line-height: 1 !important; font-weight: 500;
+  white-space: nowrap; text-decoration: none !important;
+  color: var(--aet-text, #212529) !important; background: transparent !important;
+  border: 0 !important; border-bottom: 2px solid transparent !important; border-radius: 0 !important;
+}
+#aet-pmenu .navbar-nav > li > a .aet-ico { width: 14px; height: 14px; flex: 0 0 14px; opacity: .75; }
+#aet-pmenu .navbar-nav > li > a:hover { background: var(--aet-hover, rgba(0, 0, 0, .05)) !important; }
+#aet-pmenu .navbar-nav > li.aet-pm-active > a,
+#aet-pmenu .navbar-nav > li.active > a {
+  font-weight: 700 !important;
+  border-bottom-color: var(--aet-accent, #0d6efd) !important;
+  background: var(--aet-nav-active, var(--aet-hover, rgba(0, 0, 0, .05))) !important;
+  color: var(--aet-nav-active-tx, var(--aet-text, #212529)) !important;
+}
+#aet-pmenu .navbar-nav > li.aet-pm-active > a .aet-ico { opacity: 1; }
+#aet-pmenu .dropdown-toggle::after { margin-left: 2px; }
+
+/* dropdowns open as fixed popovers so the scrolling row never clips them */
+#aet-pmenu .dropdown-menu {
+  position: fixed !important; z-index: 1045; margin: 0 !important; transform: none !important;
+  min-width: 190px; padding: 4px 0 !important; float: none;
+  background: var(--aet-panel, #fff) !important; border: 1px solid var(--aet-border, #dee2e6) !important;
+  border-radius: var(--aet-rad, 6px); box-shadow: 0 6px 18px rgba(0, 0, 0, .12);
+}
+#aet-pmenu .dropdown-menu:not(.show) { display: none !important; }
+#aet-pmenu .dropdown-menu.show { display: block !important; }
+#aet-pmenu .dropdown-menu > li { display: block; margin: 0; padding: 0; }
+#aet-pmenu .dropdown-menu > li > a {
+  display: block; padding: 6px 14px !important; font-size: 12.5px !important; white-space: nowrap;
+  color: var(--aet-text, #212529) !important; text-decoration: none !important;
+}
+#aet-pmenu .dropdown-menu > li > a:hover { background: var(--aet-hover, rgba(0, 0, 0, .05)) !important; }
+#aet-pmenu .dropdown-menu > li.aet-pm-active > a { font-weight: 700; color: var(--aet-accent, #0d6efd) !important; }
+
+/* v1.5.4/1.5.5: content under the bar (and, from 1.5.5, every page opened in a main tab) - one left gutter, no centred fixed-width containers, no stray body margins.
+   aet-patient-menu.js then trims any remaining offset so the first heading lines up with the menu. */
+html.aet-pm body, html.aet-pc body { margin: 0 !important; padding-left: 0 !important; padding-right: 0 !important; }
+html.aet-pc body > .container, html.aet-pc body > .container-fluid, html.aet-pc body > .container-xl, html.aet-pc body > #container_div,
+html.aet-pc .aet-pc-wrap {
+  max-width: none !important; width: auto !important;
+  margin-left: 0 !important; margin-right: 0 !important; margin-top: 0 !important;
+  padding-left: var(--aet-pm-pad) !important; padding-right: var(--aet-pm-pad) !important;
+}
+/* OpenEMR's page heading is drawn as a padded navbar; drop its side padding so the title sits on the gutter */
+html.aet-pc #container_div nav.navbar:not(.aet-pm-nav):has(> .navbar-brand),
+html.aet-pc .aet-pc-wrap nav.navbar:not(.aet-pm-nav):has(> .navbar-brand) { padding-left: 0 !important; padding-right: 0 !important; }
+
+@media print { #aet-pmenu { display: none !important; } html.aet-pm body { padding-top: 0 !important; } }

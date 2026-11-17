@@ -1,0 +1,52 @@
+{% extends '@cashpay/patient/base.html.twig' %}
+{% import '@cashpay/admin/macros.html.twig' as m %}
+{% block title %}{{ 'Rewards'|xlt }}{% endblock %}
+{% block content %}
+    {{ m.errors(errors) }}
+    {% if not programOn %}
+        <div class="alert alert-secondary py-2">{{ 'The award points program is turned off in Cash-Pay Settings. Balances are kept; nothing is earned or redeemed.'|xlt }}</div>
+    {% endif %}
+    <div class="row mb-3">
+        <div class="col-md-3"><div class="small text-muted">{{ 'Status'|xlt }}</div>
+            <div class="h5">{% if enrolled %}<span class="badge badge-success">{{ 'Enrolled'|xlt }}</span>{% else %}<span class="badge badge-light">{{ 'Not enrolled'|xlt }}</span>{% endif %}</div></div>
+        <div class="col-md-3"><div class="small text-muted">{{ 'Points balance'|xlt }}</div><div class="h5">{{ points|text }}</div></div>
+        <div class="col-md-3"><div class="small text-muted">{{ 'Worth'|xlt }}</div><div class="h5">{{ value|text }}</div></div>
+        <div class="col-md-3"><div class="small text-muted">{{ 'Earning rate'|xlt }}</div><div>{{ rate|text }} {{ 'points per $1 paid'|xlt }}, {{ 'each point worth'|xlt }} {{ pointValue|text }}</div></div>
+    </div>
+    {% if canAdmin %}
+        <div class="card card-body py-2 mb-3">
+            <form method="post" class="mb-2">
+                {{ m.csrf(csrfField, csrfToken) }}
+                {% if enrolled %}
+                    <input type="hidden" name="action" value="unenroll"><button class="btn btn-outline-secondary btn-sm">{{ 'Remove from award points'|xlt }}</button>
+                {% else %}
+                    <input type="hidden" name="action" value="enroll"><button class="btn btn-primary btn-sm">{{ 'Enroll in award points'|xlt }}</button>
+                {% endif %}
+            </form>
+            <form method="post" class="form-row align-items-end">
+                {{ m.csrf(csrfField, csrfToken) }}<input type="hidden" name="action" value="adjust">
+                <div class="col-md-2 mb-2"><label class="small mb-0">{{ 'Points (+ or -)'|xlt }}</label><input class="form-control form-control-sm text-right" name="points" inputmode="decimal" required></div>
+                <div class="col-md-6 mb-2"><label class="small mb-0">{{ 'Reason (required)'|xlt }}</label><input class="form-control form-control-sm" name="reason" maxlength="255" required></div>
+                <div class="col-md-2 mb-2"><button class="btn btn-secondary btn-sm">{{ 'Adjust points'|xlt }}</button></div>
+            </form>
+        </div>
+    {% endif %}
+    <h6>{{ 'Points history'|xlt }}</h6>
+    <table class="table table-sm small cpi-table">
+        <thead class="thead-light"><tr><th>{{ 'Date'|xlt }}</th><th>{{ 'Description'|xlt }}</th><th class="text-right">{{ 'Points'|xlt }}</th><th class="text-right">{{ 'Value'|xlt }}</th><th>{{ 'Reason'|xlt }}</th><th>{{ 'By'|xlt }}</th></tr></thead>
+        <tbody>
+        {% for r in ledger %}
+            <tr><td class="text-nowrap">{{ r.date|text }}</td><td>{{ r.description|text }}</td><td class="text-right">{{ r.points|text }}</td><td class="text-right">{{ r.dollars|text }}</td><td>{{ r.reason|text }}</td><td>{{ r.user|text }}</td></tr>
+        {% else %}<tr><td colspan="6" class="text-muted">{{ 'No points yet.'|xlt }}</td></tr>{% endfor %}
+        </tbody>
+    </table>
+    <h6 class="mt-4">{{ 'Gift cards'|xlt }}</h6>
+    <table class="table table-sm small cpi-table">
+        <thead class="thead-light"><tr><th>{{ 'Code'|xlt }}</th><th>{{ 'Issued'|xlt }}</th><th>{{ 'For'|xlt }}</th><th class="text-right">{{ 'Value'|xlt }}</th><th class="text-right">{{ 'Balance'|xlt }}</th></tr></thead>
+        <tbody>
+        {% for g in giftCards %}
+            <tr><td class="text-monospace">{{ g.code|text }}</td><td>{{ g.issued|text }}</td><td>{{ g.recipient|text }}</td><td class="text-right">{{ g.initial|text }}</td><td class="text-right">{{ g.balance|text }}</td></tr>
+        {% else %}<tr><td colspan="5" class="text-muted">{{ 'No gift cards bought by or given to this patient.'|xlt }}</td></tr>{% endfor %}
+        </tbody>
+    </table>
+{% endblock %}

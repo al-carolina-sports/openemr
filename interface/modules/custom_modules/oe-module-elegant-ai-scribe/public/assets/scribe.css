@@ -1,0 +1,6 @@
+.eas .eas-timer { font-variant-numeric: tabular-nums; font-size: 1.25rem; font-weight: 600; min-width: 4.5rem; }
+.eas .eas-dot { width: 0.8rem; height: 0.8rem; border-radius: 50%; background: #dc3545; animation: eas-blink 1s infinite; }
+.eas .eas-dot[data-paused="1"] { animation: none; background: #6c757d; }
+.eas .eas-status { min-height: 1.2rem; font-size: 0.9rem; }
+.eas .eas-status.error { color: #dc3545; }
+@keyframes eas-blink { 50% { opacity: 0.2; } }

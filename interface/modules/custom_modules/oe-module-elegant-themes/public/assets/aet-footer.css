@@ -1,0 +1,104 @@
+/* Annie's Elegant Themes v1.5.1: footer quick-booking bar (all themes).
+   Also keeps the left icon rail scrollable so menu items (e.g. Cash Pay) are
+   never trapped under this bar when the window is shorter than the full menu. */
+:root { --aet-footer-h: 34px; }
+#aet-footer {
+    position: fixed; left: 0; right: 0; bottom: 0; height: var(--aet-footer-h); z-index: 1030;
+    display: flex; align-items: center; justify-content: flex-end; gap: 8px; padding: 0 12px;
+    background: #F4F5F7; border-top: 1px solid rgba(0, 0, 0, .14); box-shadow: 0 -1px 4px rgba(0, 0, 0, .06);
+}
+#aet-footer .aet-fbtn {
+    display: inline-flex; align-items: center; gap: 6px; height: 26px; padding: 0 12px; border: 0;
+    border-radius: 13px; font: 600 12px/1 system-ui, -apple-system, "Segoe UI", sans-serif; letter-spacing: .04em;
+    color: #FFFFFF; cursor: pointer;
+}
+#aet-footer .aet-fbtn-appt { background: #1D4ED8; }
+#aet-footer .aet-fbtn-appt:hover { background: #1E40AF; }
+#aet-footer .aet-fbtn-office { background: #92400E; }
+#aet-footer .aet-fbtn-office:hover { background: #78350F; }
+#aet-footer .aet-fbtn:focus-visible { outline: 2px solid #111827; outline-offset: 2px; }
+html.aet-has-footer body { padding-bottom: var(--aet-footer-h) !important; box-sizing: border-box; }
+html.aet-has-footer #mainBox {
+    height: calc(100vh - var(--aet-footer-h)) !important;
+    max-height: calc(100vh - var(--aet-footer-h)) !important;
+    height: calc(100dvh - var(--aet-footer-h)) !important;
+    max-height: calc(100dvh - var(--aet-footer-h)) !important;
+}
+
+/* v1.5.1: left rail is a flex column whose menu list scrolls; the footer
+   starts at the rail edge so it cannot cover Cash Pay or other items. */
+@media (min-width: 1200px) {
+  html.aet-main #mainBox { min-height: 0; }
+  html.aet-main #mainBox > nav.navbar {
+    display: flex !important;
+    flex-direction: column !important;
+    align-items: stretch !important;
+    align-self: stretch !important;
+    min-height: 0 !important;
+    max-height: 100% !important;
+    overflow-x: hidden !important;
+    overflow-y: hidden !important;
+  }
+  html.aet-main #mainBox > nav.navbar .navbar-brand { flex: 0 0 auto !important; }
+  html.aet-main #mainMenu {
+    display: flex !important;
+    flex-direction: column !important;
+    flex: 1 1 auto !important;
+    min-height: 0 !important;
+    width: 100%;
+    overflow-x: hidden !important;
+    overflow-y: auto !important;
+    overscroll-behavior: contain;
+    scrollbar-width: thin;
+    scrollbar-color: rgba(127, 127, 127, .55) transparent;
+  }
+  html.aet-main #mainMenu::-webkit-scrollbar { width: 6px; }
+  html.aet-main #mainMenu::-webkit-scrollbar-thumb { background: rgba(127, 127, 127, .45); border-radius: 99px; }
+  html.aet-main #mainBox > nav.navbar > .navbar-nav,
+  html.aet-main #mainBox > nav.navbar > form,
+  html.aet-main #mainBox > nav.navbar > div:not(#mainMenu) { flex: 0 0 auto !important; }
+  /* --aet-rail-w is set only by left-rail packs; top-bar themes keep left: 0. */
+  html.aet-has-footer.aet-main #aet-footer { left: var(--aet-rail-w, 0px); }
+}
+
+@media (min-width: 1200px) and (max-height: 760px) {
+  html.aet-main #mainMenu .appMenu > div > .menuLabel,
+  html.aet-main #mainMenu .appMenu > div > .menuSection > .menuLabel {
+    padding: 3px 2px !important;
+    gap: 1px;
+    font-size: 9px;
+  }
+  html.aet-main #mainMenu .appMenu .aet-ico { width: 15px; height: 15px; flex-basis: 15px; }
+  html.aet-main #mainBox > nav.navbar { padding: 4px 2px !important; }
+  html.aet-main #mainBox > nav.navbar .navbar-brand img { max-height: 22px; }
+}
+@media (min-width: 1200px) and (max-height: 600px) {
+  html.aet-main #mainMenu .appMenu > div > .menuLabel,
+  html.aet-main #mainMenu .appMenu > div > .menuSection > .menuLabel {
+    padding: 2px 1px !important;
+    gap: 0;
+    font-size: 8px;
+  }
+  html.aet-main #mainMenu .appMenu .aet-ico { width: 14px; height: 14px; flex-basis: 14px; }
+}
+
+@media (max-width: 1199.98px) {
+  #aet-footer { left: 0; }
+}
+@media print { #aet-footer { display: none; } }
+
+/* v1.5.2: Admin (and other) rail flyouts must sit above the footer and scroll,
+   so trailing items such as Cash-Pay Setup are not trapped under + APPT / + OFFICE. */
+@media (min-width: 1200px) {
+  html.aet-has-footer.aet-main #mainMenu .appMenu > div > .menuSection > .menuEntries {
+    max-height: calc(100vh - var(--aet-footer-h) - 16px);
+    max-height: calc(100dvh - var(--aet-footer-h) - 16px);
+    overflow-y: auto !important;
+    overflow-x: hidden !important;
+    z-index: 1040;
+    scrollbar-width: thin;
+    scrollbar-color: rgba(127, 127, 127, .55) transparent;
+  }
+  html.aet-has-footer.aet-main #mainMenu .appMenu > div > .menuSection > .menuEntries::-webkit-scrollbar { width: 8px; }
+  html.aet-has-footer.aet-main #mainMenu .appMenu > div > .menuSection > .menuEntries::-webkit-scrollbar-thumb { background: rgba(127, 127, 127, .45); border-radius: 99px; }
+}

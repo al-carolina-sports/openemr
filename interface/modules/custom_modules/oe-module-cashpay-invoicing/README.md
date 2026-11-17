@@ -1,0 +1,166 @@
+# oe-module-cashpay-invoicing
+
+Cash-pay quoting, invoicing, packages, memberships, rewards, gift cards, inventory and
+provider/seller commissions for OpenEMR 8.5, modeled on the practice's previous cash-pay system and built for
+Carolina Sports and Spine / BioFunctional Med / True Radiance MediSpa.
+
+Everything lives in this module. No OpenEMR core file is edited; the module hooks in
+through events (`MenuEvent`, `PatientMenuEvent`, script/style filters) the same way
+`oe-module-appt-hovercard` and `oe-module-compact-theme` do, so OpenEMR upgrades do
+not overwrite it.
+
+**Cash-pay only.** There is no insurance invoice type. Insurance and Medicare billing
+stay in OpenEMR's Fee Sheet / billing module, and no insurance data is migrated.
+
+## Status
+
+**Phase 1 (catalog admin) is built and tested.** Phase 2 is built in three parts, all ready for testing:
+quotes and invoices; payments, points, gift cards, notes and cash drawer; Stripe and memberships
+(module version 0.3.0, run *Upgrade* in Module Manager, then Disable and Enable once). Phases 3 (commissions)
+and 4 (reports) are not started.
+
+Phase 1 adds **Admin > Cash-Pay Setup**:
+
+- Catalog and Pricing home page with counts.
+- Procedures, with price overrides by provider and/or office and the products each procedure uses.
+- Products, with stock by office (adjust, receive, physical count, on-order and low-stock levels, history), vendors and office prices.
+- Sales packages, with a line builder and the package price.
+- Membership plans, with their member discounts.
+- Promotional discounts, with a scope editor (invoice types, offices, procedures, procedure and product categories, products, vendors, manufacturers).
+- Lists: categories, manufacturers, vendors, discount reasons, stock reasons, payment methods.
+- Settings: Tax 1 and Tax 2, the credit card service charge (credit cards only, 0 to 3%), award points, quote and receipt text.
+- Price List (printable) with CSV export, and CSV import for bulk edits of procedures and products.
+- One-time import of the ZeroDoc catalog (`data/zerodoc_catalog.json`).
+
+Phase 2 part 1 adds a **Cash-Pay** menu to the patient chart with **Invoices** and **Quotes**:
+
+- A shared editor: header (name, date, type, office, provider, seller, deposit; quotes also expiry, consult credit, active),
+  a search box that adds procedures, products and packages (packages explode into their lines), fee lines for
+  OR / anesthesia / recovery / assistant, per-line edits (quantity, price, discount in $ or %, reason, provider,
+  seller, office, service date), Discount All, and the totals matrix.
+- Pricing: provider + office fee, provider fee, office fee, then standard price; office prices for products;
+  the best matching promotional discount (members-only promos need an active membership); Tax 1 and Tax 2 on the net.
+- Immediate-sale, gift card and membership invoices are delivered when sold: stock comes out of the line's office
+  (the product, or the products a procedure uses). Prepaid and surgery lines wait: Receive, Edit received,
+  Clear received (stock goes back), Forfeit and Undo forfeit. The invoice list shows unearned income.
+- Lock / unlock (unlock needs the refunds-and-unlock permission and a reason, kept in the lock history), copy,
+  delete (only without payments), quote to invoice.
+- Print and PDF for quotes and receipts; email a quote as a PDF marked "for information only"; printed quotes
+  carry signature lines; upload the signed scan to the patient documents.
+
+Phase 2 part 2 adds **Payments**, **Rewards** and **Financial Notes** to the patient menu, and **Gift Cards** and
+**Cash Drawer** to Admin > Cash-Pay Setup:
+
+- Apply patient payment or deposit (cash, check, card on another terminal, award points, gift card, financing),
+  spread over open invoices; anything not applied is credit and can be applied later. Card payments ask for the
+  card type and add the credit card service charge only for credit cards. Gratuity is recorded separately.
+- Refunds (unapplied credit first, then newest invoices; card charge and earned points reversed in proportion;
+  gift card value restored), write-offs and voids. Nothing is deleted. These need the refunds permission.
+- Patient totals: balance due, credit on account, lifetime paid, patient since.
+- Award points: admin enrolls the patient; points are earned on the eligible share of what is applied to invoices
+  (no tax, no card charge, only items marked to earn); points can pay at the set value; admin adjustments need a reason.
+- Gift cards: sold as a line on a Gift Cards invoice; the code is issued when that invoice is paid in full; lookup,
+  history, recipient, total owed.
+- Financial notes: one rich-text note per patient, cleaned before saving.
+- Cash drawer per office per day: opening balance, cash in and out, adjustment, counted close, over/short; reopen
+  needs the refunds permission.
+
+Phase 2 part 3 adds **Membership** to the patient menu, and **Stripe** and **Memberships and Cards** to
+Admin > Cash-Pay Setup:
+
+- Stripe accounts: one per business (e.g. CSS, BFM, True Radiance), test or live keys, webhook secret, Terminal
+  location, the offices it serves, and a default. Keys are encrypted in the database. **Test connection** checks
+  the keys and lists readers.
+- Only invoice numbers and amounts go to Stripe - no names of procedures, no diagnoses.
+- Payments page: **Stripe reader** (pick a reader, the patient taps or inserts; the card service charge is added
+  only if the card turns out to be a credit card), **Pay link** by email (Stripe Checkout; no service charge,
+  because the card type is not known in advance), and **Card on file** link (Stripe saves the card; we keep only
+  brand and last four).
+- Stripe payments post themselves through the webhook (`public/stripe/webhook.php?site=default`), once only.
+  Refunds of Stripe payments go back to the card through Stripe. Stripe payments cannot be voided - refund them.
+- Memberships: enroll with plan, office, start date and autopay; freeze, unfreeze, cancel; **Bill now**. Each period
+  makes a Membership invoice (plan fee plus the plan's package lines, which wait for delivery) and, with autopay on,
+  charges the saved card. Monthly points from the plan are added. Month-end start dates stay at month end.
+- Background job *cashpay_membership_billing* runs the due memberships every hour.
+- **Memberships and Cards** worklist: failed autopay, memberships due, patients flagged as needing a card.
+- Badges beside the patient name: membership plan(s) and *Card needed*.
+
+Install and test steps are in [TESTING.md](TESTING.md).
+
+### Data safety
+
+- Uninstalling (unregistering) the module does **not** drop its tables, because they will hold invoices,
+  payments and commission history. `cleanup.sql` removes them by hand if that is ever wanted.
+- Records are deactivated, not deleted, so old invoices keep their items.
+- The catalog import runs once, in one transaction, and refuses to run again.
+
+## Decisions baked in
+
+| Area | Decision |
+| --- | --- |
+| Taxes | Tax 1 and Tax 2 are two true taxes, set by admin, applied by item flag. |
+| Card service charge | Separate setting (1% / 2% / 3%), credit cards only - never debit or prepaid. Own receipt line and report. |
+| Card processor | Stripe (Checkout / Payment Links, Terminal readers, saved cards, refunds, webhooks). Saved cards are not migrated from the previous system - patients re-enter them. |
+| Commissions | Cash-pay only. Seller credited at sale (invoice date), provider at delivery (received date). Category scoping, tie-break, overlap warning, role templates, rule preview, audit log. Rates set by admin later. |
+| Rewards | Admin turns the program on, enrolls patients, sets points per dollar paid and redemption value. |
+| Quotes | No e-signature. Emailed "for information only"; printed for a hand signature; signed scan can be uploaded. |
+| Balances | Not migrated yet. Tables accept opening balances later (`source='migration'`). |
+
+## Proposed file tree
+
+```
+oe-module-cashpay-invoicing/
+  info.txt                      Module name + version for Module Manager
+  version.php                   Module version / database version
+  composer.json                 PSR-4 autoload OpenEMR\Modules\CashpayInvoicing\ -> src/, stripe/stripe-php
+  openemr.bootstrap.php         Registers the namespace and subscribes Bootstrap to events
+  ModuleManagerListener.php     Registers the 'cashpay' ACL objects on enable; keeps data on unregister
+  table.sql                     45 cpi_ tables plus default rows
+  cleanup.sql                   Drops all cpi_ tables (manual use only)
+  README.md
+
+  src/
+    Bootstrap.php               Menu items (Admin > Cash-Pay Setup, Reports > Cash-Pay), patient tabs
+    Acl.php                     ACO section 'cashpay': view, write, admin, commissions, refunds
+    Money.php                   Integer-cents value object (no float math)
+    Settings/                   SettingsRepository, Settings (card fee %, rewards, Stripe keys via CryptoGen)
+    Catalog/                    Procedure, Product, Package, MembershipPlan, PromoDiscount repositories + CsvImporter
+    Pricing/                    PriceResolver (fee overrides), PromoMatcher, TaxCalculator, CardFeeCalculator
+    Billing/                    QuoteService, InvoiceService, LineService, PrepaidService (receive/forfeit), LockService
+    Payments/                   PaymentService, AllocationService, RefundService, CashDrawerService
+    Stripe/                     StripeClientFactory, CheckoutService, TerminalService, WebhookHandler, CustomerService
+    Rewards/                    PointsService, GiftCardService
+    Membership/                 MembershipService, MonthlyBillingJob (background service)
+    Commission/                 RuleMatcher, CommissionEngine, RunService, TemplateService, RuleAuditLog
+    Reports/                    One class per report, each returning rows for screen / CSV / PDF
+    Inventory/                  StockService (receive, adjust, count, sale/procedure use)
+
+  public/
+    admin/                      Catalog, packages, memberships, discounts, payment methods, taxes, settings
+    patient/                    Quotes, Invoices, Payments, Rewards, Financial Notes tabs
+    reports/                    Report runner pages
+    commissions/                Rule editor, templates, commission runs
+    stripe/webhook.php          Stripe webhook endpoint (signature-verified)
+    ajax/                       JSON endpoints (CSRF header, ACL checked)
+    assets/                     css / js
+
+  templates/                    Twig templates for all pages and printable quote/receipt PDFs
+
+    (default tax types, discount reasons, payment methods and stock reasons are #IfNotRow blocks at the end of table.sql)
+
+  data/
+    zerodoc_catalog.json     Procedures, products, packages, memberships, promos captured from the previous system
+
+  tests/                        Isolated PHPUnit tests (no database): pricing, tax, card fee,
+                                prepaid/unearned income, points, commission matching and tie-break
+```
+
+## Build phases (each one stops for testing on the test system)
+
+1. **Catalog admin** - procedures, products, inventory, packages, memberships, discounts,
+   payment methods, taxes, settings, and import of the ZeroDoc catalog.
+2. **Quotes, invoices, payments** - patient tabs, pricing and taxes, prepaid packages,
+   memberships, Stripe payments and card fee, rewards, gift cards, financial notes, cash drawer.
+3. **Commissions** - rule editor with the improvements over the previous system, engine, commission runs.
+4. **Reports** - sales, commissions, unearned income, taxes and card fees, gift cards,
+   memberships, inventory.

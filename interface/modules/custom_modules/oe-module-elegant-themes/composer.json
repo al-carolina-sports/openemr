@@ -1,0 +1,10 @@
+{
+    "name": "carolina-sports-and-spine/oe-module-elegant-themes",
+    "description": "Annie's Elegant Themes: per-user CSS themes for OpenEMR, injected via module events (no core edits).",
+    "type": "openemr-module",
+    "license": "GPL-3.0",
+    "version": "1.5.6",
+    "require": {},
+    "autoload": { "psr-4": { "OpenEMR\\Modules\\ElegantThemes\\": "src/" } },
+    "conflict": { "openemr/openemr": "<8.0.0" }
+}

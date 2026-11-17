@@ -1,0 +1,66 @@
+{% extends '@cashpay/admin/base.html.twig' %}
+{% import '@cashpay/admin/macros.html.twig' as m %}
+{% block title %}{{ 'Cash Drawer'|xlt }}{% endblock %}
+{% block crumbs %}<li class="breadcrumb-item active">{{ 'Cash Drawer'|xlt }}</li>{% endblock %}
+{% block content %}
+    <h3>{{ 'Cash Drawer'|xlt }}</h3>
+    <form method="get" class="form-inline mb-3">
+        <select class="form-control form-control-sm mr-2" name="facility_id" aria-label="{{ 'Office'|xla }}">
+            {% for fid, name in facilities %}<option value="{{ fid|attr }}"{% if fid == facilityId %} selected{% endif %}>{{ name|text }}</option>{% endfor %}
+        </select>
+        <input type="date" class="form-control form-control-sm mr-2" name="date" value="{{ date|attr }}" aria-label="{{ 'Date'|xla }}">
+        <button class="btn btn-secondary btn-sm">{{ 'Show'|xlt }}</button>
+    </form>
+    {{ m.errors(errors) }}
+    {% if day %}
+        <div class="row">
+            <div class="col-lg-5">
+                <table class="table table-sm">
+                    <tr><th>{{ 'Opening balance'|xlt }}</th><td class="text-right">{{ day.opening|text }}</td></tr>
+                    <tr><th>{{ 'Cash taken (payments, deposits, gratuity)'|xlt }}</th><td class="text-right">{{ day.cashIn|text }}</td></tr>
+                    <tr><th>{{ 'Cash refunded'|xlt }}</th><td class="text-right">-{{ day.cashOut|text }}</td></tr>
+                    <tr><th>{{ 'Adjustment'|xlt }}</th><td class="text-right">{{ day.adjustment|text }}</td></tr>
+                    <tr class="table-active"><th>{{ 'Expected in drawer'|xlt }}</th><th class="text-right">{{ day.expected|text }}</th></tr>
+                    {% if day.closed %}
+                        <tr><th>{{ 'Counted at close'|xlt }}</th><td class="text-right">{{ day.closing|text }}</td></tr>
+                        <tr class="{{ day.varianceCents == 0 ? 'table-success' : 'table-warning' }}"><th>{{ 'Over / short'|xlt }}</th><th class="text-right">{{ day.variance|text }}</th></tr>
+                    {% endif %}
+                </table>
+                <p class="small text-muted">
+                    {% if day.open %}{{ 'Opened'|xlt }} {{ day.openedAt|text }} {{ 'by'|xlt }} {{ day.openedBy|text }}.{% endif %}
+                    {% if day.closed %} {{ 'Closed'|xlt }} {{ day.closedAt|text }} {{ 'by'|xlt }} {{ day.closedBy|text }}.{% endif %}
+                </p>
+                {% if not day.open %}
+                    <form method="post" class="form-row align-items-end">
+                        {{ m.csrf(csrfField, csrfToken) }}<input type="hidden" name="action" value="open">
+                        <div class="col-6"><label class="small mb-0">{{ 'Opening balance'|xlt }}</label><input class="form-control form-control-sm text-right" name="opening" inputmode="decimal" required></div>
+                        <div class="col-6"><button class="btn btn-primary btn-sm">{{ 'Open drawer'|xlt }}</button></div>
+                    </form>
+                {% elseif not day.closed %}
+                    <form method="post" class="form-row align-items-end">
+                        {{ m.csrf(csrfField, csrfToken) }}<input type="hidden" name="action" value="close">
+                        <div class="col-4"><label class="small mb-0">{{ 'Counted cash'|xlt }}</label><input class="form-control form-control-sm text-right" name="counted" inputmode="decimal" required></div>
+                        <div class="col-4"><label class="small mb-0">{{ 'Adjustment (+/-)'|xlt }}</label><input class="form-control form-control-sm text-right" name="adjustment" inputmode="decimal"></div>
+                        <div class="col-4"><button class="btn btn-primary btn-sm">{{ 'Close drawer'|xlt }}</button></div>
+                    </form>
+                {% elseif canReopen %}
+                    <form method="post">{{ m.csrf(csrfField, csrfToken) }}<input type="hidden" name="action" value="reopen">
+                        <button class="btn btn-outline-warning btn-sm">{{ 'Reopen this day'|xlt }}</button></form>
+                {% endif %}
+            </div>
+            <div class="col-lg-7">
+                <h6>{{ 'Cash entries'|xlt }}</h6>
+                <table class="table table-sm small">
+                    <thead><tr><th>{{ 'Time'|xlt }}</th><th>{{ 'Patient'|xlt }}</th><th>{{ 'Type'|xlt }}</th><th class="text-right">{{ 'Amount'|xlt }}</th><th>{{ 'Status'|xlt }}</th><th>{{ 'By'|xlt }}</th></tr></thead>
+                    <tbody>
+                    {% for e in day.entries %}
+                        <tr class="{{ e.status == 'void' ? 'text-muted cpi-inactive' : '' }}"><td>{{ e.time|text }}</td><td>{{ e.patient|text }}</td><td>{{ e.type|xlt }}</td><td class="text-right">{{ e.amount|text }}</td><td>{{ e.status|xlt }}</td><td>{{ e.user|text }}</td></tr>
+                    {% else %}<tr><td colspan="6" class="text-muted">{{ 'No cash entries for this office and day.'|xlt }}</td></tr>{% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    {% else %}
+        <p class="text-muted">{{ 'Add a facility in OpenEMR first.'|xlt }}</p>
+    {% endif %}
+{% endblock %}
