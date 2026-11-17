@@ -40,6 +40,50 @@ Compatible with Elegant Calendar Style and Appointment Hover Card: calendar
 rules here only change colours; layout stays with Elegant Calendar Style.
 
 ## Changelog
+### 1.5.6 (2026-11-16)
+- Follow-up to 1.5.5 found during verification: on pages whose heading sits directly in the top
+  wrapper (Visit History) the top gap grew by 12px on each re-check; it is now measured on the
+  heading line and settles at 12px. A heading inside a flex navbar (encounter Summary/Review) was
+  mistaken for centred text and left 10px in; only text that really sits in the middle of its box
+  is treated as centred now. Reports > Insurance > Authorizations (the all-patients report) no
+  longer gets the patient menu bar; only the patient's own Auths page does.
+- Rail packs (1200px and wider): the avatar menu (Settings, Change Password, MFA Management,
+  About, Logout) opened downward and to the left of the bottom-left avatar, i.e. off-screen and
+  clipped by the rail, so it could not be used. It now opens as a flyout to the right of the rail,
+  bottom-aligned above the footer and on top of everything. The avatar is now keyboard operable
+  (Tab, Enter/Space, arrow keys, Escape) in every pack.
+### 1.5.5 (2026-11-16)
+- Encounter pages line up like the patient tabs: Visit History, the New Encounter form, the
+  encounter Summary and every form opened from the encounter menu (Administrative, Clinical,
+  Miscellaneous, Orders, Questionnaires) now start 12px from the tab's left edge with a 12px top
+  gap. They used a centred fixed-width `.container` / `#container_div` (New Encounter, Vitals, SOAP,
+  ROS, ...), a padded encounter navbar (Summary, Fee Sheet) or `.container-fluid`, so text started
+  anywhere from 10px to 170px in. Nested Summary/form frames are measured from the tab's edge.
+  The patient menu is still only pinned in the patient tab.
+- The same alignment runs on the pages behind the main menu (Finder, Flow, Messages, Patient,
+  Fees, Modules, Procedures, Reports, Miscellaneous, Admin incl. Cash-Pay Setup). Centred
+  headings and centred tables keep their own centring; the calendar grid is left untouched.
+- Rail packs (shadcn, Espresso, Graphite Rail, Storyboard Slate): flyout section rows (Clinic,
+  Patients, System, Cash-Pay Setup, ...) now start their text in the same column as plain items
+  and have the same row height; the expand chevron sits at the row's right edge.
+### 1.5.4 (2026-11-15)
+- Patient page content now starts at the same left edge as the pinned patient menu (12px gutter)
+  and the same 12px gap below it on every patient tab. Pages used a centred fixed-width
+  `.container` (History, SDOH, Report, Transactions, Issues, Ledger, External Data, Auths),
+  `.container-fluid` with body margins (Questionnaires, Cash-Pay), a padded heading navbar
+  (Dashboard) or column padding (Documents), so headings started anywhere from 10px to 172px in.
+  Top-level wrappers become full width with one gutter, then the first heading is measured and
+  any remaining offset is trimmed on that wrapper (patient tab only, theme module only).
+### 1.5.3 (2026-11-15)
+- Pinned patient menu: the patient menu (Dashboard, History, Assessments, Report, Documents,
+  Transactions, Issues, Ledger, External Data, Auths, Cash-Pay) now sits in one fixed bar at the
+  top of the patient tab, directly under the main menu, with the same height, left edge and order
+  on every patient page, and the current tab highlighted. Previously each page drew the menu under
+  its own heading/container, so it shifted left/right/up/down on every click.
+- Documents, Auths and Cash-Pay pages, which do not draw the menu themselves, get the same menu
+  (rendered by core's PatientMenuRole through `public/ajax.php?action=pmenu`, current patient only).
+- Dropdowns (Assessments, Cash-Pay) open as fixed popovers; on narrow windows the row scrolls
+  sideways instead of wrapping. Files: `public/assets/aet-patient-menu.js`, `aet-patient-menu.css`.
 ### 1.5.0 (2026-11-01)
 * New theme **Espresso** (modelled on Frappe/ERPNext Espresso UI): white workspace, light-grey
   hairlines, soft rounded cards, thin light icon rail (icon + label) with collapsible tree flyouts

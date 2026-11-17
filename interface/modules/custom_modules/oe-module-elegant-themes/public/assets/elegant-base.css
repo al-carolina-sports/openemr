@@ -232,3 +232,9 @@ html #mainMenu .appMenu .show > .menuLabel, html #mainMenu .appMenu .menuSection
   background-color: var(--aet-nav-hover) !important; background-image: none !important; color: var(--aet-sidetx) !important;
 }
 #attendantData .context-label, .context-label { color: var(--aet-text) !important; opacity: .85; }
+
+/* v1.5.6: the avatar menu (#userdropdown) opens below the main bar; the bar clips its overflow, so in the
+   top-bar packs every item below the bar was hidden under the tab strip / content frame and unclickable.
+   While the menu is open the bar lets it overflow and sits above the tabs, content frame and footer. */
+html.aet-main #mainBox > nav.navbar:has(#userdropdown.show) { overflow: visible !important; z-index: 1045 !important; }
+html.aet-main #mainBox > nav.navbar #userdropdown.show { z-index: 1045 !important; }

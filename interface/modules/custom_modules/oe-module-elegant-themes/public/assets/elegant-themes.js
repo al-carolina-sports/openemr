@@ -86,6 +86,32 @@
         panel.style.setProperty('top', Math.round(top) + 'px', 'important');
     }
 
+    // v1.5.6: the avatar toggle (#username) is a plain div - make it reachable and operable from the keyboard
+    // (Tab, Enter/Space opens, Arrow keys move through the items via Bootstrap, Escape closes and returns focus)
+    function bindUserMenuKeys() {
+        var t = document.getElementById('username'), ul = document.getElementById('userdropdown');
+        if (!t || !ul || t.getAttribute('data-aet-keys')) { return; }
+        t.setAttribute('data-aet-keys', '1');
+        if (!t.hasAttribute('tabindex')) { t.setAttribute('tabindex', '0'); }
+        ul.setAttribute('role', 'menu');
+        t.addEventListener('keydown', function (ev) {
+            var k = ev.key;
+            if (k === 'Enter' || k === ' ' || k === 'Spacebar' || (k === 'ArrowDown' && !ul.classList.contains('show'))) {
+                ev.preventDefault();
+                if (!ul.classList.contains('show')) { t.click(); }
+                setTimeout(function () { var a = ul.querySelector('a.dropdown-item'); if (a) { a.focus(); } }, 50);
+            }
+        });
+        Array.prototype.forEach.call(ul.querySelectorAll('a.dropdown-item'), function (a) {
+            if (!a.hasAttribute('tabindex')) { a.setAttribute('tabindex', '0'); }
+            a.setAttribute('role', 'menuitem');
+            a.addEventListener('keydown', function (ev) {
+                if (ev.key === 'Enter' || ev.key === ' ') { ev.preventDefault(); a.click(); }
+                if (ev.key === 'Escape' || ev.key === 'Esc') { ev.preventDefault(); if (ul.classList.contains('show')) { t.click(); } t.focus(); }
+            });
+        });
+    }
+
     // v1.2.3: rail flyouts are driven by JS: click-to-pin, hover intent (open delay), forgiving close delay
     function bindFlyouts(root) {
         var TOPSEL = '.appMenu > div > .menuSection';
@@ -241,6 +267,7 @@
         document.documentElement.classList.add('aet-main');
         decorate();
         bindFlyouts(document.getElementById('mainMenu'));
+        bindUserMenuKeys(); setTimeout(bindUserMenuKeys, 1500);
         placeSearch();
         window.addEventListener('resize', placeSearch);
         var obs = new MutationObserver(function () { decorate(); });

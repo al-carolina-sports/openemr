@@ -71,7 +71,18 @@
   html.aet-main #mainBox > nav.navbar > div:not(#mainMenu) { flex-direction: column !important; margin: 6px 0 0 !important; width: 100%; }
   html.aet-main #mainBox > nav.navbar .input-group { flex-wrap: nowrap; }
   html.aet-main #mainBox > nav.navbar #anySearchBox { width: 100% !important; min-width: 0; font-size: 10px; padding: 2px 4px; }
-  html.aet-main #mainBox > nav.navbar #userdropdown .dropdown-menu, html.aet-main #mainBox > nav.navbar #userdropdown + .dropdown-menu { left: 74px !important; right: auto !important; position: fixed !important; bottom: 8px; top: auto !important; }
+  /* v1.5.6: the avatar menu is ul#userdropdown itself (the old selectors never matched it), so it opened
+     downward/left from the bottom-left avatar, off-screen and clipped by the rail (overflow:hidden).
+     Now a fixed flyout to the right of the rail, bottom-aligned above the footer and on top of it. */
+  html.aet-main #mainBox > nav.navbar #userdropdown.dropdown-menu {
+    position: fixed !important; left: 76px !important; right: auto !important; top: auto !important;
+    bottom: calc(var(--aet-footer-h, 0px) + 8px) !important; transform: none !important; margin: 0 !important; inset-inline-end: auto !important;
+    z-index: 1045 !important; min-width: 220px; max-height: calc(100vh - var(--aet-footer-h, 0px) - 16px); max-height: calc(100dvh - var(--aet-footer-h, 0px) - 16px); overflow-y: auto;
+    padding: 6px !important; border-radius: 8px !important; box-shadow: 0 8px 24px rgba(0, 0, 0, .14), 0 1px 2px rgba(0, 0, 0, .06) !important;
+  }
+  html.aet-main #mainBox > nav.navbar:has(#userdropdown.show) { z-index: 1045 !important; }
+  html.aet-main #mainBox > nav.navbar #userdropdown .dropdown-item { border-radius: 5px; padding: 4px 8px !important; }
+  html.aet-main #mainBox > nav.navbar #userdropdown .dropdown-item:focus-visible { outline: 2px solid var(--aet-accent, #2563EB) !important; outline-offset: -2px; }
   html.aet-main #attendantData { grid-column: 2; grid-row: 1; }
   html.aet-main #tabs_div { grid-column: 2; grid-row: 2; }
   html.aet-main #mainFrames_div { grid-column: 2; grid-row: 3; min-height: 0; height: auto !important; }
@@ -110,3 +121,11 @@
 .card { box-shadow: 0 1px 2px rgba(17, 20, 24, .06) !important; margin-bottom: 6px !important; }
 .card-header { background: #FFFFFF !important; font-weight: 500; }
 #attendantData { background: #FFFFFF !important; border-bottom: 1px solid #E6E5E1; }
+
+/* v1.5.5: flyout rows line up - section rows (Clinic, Patients, System, Cash-Pay Setup, ...) used to start
+   their text 16px right of plain items and were 13px taller because of the core caret icon on its own line.
+   One text column and one row height for every row; the expand chevron moves to the row's right edge. */
+@media (min-width: 1200px) {
+  html.aet-main #mainMenu .menuEntries > li > i.closeButton:has(+ .menuSection) { display: none !important; }
+  html.aet-main #mainMenu .menuEntries .menuSection > .menuLabel::before { order: 2; margin: 0 2px 0 auto !important; }
+}

@@ -10,7 +10,8 @@
  *  - StyleFilterEvent adds the theme CSS to every page that uses Header::setupHeader();
  *  - ScriptFilterEvent adds the menu-icon script and the v1.3.0 contact card /
  *    recent patients script (public/ajax.php endpoint);
- *  - MenuEvent adds "Elegant Themes" under Miscellaneous (everyone) and Admin.
+ *  - MenuEvent adds "Elegant Themes" under Miscellaneous (everyone) and Admin;
+ *  - v1.5.3: aet-patient-menu.js/.css pin the patient menu at the top of the patient tab.
  *
  * @package   OpenEMR
  * @link      https://www.open-emr.org
@@ -71,6 +72,7 @@ class Bootstrap
         $styles[] = $this->asset('/public/assets/themes/' . $this->theme . '.css');
         $styles[] = $this->asset('/public/assets/aet-features.css');
         $styles[] = $this->asset('/public/assets/aet-footer.css');
+        $styles[] = $this->asset('/public/assets/aet-patient-menu.css');
         return $event->setStyles($styles);
     }
 
@@ -81,6 +83,7 @@ class Bootstrap
         $scripts[] = $this->asset('/public/assets/aet-features.js');
         $scripts[] = $this->asset('/public/assets/aet-footer.js');
         $scripts[] = $this->asset('/public/assets/aet-modern.js');
+        $scripts[] = $this->asset('/public/assets/aet-patient-menu.js');
         return $event->setScripts($scripts);
     }
 

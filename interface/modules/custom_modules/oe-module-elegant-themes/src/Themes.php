@@ -22,7 +22,7 @@ namespace OpenEMR\Modules\ElegantThemes;
 
 final class Themes
 {
-    public const VERSION = '1.5.2';
+    public const VERSION = '1.5.6';
 
     /** Stored value meaning "use the site default". */
     public const SITE = 'site';

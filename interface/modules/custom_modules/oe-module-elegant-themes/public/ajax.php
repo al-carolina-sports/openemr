@@ -1,7 +1,8 @@
 <?php
 
 /**
- * Annie's Elegant Themes AJAX endpoint: patient contact card, recent patients, footer booking context.
+ * Annie's Elegant Themes AJAX endpoint: patient contact card, recent patients, footer booking context,
+ * pinned patient menu (v1.5.3).
  * POST only, CSRF (default token of the main tabs page), ACL patients/demo read.
  *
  * @package   OpenEMR
@@ -17,6 +18,7 @@ require_once(__DIR__ . '/../../../../globals.php');
 use OpenEMR\Common\Acl\AclMain;
 use OpenEMR\Common\Csrf\CsrfUtils;
 use OpenEMR\Common\Session\SessionWrapperFactory;
+use OpenEMR\Menu\PatientMenuRole;
 use OpenEMR\Modules\ElegantThemes\Appointments;
 use OpenEMR\Modules\ElegantThemes\PatientExtras;
 use OpenEMR\Modules\ElegantThemes\ThemeRepository;
@@ -75,6 +77,28 @@ if ($action === 'apptctx') {
 }
 if (!AclMain::aclCheckCore('patients', 'demo')) {
     $out(403, ['error' => 'acl']);
+}
+
+// v1.5.3 pinned patient menu: the stock patient menu, rendered by core for the session's
+// current patient, for patient pages that do not draw it themselves (Documents, Auths, Cash-Pay).
+if ($action === 'pmenu') {
+    $sessionPid = (int)($session->get('pid') ?? 0);
+    if ($sessionPid <= 0 || (int)($_POST['pid'] ?? 0) !== $sessionPid) {
+        $out(200, ['ok' => false, 'error' => 'pid']);
+    }
+    $level = ob_get_level();
+    try {
+        ob_start();
+        (new PatientMenuRole())->displayHorizNavBarMenu();
+        $html = (string)ob_get_clean();
+        $out(200, ['ok' => true, 'pid' => $sessionPid, 'html' => $html]);
+    } catch (\Throwable $e) {
+        while (ob_get_level() > $level) {
+            ob_end_clean();
+        }
+        error_log('oe-module-elegant-themes ajax: ' . $e::class);
+        $out(500, ['error' => 'server']);
+    }
 }
 
 $extras = new PatientExtras();
