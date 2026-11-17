@@ -1,0 +1,72 @@
+# Rollback fixture - fault injection.
+#
+# This library is clean: it passes every validator. The test schema carries a
+# trigger that aborts an insert of a saved finding whose name contains "FAULT
+# INJECTION", which fails late in the import sequence, after the templates,
+# elements and options are already written.
+#
+# What it proves: the importer unwinds all of it. A half-imported library is
+# worse than none, because the half that landed looks finished.
+#
+# Nothing in the import format itself can reach this state - every defect the
+# format can express is caught by a validator before the transaction opens. That
+# is the design, and this fixture stands in for the failures that are not the
+# format's fault: a lost connection, a constraint added elsewhere, a disk error.
+
+library:
+  name: Rollback fault injection fixture
+
+templates:
+  - key: pe_lumbar
+    name: Lumbar Examination Fixture Template
+    section_key: pe
+    owner_scope: practice
+    elements:
+      - label: Inspection
+        sort_order: 1
+        options:
+          - label: no deformity
+            polarity: negative
+          - label: normal alignment
+            polarity: neutral
+      - label: Range of Motion
+        sort_order: 2
+        options:
+          - label: full and painless
+            polarity: neutral
+          - label: limited flexion
+            polarity: positive
+
+order_sets:
+  - code: "995"
+    name: Lumbar Radiculopathy Fixture Orders
+    items:
+      - item_type: imaging
+        reference: imaging_lumbar_mri_without_contrast
+        display_name: Magnetic resonance imaging, lumbar spine, without contrast
+        sort_order: 1
+
+saved_findings:
+  - key: sf_before_the_failure
+    name: Lumbar Examination Fixture Baseline
+    section_key: pe
+    owner_scope: practice
+    templates:
+      - template: pe_lumbar
+        sort_order: 1
+    presets:
+      - template: pe_lumbar
+        element: Inspection
+        option: normal alignment
+
+  - key: sf_fault
+    name: Lumbar Examination FAULT INJECTION
+    section_key: pe
+    owner_scope: practice
+    templates:
+      - template: pe_lumbar
+        sort_order: 1
+    presets:
+      - template: pe_lumbar
+        element: Range of Motion
+        option: limited flexion

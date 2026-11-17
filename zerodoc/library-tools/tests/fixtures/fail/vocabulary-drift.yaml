@@ -1,0 +1,89 @@
+# Expect: VOCAB errors.
+#
+# Defect class: an element retyping a shared vocabulary instead of referencing
+# it. Two elements that should carry the same response scale end up with
+# different scales, and nobody notices until a clinician cannot record the
+# answer they want on one of them.
+#
+#   1. Previous Injections restates response_to_treatment in full.
+#   2. Previous Chiropractic Care restates it MINUS "helped significantly" -
+#      exactly the drift the vocabulary requirement exists to prevent.
+#   3. Sensation restates the sensation vocabulary.
+#   4. An element references a vocabulary that does not exist.
+#   5. A plan-option parameter restates the laterality vocabulary.
+#   6. A set with laterality_param hard-codes a side on an item.
+
+library:
+  name: Vocabulary drift defects
+
+templates:
+  - key: hpi_drifting
+    name: Lumbar History Draft
+    section_key: hpi
+    owner_scope: practice
+    elements:
+      - label: Previous Injections
+        sort_order: 1
+        options:
+          - label: did not help
+            polarity: negative
+          - label: helped a little
+            polarity: neutral
+          - label: helped temporarily
+            polarity: neutral
+          - label: helped significantly
+            polarity: positive
+          - label: aggravated symptoms
+            polarity: negative
+
+      - label: Previous Chiropractic Care
+        sort_order: 2
+        options:
+          - label: did not help
+            polarity: negative
+          - label: helped a little
+            polarity: neutral
+          - label: helped temporarily
+            polarity: neutral
+          - label: aggravated symptoms
+            polarity: negative
+
+      - label: Sensation
+        sort_order: 3
+        options:
+          - label: normal
+            polarity: neutral
+          - label: decreased
+            polarity: positive
+          - label: absent
+            polarity: positive
+          - label: hyperesthetic
+            polarity: positive
+
+      - label: Reflexes
+        sort_order: 4
+        vocabulary: reflex_grades
+
+diagnosis_sets:
+  - code: "860"
+    name: Shoulder Candidates
+    presentation_mode: pick_list
+    laterality_param: true
+    items:
+      - icd10_code: M25.511
+        display_name: Shoulder pain
+        laterality: right
+        sort_order: 1
+
+plan_groups:
+  - key: pg_drift
+    name: shoulder pain
+    codes: [M25.511, M25.512, M25.519]
+    options:
+      - label: Subacromial injection
+        sort_order: 1
+        narrative_template: Discussed @SIDE@ subacromial injection.
+        parameters:
+          - key: side
+            options: [right, left, bilateral, "n/a"]
+            required: true

@@ -1,0 +1,129 @@
+# ICD-10-CM reference for the specificity checks.
+#
+# Format:  CODE | description | flags
+# Flags (comma separated, all optional):
+#   unspecified     - the code itself means "unspecified"; more specific siblings exist
+#   side=right      - the code encodes a right-sided diagnosis
+#   side=left       - left-sided
+#   side=bilateral  - bilateral
+#   side=none       - the code's family does not encode a side at all
+#   category        - 3-character category, not billable on a claim
+#
+# This file is a working reference for the codes this library actually uses, not
+# a full ICD-10-CM distribution. Add the codes you transcribe. An unknown code is
+# checked for FORMAT only and reported as unverified, never as wrong.
+
+# --- lumbar / lumbosacral ----------------------------------------------------
+M54.16 | Radiculopathy, lumbar region                      | side=none
+M54.17 | Radiculopathy, lumbosacral region                 | side=none
+M54.14 | Radiculopathy, thoracic region                    | side=none
+M54.12 | Radiculopathy, cervical region                    | side=none
+M54.15 | Radiculopathy, thoracolumbar region               | side=none
+M54.50 | Low back pain, unspecified                        | unspecified, side=none
+M54.51 | Vertebrogenic low back pain                       | side=none
+M54.59 | Other low back pain                               | side=none
+M54.9  | Dorsalgia, unspecified                            | unspecified, side=none
+M54.2  | Cervicalgia                                       | side=none
+M54.6  | Pain in thoracic spine                            | side=none
+M51.26 | Other intervertebral disc displacement, lumbar region        | side=none
+M51.27 | Other intervertebral disc displacement, lumbosacral region   | side=none
+M51.36 | Other intervertebral disc degeneration, lumbar region        | side=none
+M48.061 | Spinal stenosis, lumbar region without neurogenic claudication | side=none
+M48.062 | Spinal stenosis, lumbar region with neurogenic claudication    | side=none
+M47.816 | Spondylosis without myelopathy or radiculopathy, lumbar region | side=none
+M43.16 | Spondylolisthesis, lumbar region                  | side=none
+M46.46 | Discitis, unspecified, lumbar region              | unspecified, side=none
+M53.3  | Sacrococcygeal disorders, not elsewhere classified | side=none
+M53.2X7 | Spinal instabilities, lumbosacral region          | side=none
+
+# --- sacroiliac --------------------------------------------------------------
+M46.1  | Sacroiliitis, not elsewhere classified            | side=none
+M53.2X8 | Spinal instabilities, sacral and sacrococcygeal region | side=none
+
+# --- facet / arthropathy -----------------------------------------------------
+M47.896 | Other spondylosis, lumbar region                 | side=none
+M47.892 | Other spondylosis, cervical region               | side=none
+
+# --- shoulder ----------------------------------------------------------------
+M75.100 | Unspecified rotator cuff tear or rupture, unspecified shoulder, not traumatic | unspecified
+M75.101 | Unspecified rotator cuff tear or rupture, right shoulder, not traumatic  | side=right
+M75.102 | Unspecified rotator cuff tear or rupture, left shoulder, not traumatic   | side=left
+M75.00 | Adhesive capsulitis of unspecified shoulder       | unspecified
+M75.01 | Adhesive capsulitis of right shoulder             | side=right
+M75.02 | Adhesive capsulitis of left shoulder              | side=left
+M75.40 | Impingement syndrome of unspecified shoulder      | unspecified
+M75.41 | Impingement syndrome of right shoulder            | side=right
+M75.42 | Impingement syndrome of left shoulder             | side=left
+M75.50 | Bursitis of unspecified shoulder                  | unspecified
+M75.51 | Bursitis of right shoulder                        | side=right
+M75.52 | Bursitis of left shoulder                         | side=left
+M75.20 | Bicipital tendinitis, unspecified shoulder        | unspecified
+M75.21 | Bicipital tendinitis, right shoulder              | side=right
+M75.22 | Bicipital tendinitis, left shoulder               | side=left
+M19.011 | Primary osteoarthritis, right shoulder           | side=right
+M19.012 | Primary osteoarthritis, left shoulder            | side=left
+M19.019 | Primary osteoarthritis, unspecified shoulder     | unspecified
+M25.511 | Pain in right shoulder                           | side=right
+M25.512 | Pain in left shoulder                            | side=left
+M25.519 | Pain in unspecified shoulder                     | unspecified
+S43.431 | Superior glenoid labrum lesion of right shoulder | side=right
+S43.432 | Superior glenoid labrum lesion of left shoulder  | side=left
+S43.439 | Superior glenoid labrum lesion of unspecified shoulder | unspecified
+
+# --- hip ---------------------------------------------------------------------
+M16.11 | Unilateral primary osteoarthritis, right hip       | side=right
+M16.12 | Unilateral primary osteoarthritis, left hip        | side=left
+M16.0  | Bilateral primary osteoarthritis of hip            | side=bilateral
+M25.551 | Pain in right hip                                 | side=right
+M25.552 | Pain in left hip                                  | side=left
+M25.559 | Pain in unspecified hip                           | unspecified
+M70.61 | Trochanteric bursitis, right hip                   | side=right
+M70.62 | Trochanteric bursitis, left hip                    | side=left
+M24.151 | Other articular cartilage disorders, right hip     | side=right
+M24.152 | Other articular cartilage disorders, left hip      | side=left
+
+# --- knee --------------------------------------------------------------------
+M17.11 | Unilateral primary osteoarthritis, right knee       | side=right
+M17.12 | Unilateral primary osteoarthritis, left knee        | side=left
+M17.0  | Bilateral primary osteoarthritis of knee            | side=bilateral
+M17.9  | Osteoarthritis of knee, unspecified                 | unspecified
+M25.561 | Pain in right knee                                 | side=right
+M25.562 | Pain in left knee                                  | side=left
+M25.569 | Pain in unspecified knee                           | unspecified
+M23.221 | Derangement of other medial meniscus due to old tear, right knee | side=right
+M23.222 | Derangement of other medial meniscus due to old tear, left knee  | side=left
+
+# --- upper limb nerve --------------------------------------------------------
+G56.00 | Carpal tunnel syndrome, unspecified upper limb      | unspecified
+G56.01 | Carpal tunnel syndrome, right upper limb            | side=right
+G56.02 | Carpal tunnel syndrome, left upper limb             | side=left
+G56.03 | Carpal tunnel syndrome, bilateral upper limbs       | side=bilateral
+G56.20 | Lesion of ulnar nerve, unspecified upper limb       | unspecified
+G56.21 | Lesion of ulnar nerve, right upper limb             | side=right
+G56.22 | Lesion of ulnar nerve, left upper limb              | side=left
+M77.00 | Medial epicondylitis, unspecified elbow             | unspecified
+M77.01 | Medial epicondylitis, right elbow                   | side=right
+M77.02 | Medial epicondylitis, left elbow                    | side=left
+M77.10 | Lateral epicondylitis, unspecified elbow            | unspecified
+M77.11 | Lateral epicondylitis, right elbow                  | side=right
+M77.12 | Lateral epicondylitis, left elbow                   | side=left
+
+# --- lower limb nerve / other ------------------------------------------------
+M54.30 | Sciatica, unspecified side                          | unspecified
+M54.31 | Sciatica, right side                                | side=right
+M54.32 | Sciatica, left side                                 | side=left
+M79.604 | Pain in right leg                                  | side=right
+M79.605 | Pain in left leg                                   | side=left
+M79.606 | Pain in leg, unspecified                           | unspecified
+G57.01 | Lesion of sciatic nerve, right lower limb           | side=right
+G57.02 | Lesion of sciatic nerve, left lower limb            | side=left
+
+# --- comorbid / non-musculoskeletal used in plan groups ----------------------
+I10    | Essential (primary) hypertension                     | side=none
+E11.9  | Type 2 diabetes mellitus without complications       | side=none
+E11.40 | Type 2 diabetes mellitus with diabetic neuropathy, unspecified | unspecified, side=none
+G89.29 | Other chronic pain                                   | side=none
+G89.4  | Chronic pain syndrome                                | side=none
+Z79.891 | Long term (current) use of opiate analgesic         | side=none
+M62.830 | Muscle spasm of back                                | side=none
+R29.898 | Other symptoms and signs involving the musculoskeletal system | side=none

@@ -1,0 +1,5 @@
+ROS — Comprehensive Adult Problem ROS
+Patient reports limited motion and low back pain but reports no soft tissue
+swelling, no joint swelling, no myalgia, and no trauma. He reports numbness and
+tingling of the left hand. He reports no significant weight change, good
+appetite, no fever, and no fatigue. [... 12 further systems ...]

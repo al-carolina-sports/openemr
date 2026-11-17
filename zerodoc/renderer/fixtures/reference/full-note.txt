@@ -1,0 +1,95 @@
+PATIENT   TEST, MARTY (36yo M)  ID# 6108   DOB 01/01/1990
+VISIT     11/14/2026 02:00 PM · ROCKY MOUNT OFFICE · FOLLOW UP
+PROVIDER  ALVIN K. ANTONY, MD
+INSURANCE Med Primary: *SELF PAY*
+
+CHIEF COMPLAINT
+low back pain
+
+VITALS (11/14/2026 21:40)
+Ht 5'10" · Wt 210 lb · BMI 30.1 · BP 132/84 · RR 16 · T 98.4 °F ·
+HR 78 · O2 98% · Pain 6/10
+
+REVIEWED ALLERGIES
+CODEINE · STRAWBERRY        (external, 11/14/2026 21:38; reviewed 21:55)
+
+REVIEWED MEDICATIONS
+metFORMIN 500 mg tablet — 1 tab PO BID
+lisinopril 10 mg tablet — 1 tab PO daily
+
+PROBLEMS
+Essential hypertension (I10) · Diabetes type 2, controlled (E11.9) ·
+Obesity, class 1, BMI 30.0–34.9 (E66.811) ·
+Carpal tunnel syndrome, left (G56.02)
+
+HPI — Pain Management L-spine (reported by patient)
+Location: radiating to the RLE; LBP; right buttock pain
+Quality: aching; sharp
+Severity: current pain level 6/10; worst pain 8/10; interference with sleep
+Duration: intermittent
+Onset/Timing: chronic
+Context: lifting
+Alleviating Factors: heat; medication; rest
+Aggravating Factors: flexion; lifting; sit-to-stand; sitting
+Associated Symptoms: numbness; no weakness; no bladder or bowel compromise
+Radiation: right S1
+Work Related: no
+ADL: improve with medication
+Driving Impairments with Medications: no
+Prior Imaging: MRI   Prior EMG: none   Previous Surgery: none
+Previous Injections: none   Previous PT: helped a little
+Previous Chiropractic Care: none
+Note: numbness and tingling in the first three digits of the LEFT hand in a
+median nerve distribution, worse at night and with sustained gripping; relieved
+by shaking the hand. No prior EMG/NCS. Consistent with left carpal tunnel
+syndrome.
+
+ROS — Comprehensive Adult Problem ROS
+Patient reports limited motion and low back pain but reports no soft tissue
+swelling, no joint swelling, no myalgia, and no trauma. He reports numbness and
+tingling of the left hand. He reports no significant weight change, good
+appetite, no fever, and no fatigue. [... 12 further systems ...]
+
+PHYSICAL EXAM — CSS Lumbar Spine + Wrist
+Constitutional: General Appearance: healthy-appearing, NAD, normal body habitus.
+Gait and Station: normal gait, no limp, no assistive devices.
+Lumbar Spine: Inspection: no induration, ecchymosis, or swelling; normal
+  alignment. Bony Palpation: no tenderness of the spinous process, the facet
+  joints, the sacroiliac joint(s), or the coccyx. Active ROM: no pain with
+  motion.
+Motor Strength: L1, L2–L4, L5, S1 — 5/5 right and left.
+Wrist: Sensation Right: normal median nerve distribution. Sensation Left:
+  decreased median nerve distribution. Special Tests Right: Tinel's negative,
+  Phalen's negative. Special Tests Left: Tinel's at the median nerve positive,
+  Phalen's positive.
+Neurological: Sensation T12–S2 normal bilaterally. Straight leg raise negative
+  bilaterally. Babinski absent bilaterally.
+Note: no thenar atrophy.
+
+ASSESSMENT / PLAN
+1. Right lumbar radiculopathy — M54.16
+   Chronic right L5–S1 radicular low back pain, mechanical onset with lifting.
+   Continue HEP; PT previously gave partial relief. Discussed right L4–L5
+   interlaminar ESI; will schedule. Review prior lumbar MRI. Monitor glycemic
+   control before steroid injection — counseled on transient post-injection
+   hyperglycemia. Return 4 weeks.
+2. Carpal tunnel syndrome, left — G56.02
+   Orders: nerve conduction study/EMG, upper extremity (in house). Night splint.
+3. Essential hypertension — I10
+4. Obesity, class 1 — E66.811
+
+ORDERS SIGNED (1)
+nerve conduction study/EMG, upper extremity — Alvin K. Antony, MD,
+Rocky Mount Office · 11/14/2026
+
+PATIENT EDUCATION PROVIDED (4)   [not an order]
+carpal tunnel syndrome: care instructions · carpal tunnel syndrome: exercises ·
+high blood pressure: care instructions · learning about high blood pressure
+
+TIME SPENT
+25 minutes, Evaluation and Management (E&M)
+
+FOLLOW-UP
+Return to office in 4 weeks.
+
+SIGNED  Alvin K. Antony, MD · 11/14/2026 22:10

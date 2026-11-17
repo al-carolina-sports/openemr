@@ -1,0 +1,83 @@
+# Expect: LAT_IN_NAME errors.
+#
+# Defect class: laterality baked into entry names, in four different spellings,
+# plus an anatomical level in a name. Laterality and level are attributes; a
+# library that spells them into names cannot sort, cannot pair and guarantees a
+# missing mirror sooner or later.
+
+library:
+  name: Laterality-in-name defects
+
+templates:
+  - key: pe_wrist
+    name: Wrist Examination
+    section_key: pe
+    owner_scope: practice
+    elements:
+      - label: Inspection
+        sort_order: 1
+        options:
+          - label: no swelling
+            polarity: negative
+
+saved_findings:
+  - key: sf_hip_labral_r
+    name: Hip Labral Tear R
+    section_key: pe
+    owner_scope: practice
+    templates: [pe_wrist]
+    presets:
+      - template: pe_wrist
+        element: Inspection
+        option: no swelling
+
+  - key: sf_si_joint_b
+    name: SI Joint B
+    section_key: pe
+    owner_scope: practice
+    templates: [pe_wrist]
+    presets:
+      - template: pe_wrist
+        element: Inspection
+        option: no swelling
+
+  - key: sf_carpal_tunnel_left
+    name: Carpal Tunnel Left
+    section_key: pe
+    owner_scope: practice
+    templates: [pe_wrist]
+    presets:
+      - template: pe_wrist
+        element: Inspection
+        option: no swelling
+
+  - key: sf_shoulder_bursitis_bilateral
+    name: Shoulder Bursitis Bilateral
+    section_key: pe
+    owner_scope: practice
+    templates: [pe_wrist]
+    presets:
+      - template: pe_wrist
+        element: Inspection
+        option: no swelling
+
+diagnosis_sets:
+  - code: "870"
+    name: Shoulder Candidates Right
+    presentation_mode: pick_list
+    laterality_param: false
+    items:
+      - icd10_code: M75.101
+        display_name: Rotator cuff tear, right shoulder
+        laterality: n/a
+        sort_order: 1
+
+order_sets:
+  - code: "871"
+    name: Right L4-L5 Interlaminar Epidural Steroid Injection
+    items:
+      - item_type: procedure
+        reference: procedure_lumbar_esi
+        display_name: Right interlaminar epidural steroid injection
+        laterality: n/a
+        sort_order: 1

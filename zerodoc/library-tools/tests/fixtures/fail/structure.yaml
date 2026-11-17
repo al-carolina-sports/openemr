@@ -1,0 +1,54 @@
+# Expect: STRUCTURE errors - the format's own shape rules.
+#
+# These are the mistakes a transcriber makes before any clinical judgement is
+# involved: a misspelled field name, a value outside an enum, a required field
+# left out, an invented field. Each is named with the entry it belongs to.
+
+library:
+  name: Structural defects
+
+templates:
+  - key: t_bad_enum
+    name: Lumbar Examination Draft
+    section_key: physical_exam          # not a section key; "pe" is
+    owner_scope: clinic                 # not an owner scope
+    elements:
+      - label: Inspection
+        sort_order: 1
+        colour: blue                    # invented field
+        options:
+          - label: no deformity
+            polarity: nega              # not a polarity
+      - sort_order: 2                   # no label
+        options:
+          - label: normal alignment
+
+  - name: Missing Section Key Template   # section_key omitted
+    owner_scope: practice
+    elements:
+      - label: Inspection
+        sort_order: 1
+        vocabulary: sensation
+        options:                         # both vocabulary and options
+          - label: normal
+
+saved_findings:
+  - key: sf_no_templates
+    name: Finding With No Templates
+    section_key: pe
+    owner_scope: practice
+    presets:
+      - element: Inspection              # no template named
+        option: normal
+
+diagnosis_sets:
+  - name: Set Without A Code
+    presentation_mode: insert_all
+    items:
+      - display_name: Radiculopathy      # no icd10_code
+        sort_order: 1
+
+order_sets:
+  - code: "899"
+    name: Empty Order Set
+    items: []

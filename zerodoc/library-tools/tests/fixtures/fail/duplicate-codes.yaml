@@ -1,0 +1,65 @@
+# Expect: DUP_CODE errors.
+#
+# Defect class: one catalog number naming several different sets, so the number
+# stops being a key and nothing can reference a set reliably.
+#   - "850" names three different diagnosis sets
+#   - "857" names the same set twice, once per side - the case that collapses
+#     into one set with laterality_param
+#   - "511" is used by both a diagnosis set and an order set; set codes share one
+#     catalog, so that is a collision too
+
+library:
+  name: Duplicate code defects
+
+diagnosis_sets:
+  - code: "850"
+    name: Lumbar Candidates
+    presentation_mode: pick_list
+    items:
+      - icd10_code: M54.16
+        display_name: Radiculopathy, lumbar region
+
+  - code: "850"
+    name: Lumbar Post-Laminectomy Candidates
+    presentation_mode: pick_list
+    items:
+      - icd10_code: M54.16
+        display_name: Radiculopathy, lumbar region
+
+  - code: "850"
+    name: Lumbar Spondylolisthesis Candidates
+    presentation_mode: pick_list
+    items:
+      - icd10_code: M43.16
+        display_name: Spondylolisthesis, lumbar region
+
+  - code: "857"
+    name: Shoulder Candidates Right
+    presentation_mode: pick_list
+    items:
+      - icd10_code: M75.101
+        display_name: Rotator cuff tear, right shoulder
+        laterality: right
+
+  - code: "857"
+    name: Shoulder Candidates Left
+    presentation_mode: pick_list
+    items:
+      - icd10_code: M75.102
+        display_name: Rotator cuff tear, left shoulder
+        laterality: left
+
+  - code: "511"
+    name: Thoracic Candidates
+    presentation_mode: pick_list
+    items:
+      - icd10_code: M54.14
+        display_name: Radiculopathy, thoracic region
+
+order_sets:
+  - code: "511"
+    name: Lumbar Epidural Steroid Injection Orders
+    items:
+      - item_type: procedure
+        reference: procedure_lumbar_esi
+        sort_order: 1

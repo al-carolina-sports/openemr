@@ -1,0 +1,46 @@
+# Expect: SPELLING - errors on names and element labels, warnings on option text.
+#
+# Defect class: typos transcribed faithfully. A typo in a name outlives the
+# transcription because everything else references it, and an unfinished name
+# ("Knee OA Left val") ships as if it were deliberate.
+
+library:
+  name: Spelling defects
+
+templates:
+  - key: hpi_tspine_typo
+    name: Pain Manangement Thoracic Spine
+    section_key: hpi
+    owner_scope: practice
+    elements:
+      - label: Previous Surgery
+        sort_order: 1
+        options:
+          - label: none
+            polarity: negative
+          - label: discecotomy
+            polarity: positive
+          - label: fusion
+            polarity: positive
+          - label: laminectomy
+            polarity: positive
+      - label: Assesment of Function
+        sort_order: 2
+        options:
+          - label: independent
+            polarity: neutral
+          - label: requires assistence
+            polarity: positive
+
+saved_findings:
+  - key: sf_knee_oa_unfinished
+    name: Knee Osteoarthritis val
+    section_key: pe
+    owner_scope: practice
+    templates:
+      - template: hpi_tspine_typo
+        sort_order: 1
+    presets:
+      - template: hpi_tspine_typo
+        element: Previous Surgery
+        option: none

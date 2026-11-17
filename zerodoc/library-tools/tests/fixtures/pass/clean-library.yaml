@@ -1,0 +1,754 @@
+# ZeroDoc Clinical Encounter Workflow - reference library
+#
+# This file is the worked example in FORMAT.md and the "everything passes"
+# fixture. It must validate with zero errors and zero warnings, so it is also the
+# shape to copy when starting a new batch of transcription.
+
+library:
+  name: Reference library
+  version: 1
+  transcribed_by: content track
+  notes: Every entry here is clean on purpose. Copy its shape, not its content.
+
+templates:
+
+  # ---------------------------------------------------------------- HPI -----
+  - key: hpi_lumbar_pain
+    name: Pain Management Lumbar Spine
+    specialty: pain management
+    body_region: lumbar spine
+    section_key: hpi
+    owner_scope: practice
+    is_active: true
+    elements:
+
+      - label: Location
+        sort_order: 1
+        allows_multi: true
+        render_prefix: "Pain located:"
+        options:
+          - label: low back
+            polarity: positive
+          - label: buttock
+            polarity: positive
+          - label: hip
+            polarity: positive
+          - label: groin
+            polarity: positive
+
+      - label: Quality
+        sort_order: 2
+        allows_multi: true
+        vocabulary: pain_quality
+
+      - label: Severity
+        sort_order: 3
+        allows_multi: true
+        options:
+          - label: current __/10
+            polarity: positive
+            value_slots:
+              - type: numeric
+                min: 0
+                max: 10
+                suffix: /10
+          - label: worst __/10
+            polarity: positive
+            value_slots:
+              - type: numeric
+                min: 0
+                max: 10
+                suffix: /10
+          - label: improving
+            polarity: neutral
+            excludes: [worsening]
+          - label: worsening
+            polarity: positive
+            excludes: [improving]
+          - label: interferes with sleep
+            polarity: positive
+          - label: interferes with work
+            polarity: positive
+
+      - label: Onset
+        sort_order: 4
+        allows_multi: false
+        vocabulary: onset
+
+      - label: Frequency
+        sort_order: 5
+        allows_multi: false
+        vocabulary: frequency
+
+      - label: Context
+        sort_order: 6
+        allows_multi: true
+        options:
+          - label: cannot identify
+            polarity: neutral
+          - label: bending
+            polarity: positive
+          - label: lifting
+            polarity: positive
+          - label: twisting
+            polarity: positive
+          - label: fall
+            polarity: positive
+          - label: motor vehicle accident
+            polarity: positive
+
+      - label: Alleviating Factors
+        sort_order: 7
+        allows_multi: true
+        options:
+          - label: nothing helps
+            polarity: positive
+          - label: heat
+            polarity: neutral
+          - label: ice
+            polarity: neutral
+          - label: medication
+            polarity: neutral
+          - label: position change
+            polarity: neutral
+          - label: rest
+            polarity: neutral
+          - label: physical therapy
+            polarity: neutral
+
+      - label: Aggravating Factors
+        sort_order: 8
+        allows_multi: true
+        options:
+          - label: cannot identify
+            polarity: neutral
+          - label: flexion
+            polarity: positive
+          - label: extension
+            polarity: positive
+          - label: lifting
+            polarity: positive
+          - label: sitting
+            polarity: positive
+          - label: standing
+            polarity: positive
+          - label: walking
+            polarity: positive
+
+      # POLARITY CONVENTION, both cases in one element:
+      #   "no weakness"  - an asserted absence   -> negative
+      #   "normal gait"  - a normal descriptor   -> neutral
+      - label: Associated Symptoms
+        sort_order: 9
+        allows_multi: true
+        options:
+          - label: no weakness
+            polarity: negative
+          - label: no numbness
+            polarity: negative
+          - label: no bowel or bladder compromise
+            polarity: negative
+          - label: normal gait
+            polarity: neutral
+          - label: weakness
+            polarity: positive
+          - label: numbness
+            polarity: positive
+          - label: bowel compromise
+            polarity: positive
+          - label: bladder compromise
+            polarity: positive
+
+      - label: Previous Injections
+        sort_order: 10
+        allows_multi: false
+        vocabulary: response_to_treatment
+
+      # Same scale as the element above, by reference, so the two can never
+      # diverge the way two hand-typed lists do.
+      - label: Previous Chiropractic Care
+        sort_order: 11
+        allows_multi: false
+        vocabulary: response_to_treatment
+
+  # Monitoring fields live in their own attachable template, not inside a
+  # mechanical-pain history.
+  - key: hpi_controlled_substance_monitoring
+    name: Controlled Substance Monitoring
+    specialty: pain management
+    section_key: hpi
+    owner_scope: practice
+    is_active: true
+    elements:
+      - label: Relief With Current Medication
+        sort_order: 1
+        allows_multi: false
+        options:
+          - label: __ percent relief
+            polarity: neutral
+            value_slots:
+              - type: percent
+                max: 100
+                suffix: "%"
+          - label: relief lasting __ hours
+            polarity: neutral
+            value_slots:
+              - type: numeric
+                max: 24
+                unit: hours
+      - label: Driving Impairment With Medication
+        sort_order: 2
+        allows_multi: false
+        options:
+          - label: no impairment reported
+            polarity: negative
+          - label: impairment reported
+            polarity: positive
+      - label: Prescription Monitoring Program Review
+        sort_order: 3
+        allows_multi: false
+        options:
+          - label: reviewed, consistent
+            polarity: neutral
+          - label: reviewed, discrepancy noted
+            polarity: positive
+          - label: review deferred to next visit
+            polarity: neutral
+
+  # ----------------------------------------------------------------- PE -----
+  - key: pe_lumbar_spine
+    name: Lumbar Spine Examination
+    specialty: physical medicine and rehabilitation
+    body_region: lumbar spine
+    section_key: pe
+    owner_scope: practice
+    is_active: true
+    applies_to_sex: any
+    elements:
+
+      - label: Inspection
+        sort_order: 1
+        allows_multi: true
+        options:
+          - label: no deformity
+            polarity: negative
+          - label: no scar
+            polarity: negative
+          - label: normal alignment
+            polarity: neutral
+          - label: loss of lumbar lordosis
+            polarity: positive
+          - label: scoliosis
+            polarity: positive
+
+      # Paired elements. The option sets are identical, option for option.
+      # pair_key makes the pairing explicit so the linter never has to guess.
+      - label: Soft Tissue Palpation - Right
+        sort_order: 2
+        side: right
+        pair_key: soft tissue palpation
+        allows_multi: true
+        render_prefix: "Tenderness on the right:"
+        options:
+          - label: no tenderness
+            polarity: negative
+          - label: paraspinal muscles
+            polarity: positive
+          - label: iliolumbar region
+            polarity: positive
+          - label: gluteus medius
+            polarity: positive
+          - label: piriformis
+            polarity: positive
+          - label: sciatic notch
+            polarity: positive
+
+      - label: Soft Tissue Palpation - Left
+        sort_order: 3
+        side: left
+        pair_key: soft tissue palpation
+        allows_multi: true
+        render_prefix: "Tenderness on the left:"
+        options:
+          - label: no tenderness
+            polarity: negative
+          - label: paraspinal muscles
+            polarity: positive
+          - label: iliolumbar region
+            polarity: positive
+          - label: gluteus medius
+            polarity: positive
+          - label: piriformis
+            polarity: positive
+          - label: sciatic notch
+            polarity: positive
+
+      - label: Spinous Process Tenderness
+        sort_order: 4
+        allows_multi: true
+        render_prefix: "Tenderness of the spinous process at:"
+        vocabulary: lumbar_levels
+
+      - label: Range of Motion
+        sort_order: 5
+        allows_multi: true
+        options:
+          - label: full and painless
+            polarity: neutral
+          - label: limited flexion
+            polarity: positive
+          - label: limited extension
+            polarity: positive
+          - label: painful arc
+            polarity: positive
+
+      - label: Deep Tendon Reflexes - Right
+        sort_order: 6
+        side: right
+        pair_key: deep tendon reflexes
+        allows_multi: false
+        vocabulary: reflex_grade
+
+      - label: Deep Tendon Reflexes - Left
+        sort_order: 7
+        side: left
+        pair_key: deep tendon reflexes
+        allows_multi: false
+        vocabulary: reflex_grade
+
+      - label: Motor Strength - Right
+        sort_order: 8
+        side: right
+        pair_key: motor strength
+        allows_multi: false
+        vocabulary: motor_grade
+
+      - label: Motor Strength - Left
+        sort_order: 9
+        side: left
+        pair_key: motor strength
+        allows_multi: false
+        vocabulary: motor_grade
+
+      - label: Sensation - Right
+        sort_order: 10
+        side: right
+        pair_key: sensation
+        allows_multi: false
+        vocabulary: sensation
+
+      - label: Sensation - Left
+        sort_order: 11
+        side: left
+        pair_key: sensation
+        allows_multi: false
+        vocabulary: sensation
+
+      - label: Straight Leg Raise - Right
+        sort_order: 12
+        side: right
+        pair_key: straight leg raise
+        allows_multi: false
+        vocabulary: special_test_result
+
+      - label: Straight Leg Raise - Left
+        sort_order: 13
+        side: left
+        pair_key: straight leg raise
+        allows_multi: false
+        vocabulary: special_test_result
+
+  - key: pe_wrist_hand
+    name: Wrist and Hand Examination
+    specialty: physical medicine and rehabilitation
+    body_region: wrist
+    section_key: pe
+    owner_scope: practice
+    is_active: true
+    elements:
+      - label: Inspection
+        sort_order: 1
+        allows_multi: true
+        options:
+          - label: no swelling
+            polarity: negative
+          - label: no thenar atrophy
+            polarity: negative
+          - label: normal contour
+            polarity: neutral
+          - label: thenar atrophy
+            polarity: positive
+      - label: Phalen Test - Right
+        sort_order: 2
+        side: right
+        pair_key: phalen test
+        allows_multi: false
+        vocabulary: special_test_result
+      - label: Phalen Test - Left
+        sort_order: 3
+        side: left
+        pair_key: phalen test
+        allows_multi: false
+        vocabulary: special_test_result
+      - label: Tinel Sign - Right
+        sort_order: 4
+        side: right
+        pair_key: tinel sign
+        allows_multi: false
+        vocabulary: special_test_result
+      - label: Tinel Sign - Left
+        sort_order: 5
+        side: left
+        pair_key: tinel sign
+        allows_multi: false
+        vocabulary: special_test_result
+      - label: Median Sensation - Right
+        sort_order: 6
+        side: right
+        pair_key: median sensation
+        allows_multi: false
+        vocabulary: sensation
+      - label: Median Sensation - Left
+        sort_order: 7
+        side: left
+        pair_key: median sensation
+        allows_multi: false
+        vocabulary: sensation
+
+saved_findings:
+
+  # Side-neutral: no laterality in the name AND none fixed in the entry, so one
+  # entry serves right, left and bilateral. The side is chosen when it is
+  # applied.
+  - key: sf_pe_carpal_tunnel
+    name: Carpal Tunnel Syndrome Examination
+    section_key: pe
+    owner_scope: practice
+    is_active: true
+    templates:
+      - template: pe_wrist_hand
+        sort_order: 1
+    presets:
+      - template: pe_wrist_hand
+        element: Inspection
+        option: no swelling
+      - template: pe_wrist_hand
+        element: Phalen Test - Right
+        option: positive
+      - template: pe_wrist_hand
+        element: Tinel Sign - Right
+        option: positive
+      - template: pe_wrist_hand
+        element: Median Sensation - Right
+        option: decreased
+
+  - key: sf_pe_lumbar_normal
+    name: Lumbar Examination Without Radicular Signs
+    section_key: pe
+    owner_scope: practice
+    is_active: true
+    templates:
+      - template: pe_lumbar_spine
+        sort_order: 1
+    presets:
+      - template: pe_lumbar_spine
+        element: Inspection
+        option: normal alignment
+      - template: pe_lumbar_spine
+        element: Soft Tissue Palpation - Right
+        option: paraspinal muscles
+      - template: pe_lumbar_spine
+        element: Soft Tissue Palpation - Left
+        option: paraspinal muscles
+      - template: pe_lumbar_spine
+        element: Range of Motion
+        option: limited flexion
+      - template: pe_lumbar_spine
+        element: Motor Strength - Right
+        option: 5/5
+      - template: pe_lumbar_spine
+        element: Motor Strength - Left
+        option: 5/5
+      - template: pe_lumbar_spine
+        element: Deep Tendon Reflexes - Right
+        option: 2+
+      - template: pe_lumbar_spine
+        element: Deep Tendon Reflexes - Left
+        option: 2+
+      - template: pe_lumbar_spine
+        element: Straight Leg Raise - Right
+        option: negative
+      - template: pe_lumbar_spine
+        element: Straight Leg Raise - Left
+        option: negative
+
+diagnosis_sets:
+
+  # pick_list: narrows the code book to the candidates used for this region.
+  # laterality_param works here because none of these codes encode a side.
+  - code: "850"
+    name: Lumbar Spine Candidates
+    specialty: pain management
+    body_region: lumbar spine
+    owner_scope: practice
+    is_active: true
+    presentation_mode: pick_list
+    laterality_param: true
+    items:
+      - icd10_code: M54.16
+        display_name: Radiculopathy, lumbar region
+        laterality: n/a
+        default_selected: false
+        sort_order: 1
+        default_plan_text: Radicular lumbar pain. Plan discussed below.
+        linked_order_set: "511"
+      - icd10_code: M51.26
+        display_name: Other intervertebral disc displacement, lumbar region
+        laterality: n/a
+        default_selected: false
+        sort_order: 2
+      - icd10_code: M48.062
+        display_name: Spinal stenosis, lumbar region with neurogenic claudication
+        laterality: n/a
+        default_selected: false
+        sort_order: 3
+      - icd10_code: M47.816
+        display_name: Spondylosis without myelopathy or radiculopathy, lumbar region
+        laterality: n/a
+        default_selected: false
+        sort_order: 4
+
+  # insert_all: a deterministic follow-up where the diagnosis is known in
+  # advance. Side-specific codes, so the side lives in the code and in the
+  # item's laterality field - not in a set-level selector.
+  - code: "857"
+    name: Shoulder Candidates
+    specialty: physical medicine and rehabilitation
+    body_region: shoulder
+    owner_scope: practice
+    is_active: true
+    presentation_mode: pick_list
+    laterality_param: false
+    items:
+      - icd10_code: M75.101
+        display_name: Rotator cuff tear, right shoulder
+        laterality: right
+        default_selected: false
+        sort_order: 1
+      - icd10_code: M75.102
+        display_name: Rotator cuff tear, left shoulder
+        laterality: left
+        default_selected: false
+        sort_order: 2
+      - icd10_code: M75.01
+        display_name: Adhesive capsulitis of right shoulder
+        laterality: right
+        default_selected: false
+        sort_order: 3
+      - icd10_code: M75.02
+        display_name: Adhesive capsulitis of left shoulder
+        laterality: left
+        default_selected: false
+        sort_order: 4
+
+plan_groups:
+
+  # One group, every code that means the same problem. Options attach here, not
+  # to a code, so the two codes can never carry different plans.
+  - key: pg_lumbar_radiculopathy
+    name: lumbar radiculopathy
+    is_active: true
+    codes: [M54.16, M54.17]
+    options:
+      - label: Observe
+        sort_order: 1
+        narrative_template: Symptoms are improving. Continue current measures and observe.
+        sets_followup: false
+      - label: Home exercise program
+        sort_order: 2
+        narrative_template: Home exercise program reviewed and provided.
+        sets_followup: false
+      - label: Physical therapy
+        sort_order: 3
+        narrative_template: Referred for physical therapy, @REGION@ protocol.
+        creates_order_type: referral_physical_therapy
+        sets_followup: false
+        parameters:
+          - key: region
+            options: [lumbar, lumbosacral, core stabilization]
+            required: true
+            default: lumbar
+      - label: Epidural steroid injection
+        sort_order: 4
+        narrative_template: >-
+          Discussed @SIDE@ @LEVEL@ @APPROACH@ epidural steroid injection; risks,
+          benefits and alternatives reviewed; patient wishes to proceed and will
+          be scheduled.
+        creates_order_type: procedure_lumbar_esi
+        queues_consent: consent_epidural_steroid_injection
+        sets_followup: true
+        parameters:
+          - key: side
+            vocabulary: laterality
+            required: true
+          - key: level
+            vocabulary: lumbar_levels
+            required: true
+          - key: approach
+            options: [interlaminar, transforaminal, caudal]
+            required: true
+            default: interlaminar
+      - label: Advanced imaging
+        sort_order: 5
+        narrative_template: Ordered lumbar @MODALITY@, @CONTRAST@.
+        creates_order_type: imaging_lumbar
+        sets_followup: false
+        parameters:
+          - key: modality
+            options: [magnetic resonance imaging, computed tomography]
+            required: true
+            default: magnetic resonance imaging
+          - key: contrast
+            options: [without contrast, with contrast, with and without contrast]
+            required: true
+            default: without contrast
+
+  - key: pg_lumbar_disc_displacement
+    name: lumbar disc displacement
+    is_active: true
+    codes: [M51.26, M51.27]
+    options:
+      - label: Conservative treatment
+        sort_order: 1
+        narrative_template: Conservative treatment continued; activity modification discussed.
+        sets_followup: false
+      - label: Physical therapy
+        sort_order: 2
+        narrative_template: Referred for physical therapy.
+        creates_order_type: referral_physical_therapy
+        sets_followup: false
+
+  - key: pg_lumbar_stenosis
+    name: lumbar spinal stenosis
+    is_active: true
+    codes: [M48.061, M48.062]
+    options:
+      - label: Conservative treatment
+        sort_order: 1
+        narrative_template: Conservative treatment continued.
+        sets_followup: false
+      - label: Surgical consultation
+        sort_order: 2
+        narrative_template: Referred for spine surgical consultation.
+        creates_order_type: referral_spine_surgery
+        sets_followup: false
+
+  - key: pg_lumbar_spondylosis
+    name: lumbar spondylosis
+    is_active: true
+    codes: [M47.816, M47.896]
+    options:
+      - label: Conservative treatment
+        sort_order: 1
+        narrative_template: Conservative treatment continued.
+        sets_followup: false
+      - label: Medial branch block
+        sort_order: 2
+        narrative_template: Discussed @SIDE@ @LEVEL@ medial branch block.
+        creates_order_type: procedure_medial_branch_block
+        queues_consent: consent_medial_branch_block
+        sets_followup: true
+        parameters:
+          - key: side
+            vocabulary: laterality
+            required: true
+          - key: level
+            vocabulary: lumbar_levels
+            required: true
+
+  - key: pg_rotator_cuff_tear
+    name: rotator cuff tear
+    is_active: true
+    codes: [M75.100, M75.101, M75.102]
+    options:
+      - label: Physical therapy
+        sort_order: 1
+        narrative_template: Referred for shoulder physical therapy.
+        creates_order_type: referral_physical_therapy
+        sets_followup: false
+      - label: Subacromial injection
+        sort_order: 2
+        narrative_template: Discussed @SIDE@ subacromial corticosteroid injection.
+        creates_order_type: procedure_subacromial_injection
+        sets_followup: true
+        parameters:
+          - key: side
+            vocabulary: laterality
+            required: true
+
+  - key: pg_adhesive_capsulitis
+    name: adhesive capsulitis
+    is_active: true
+    codes: [M75.00, M75.01, M75.02]
+    options:
+      - label: Home exercise program
+        sort_order: 1
+        narrative_template: Shoulder range of motion program reviewed and provided.
+        sets_followup: false
+      - label: Glenohumeral injection
+        sort_order: 2
+        narrative_template: Discussed @SIDE@ glenohumeral corticosteroid injection.
+        creates_order_type: procedure_glenohumeral_injection
+        sets_followup: true
+        parameters:
+          - key: side
+            vocabulary: laterality
+            required: true
+
+order_sets:
+
+  # Named for a procedure and it contains the procedure. The side and the level
+  # are fields, not name text, so one set covers every side and level.
+  - code: "511"
+    name: Lumbar Interlaminar Epidural Steroid Injection
+    is_active: true
+    items:
+      - item_type: procedure
+        reference: procedure_lumbar_esi
+        display_name: Interlaminar epidural steroid injection
+        laterality: n/a
+        anatomic_level: L4-L5
+        default_quantity: 1
+        sort_order: 1
+      - item_type: diagnosis
+        reference: M54.16
+        display_name: Radiculopathy, lumbar region
+        laterality: n/a
+        sort_order: 2
+      - item_type: consent
+        reference: consent_epidural_steroid_injection
+        display_name: Epidural steroid injection consent
+        sort_order: 3
+      - item_type: education
+        reference: education_epidural_steroid_injection
+        display_name: What to expect after an epidural steroid injection
+        sort_order: 4
+
+  - code: "512"
+    name: Lumbar Radiculopathy Diagnostic Workup
+    is_active: true
+    items:
+      - item_type: imaging
+        reference: imaging_lumbar_mri_without_contrast
+        display_name: Magnetic resonance imaging, lumbar spine, without contrast
+        laterality: n/a
+        sort_order: 1
+      - item_type: lab
+        reference: lab_comprehensive_metabolic_panel
+        display_name: Comprehensive metabolic panel
+        sort_order: 2
+      - item_type: diagnosis
+        reference: M54.16
+        display_name: Radiculopathy, lumbar region
+        laterality: n/a
+        sort_order: 3

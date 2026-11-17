@@ -1,0 +1,115 @@
+# Expect: BUNDLE errors and warnings.
+#
+# Defect class, and the most serious one: a saved finding named for one narrow
+# condition that silently applies a full general exam, including sex-specific
+# sections, none of which was performed. The picker shows the name; it is the
+# bundle that documents.
+#
+#   1. a narrowly named finding bundling a general adult exam
+#   2. sex-specific templates in the bundle carrying applies_to_sex: any, so
+#      nothing filters them out
+#   3. a bundled template with no presets - blank structure, not answers
+#   4. a bundled template that is not in the library
+#   5. a preset naming an element that does not exist
+
+library:
+  name: Bundle overreach defects
+
+templates:
+  - key: pe_wrist
+    name: Wrist Examination
+    section_key: pe
+    owner_scope: practice
+    elements:
+      - label: Phalen Test
+        sort_order: 1
+        vocabulary: special_test_result
+      - label: Tinel Sign
+        sort_order: 2
+        vocabulary: special_test_result
+
+  - key: pe_general_adult
+    name: General Adult Examination
+    section_key: pe
+    owner_scope: practice
+    applies_to_sex: any
+    elements:
+      - label: Constitutional
+        sort_order: 1
+        options:
+          - label: well-appearing
+            polarity: neutral
+      - label: Cardiovascular
+        sort_order: 2
+        options:
+          - label: no murmur
+            polarity: negative
+      - label: Respiratory
+        sort_order: 3
+        options:
+          - label: no wheeze
+            polarity: negative
+      - label: Abdomen
+        sort_order: 4
+        options:
+          - label: no tenderness
+            polarity: negative
+      - label: Skin
+        sort_order: 5
+        options:
+          - label: no rash
+            polarity: negative
+
+  - key: pe_breast
+    name: Breast Examination
+    section_key: pe
+    owner_scope: practice
+    applies_to_sex: any
+    elements:
+      - label: Inspection
+        sort_order: 1
+        options:
+          - label: no mass
+            polarity: negative
+
+  - key: pe_rectal
+    name: Rectal Examination
+    section_key: pe
+    owner_scope: practice
+    applies_to_sex: any
+    elements:
+      - label: Inspection
+        sort_order: 1
+        options:
+          - label: no mass
+            polarity: negative
+
+saved_findings:
+  - key: sf_carpal_tunnel
+    name: Carpal Tunnel Syndrome Examination
+    section_key: pe
+    owner_scope: practice
+    templates:
+      - template: pe_wrist
+        sort_order: 1
+      - template: pe_general_adult
+        sort_order: 2
+      - template: pe_breast
+        sort_order: 3
+      - template: pe_rectal
+        sort_order: 4
+      - template: pe_lumbar_spine_not_transcribed
+        sort_order: 5
+    presets:
+      - template: pe_wrist
+        element: Phalen Test
+        option: positive
+      - template: pe_wrist
+        element: Tinel Sign
+        option: positive
+      - template: pe_general_adult
+        element: Constitutional
+        option: well-appearing
+      - template: pe_general_adult
+        element: Genitourinary
+        option: no lesion

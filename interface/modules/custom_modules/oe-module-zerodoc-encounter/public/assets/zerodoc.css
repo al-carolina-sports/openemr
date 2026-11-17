@@ -1,0 +1,37 @@
+/*
+ * ZeroDoc Clinical Encounter Workflow -- styles.
+ *
+ * Served statically by Apache: this file is NOT behind the login session or
+ * the enabled-module gate (core only gates .php under a module directory).
+ * Never put anything sensitive here.
+ *
+ * Theme-neutral on purpose: this install ships eight per-user themes, so
+ * colours come from Bootstrap/theme variables and inherited values rather than
+ * being hardcoded.
+ */
+
+.zdoc h2 {
+    font-size: 1.4rem;
+}
+
+.zdoc .zdoc-banner {
+    border: 1px solid rgba(0, 0, 0, .125);
+    border-radius: .25rem;
+    padding: .5rem .75rem;
+    margin-bottom: 1rem;
+    font-size: .875rem;
+    background: transparent;
+}
+
+.zdoc .zdoc-banner[data-state="ok"] {
+    border-left: 3px solid currentColor;
+}
+
+.zdoc .zdoc-banner[data-state="error"] {
+    border-left: 3px solid currentColor;
+    font-style: italic;
+}
+
+.zdoc textarea.form-control {
+    font-family: inherit;
+}

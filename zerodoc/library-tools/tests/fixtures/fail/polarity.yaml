@@ -1,0 +1,47 @@
+# Expect: POLARITY warnings.
+#
+# The renderer collapses consecutive negative findings into one negated clause,
+# so polarity decides punctuation as well as colour.
+#
+#   correct    "no induration, ecchymosis, or swelling; normal alignment"
+#   mis-tagged "no induration, ecchymosis, swelling, or normal alignment"
+#
+# Descriptors tagged negative are the dangerous direction: the note then asserts
+# the opposite of the exam. Absences tagged neutral or positive are the other
+# direction - they fall out of the clause they belong in.
+
+library:
+  name: Polarity tagging defects
+
+templates:
+  - key: pe_polarity
+    name: Wound Examination Draft
+    section_key: pe
+    owner_scope: practice
+    elements:
+      - label: Inspection
+        sort_order: 1
+        options:
+          - label: no induration
+            polarity: negative
+          - label: no ecchymosis
+            polarity: negative
+          - label: no swelling
+            polarity: negative
+          # descriptors mis-tagged as absences
+          - label: normal alignment
+            polarity: negative
+          - label: healthy-appearing
+            polarity: negative
+          - label: good granulation
+            polarity: negative
+          # absences mis-tagged as descriptors
+          - label: no drainage
+            polarity: neutral
+          - label: without erythema
+            polarity: positive
+          - label: denies fever
+            polarity: neutral
+          # not an absence and not a descriptor, but tagged negative
+          - label: wound edges approximated
+            polarity: negative

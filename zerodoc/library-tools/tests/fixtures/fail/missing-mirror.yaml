@@ -1,0 +1,94 @@
+# Expect: MIRROR errors.
+#
+# Defect classes:
+#   1. a saved finding exists for one side and not the other, so the opposite
+#      presentation of the same condition has to be built by hand
+#   2. a complete right/left pair that should be one entry with a side attribute
+#   3. an option offering one side only - "dorsum left foot" with no right
+#      equivalent, so right-foot numbness is undocumentable
+#   4. a saved finding declaring one side whose presets all record the other
+
+library:
+  name: Missing mirror defects
+
+templates:
+  - key: hpi_radiation
+    name: Radiation Pattern
+    section_key: hpi
+    owner_scope: practice
+    elements:
+      - label: Radiation
+        sort_order: 1
+        options:
+          - label: no radiation
+            polarity: negative
+          - label: dorsum left foot
+            polarity: positive
+          - label: stocking-and-glove
+            polarity: positive
+
+  - key: pe_shoulder
+    name: Shoulder Examination
+    section_key: pe
+    owner_scope: practice
+    elements:
+      - label: Inspection
+        sort_order: 1
+        options:
+          - label: no swelling
+            polarity: negative
+          - label: no atrophy
+            polarity: negative
+
+saved_findings:
+  # 1 - left exists, right does not
+  - key: sf_shoulder_bursitis_left
+    name: Shoulder Bursitis Left
+    section_key: pe
+    owner_scope: practice
+    templates: [pe_shoulder]
+    presets:
+      - template: pe_shoulder
+        element: Inspection
+        option: no swelling
+        laterality: left
+
+  # 2 - a complete pair
+  - key: sf_knee_oa_right
+    name: Knee Osteoarthritis Right
+    section_key: pe
+    owner_scope: practice
+    templates: [pe_shoulder]
+    presets:
+      - template: pe_shoulder
+        element: Inspection
+        option: no swelling
+        laterality: right
+
+  - key: sf_knee_oa_left
+    name: Knee Osteoarthritis Left
+    section_key: pe
+    owner_scope: practice
+    templates: [pe_shoulder]
+    presets:
+      - template: pe_shoulder
+        element: Inspection
+        option: no swelling
+        laterality: left
+
+  # 4 - declares right, presets say left
+  - key: sf_hip_labral
+    name: Hip Labral Tear Examination
+    section_key: pe
+    owner_scope: practice
+    laterality: right
+    templates: [pe_shoulder]
+    presets:
+      - template: pe_shoulder
+        element: Inspection
+        option: no swelling
+        laterality: left
+      - template: pe_shoulder
+        element: Inspection
+        option: no atrophy
+        laterality: left

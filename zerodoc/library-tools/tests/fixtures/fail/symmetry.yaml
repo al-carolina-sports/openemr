@@ -1,0 +1,92 @@
+# Expect: SYMMETRY errors.
+#
+# Three asymmetries, all of which make a real finding undocumentable:
+#   1. Soft Tissue Palpation: the left list carries two sites the right does not,
+#      and the right carries one the left does not. Right gluteus medius
+#      tenderness cannot be recorded at all.
+#   2. Deep Tendon Reflexes: right references the shared vocabulary, left retypes
+#      a shorter list.
+#   3. Range of Motion: a right element with no left counterpart.
+#   4. Inspection: the same option tagged a different polarity on each side.
+
+library:
+  name: Symmetry defects
+
+templates:
+  - key: pe_asymmetric_lumbar
+    name: Lumbar Examination Draft
+    section_key: pe
+    owner_scope: practice
+    elements:
+
+      - label: Soft Tissue Palpation - Right
+        sort_order: 1
+        side: right
+        pair_key: soft tissue palpation
+        options:
+          - label: no tenderness
+            polarity: negative
+          - label: paraspinal muscles
+            polarity: positive
+          - label: sciatic notch
+            polarity: positive
+
+      - label: Soft Tissue Palpation - Left
+        sort_order: 2
+        side: left
+        pair_key: soft tissue palpation
+        options:
+          - label: no tenderness
+            polarity: negative
+          - label: paraspinal muscles
+            polarity: positive
+          - label: iliolumbar region
+            polarity: positive
+          - label: gluteus medius
+            polarity: positive
+
+      - label: Deep Tendon Reflexes - Right
+        sort_order: 3
+        side: right
+        pair_key: deep tendon reflexes
+        vocabulary: reflex_grade
+
+      - label: Deep Tendon Reflexes - Left
+        sort_order: 4
+        side: left
+        pair_key: deep tendon reflexes
+        options:
+          - label: absent
+            polarity: positive
+          - label: 2+
+            polarity: negative
+
+      - label: Range of Motion - Right
+        sort_order: 5
+        side: right
+        pair_key: range of motion
+        options:
+          - label: full and painless
+            polarity: neutral
+          - label: limited flexion
+            polarity: positive
+
+      - label: Inspection - Right
+        sort_order: 6
+        side: right
+        pair_key: inspection
+        options:
+          - label: no swelling
+            polarity: negative
+          - label: normal alignment
+            polarity: neutral
+
+      - label: Inspection - Left
+        sort_order: 7
+        side: left
+        pair_key: inspection
+        options:
+          - label: no swelling
+            polarity: negative
+          - label: normal alignment
+            polarity: positive

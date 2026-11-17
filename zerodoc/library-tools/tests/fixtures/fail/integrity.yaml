@@ -1,0 +1,95 @@
+# Expect: INTEGRITY warnings and errors.
+#
+# Defect classes:
+#   1. a set named for a procedure containing only a diagnosis code, so the
+#      procedure order is never placed and the work reappears downstream
+#   2. an order set holding nothing but diagnosis codes
+#   3. a preset answering a template the finding does not bundle
+#   4. an active saved finding bundling a retired template
+#   5. a mutual-exclusion reference to an option that does not exist
+#   6. an option whose text has a blank to fill in and no value slot
+#   7. monitoring fields embedded in a mechanical-pain template
+#   8. a required plan parameter with no values, and a required parameter the
+#      narrative never uses
+
+library:
+  name: Integrity defects
+
+templates:
+  - key: hpi_mixed
+    name: Lumbar History Draft
+    section_key: hpi
+    owner_scope: practice
+    is_active: true
+    elements:
+      - label: Severity
+        sort_order: 1
+        options:
+          - label: current __/10
+            polarity: positive
+          - label: improving
+            polarity: neutral
+            excludes: [getting worse]
+      - label: Relief With Current Medication
+        sort_order: 2
+        options:
+          - label: partial relief
+            polarity: neutral
+      - label: Driving Impairment With Medication
+        sort_order: 3
+        options:
+          - label: no impairment reported
+            polarity: negative
+
+  - key: pe_retired
+    name: Lumbar Examination Superseded
+    section_key: pe
+    owner_scope: practice
+    is_active: false
+    elements:
+      - label: Inspection
+        sort_order: 1
+        options:
+          - label: no deformity
+            polarity: negative
+
+saved_findings:
+  - key: sf_active_on_retired
+    name: Lumbar Examination Standard
+    section_key: pe
+    owner_scope: practice
+    is_active: true
+    templates:
+      - template: pe_retired
+        sort_order: 1
+    presets:
+      - template: pe_retired
+        element: Inspection
+        option: no deformity
+      - template: hpi_mixed
+        element: Severity
+        option: improving
+
+order_sets:
+  - code: "890"
+    name: Lumbar Interlaminar Epidural Steroid Injection
+    items:
+      - item_type: diagnosis
+        reference: M54.16
+        display_name: Radiculopathy, lumbar region
+        sort_order: 1
+
+plan_groups:
+  - key: pg_integrity
+    name: lumbar radiculopathy
+    codes: [M54.16]
+    options:
+      - label: Epidural steroid injection
+        sort_order: 1
+        narrative_template: Discussed epidural steroid injection.
+        parameters:
+          - key: level
+            required: true
+          - key: side
+            vocabulary: laterality
+            required: true

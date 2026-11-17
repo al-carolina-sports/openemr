@@ -1,0 +1,98 @@
+# Expect: ICD10 errors and warnings.
+#
+# Defect classes:
+#   1. a code and the set it links to naming different regions for the same
+#      problem - M54.16 (lumbar) against M54.17 (lumbosacral). This is the
+#      specificity mismatch that makes a problem list and its attached orders
+#      disagree.
+#   2. malformed codes: missing dot, letter O for a zero
+#   3. a category-level code where the family subdivides
+#   4. an "unspecified" code in a set that applies a side
+#   5. a side-specific code contradicting the item's declared laterality
+#   6. laterality_param on a set whose codes encode the side themselves
+#   7. a duplicate code inside one set
+#   8. a code no plan group covers
+
+library:
+  name: ICD-10 defects
+
+diagnosis_sets:
+  - code: "880"
+    name: Lumbar Candidates
+    presentation_mode: pick_list
+    laterality_param: false
+    items:
+      # 1 - links an order set carrying M54.17
+      - icd10_code: M54.16
+        display_name: Radiculopathy, lumbar region
+        laterality: n/a
+        sort_order: 1
+        linked_order_set: "881"
+      # 2 - no dot
+      - icd10_code: M5416
+        display_name: Radiculopathy, lumbar region, mistyped
+        laterality: n/a
+        sort_order: 2
+      # 2 - letter O in place of a zero
+      - icd10_code: M48.O62
+        display_name: Spinal stenosis, lumbar region, mistyped
+        laterality: n/a
+        sort_order: 3
+      # 3 - category only
+      - icd10_code: M54
+        display_name: Dorsalgia
+        laterality: n/a
+        sort_order: 4
+      # 5 - right-sided code, left declared
+      - icd10_code: M75.101
+        display_name: Rotator cuff tear
+        laterality: left
+        sort_order: 5
+      # 7 - duplicate of item 1
+      - icd10_code: M54.16
+        display_name: Radiculopathy, lumbar region
+        laterality: n/a
+        sort_order: 6
+      # 8 - well formed, in the reference, but no plan group covers it
+      - icd10_code: M53.3
+        display_name: Sacrococcygeal disorders
+        laterality: n/a
+        sort_order: 7
+
+  - code: "882"
+    name: Shoulder Candidates
+    presentation_mode: pick_list
+    laterality_param: true
+    items:
+      # 4 - unspecified code in a set that applies a side at selection time
+      - icd10_code: M75.100
+        display_name: Rotator cuff tear
+        laterality: n/a
+        sort_order: 1
+      # 6 - side already encoded in the code
+      - icd10_code: M75.01
+        display_name: Adhesive capsulitis
+        laterality: n/a
+        sort_order: 2
+
+order_sets:
+  - code: "881"
+    name: Lumbar Epidural Steroid Injection Orders
+    items:
+      - item_type: procedure
+        reference: procedure_lumbar_esi
+        display_name: Interlaminar epidural steroid injection
+        sort_order: 1
+      - item_type: diagnosis
+        reference: M54.17
+        display_name: Radiculopathy, lumbosacral region
+        sort_order: 2
+
+plan_groups:
+  - key: pg_lumbar_rad
+    name: lumbar radiculopathy
+    codes: [M54.16, M54.17]
+    options:
+      - label: Observe
+        sort_order: 1
+        narrative_template: Observation.

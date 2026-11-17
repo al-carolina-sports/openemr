@@ -1,0 +1,65 @@
+# Rollback fixture.
+#
+# This library passes every validator: the templates are symmetric, the names
+# are clean, the codes are unique. It fails inside the transaction, on the last
+# saved finding, because a preset names an option the element does not offer.
+#
+# The point of the fixture is that the templates, elements and options ahead of
+# the failure are already inserted when it happens. If the importer were not
+# transactional, the database would be left holding a template library whose
+# saved findings are missing - which looks finished.
+
+library:
+  name: Rollback fixture
+
+templates:
+  - key: pe_lumbar
+    name: Lumbar Examination Standard Template
+    section_key: pe
+    owner_scope: practice
+    elements:
+      - label: Inspection
+        sort_order: 1
+        options:
+          - label: no deformity
+            polarity: negative
+          - label: normal alignment
+            polarity: neutral
+      - label: Range of Motion
+        sort_order: 2
+        options:
+          - label: full and painless
+            polarity: neutral
+          - label: limited flexion
+            polarity: positive
+
+saved_findings:
+  - key: sf_ok
+    name: Lumbar Examination Baseline
+    section_key: pe
+    owner_scope: practice
+    templates:
+      - template: pe_lumbar
+        sort_order: 1
+    presets:
+      - template: pe_lumbar
+        element: Inspection
+        option: normal alignment
+
+  - key: sf_broken
+    name: Lumbar Examination Standard
+    section_key: pe
+    owner_scope: practice
+    templates:
+      - template: pe_lumbar
+        sort_order: 1
+    presets:
+      - template: pe_lumbar
+        element: Inspection
+        option: no deformity
+      # "moderately limited flexion" is not an option of Range of Motion. The
+      # validators accept it - a preset value is not structurally wrong - and
+      # the importer fails on it, after everything above has been inserted.
+      - template: pe_lumbar
+        element: Range of Motion
+        option: moderately limited flexion

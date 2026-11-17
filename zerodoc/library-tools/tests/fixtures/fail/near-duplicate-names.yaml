@@ -1,0 +1,72 @@
+# Expect: NEAR_DUP - duplicate and overlapping names, and names carrying a date.
+#
+# Defect classes:
+#   - overlapping stems: two live entries whose names differ only by a prefix,
+#     so the picker offers both and the choice is arbitrary
+#   - near-identical names across the library
+#   - a date in the name, which is version control by filename: both versions
+#     stay live and both stay selectable
+
+library:
+  name: Duplicate name defects
+
+templates:
+  - key: t_lspine_bare
+    name: Lumbar Spine
+    section_key: pe
+    owner_scope: practice
+    elements:
+      - label: Inspection
+        sort_order: 1
+        options: [normal alignment]
+
+  - key: t_lspine_prefixed
+    name: Practice Lumbar Spine
+    section_key: pe
+    owner_scope: practice
+    elements:
+      - label: Inspection
+        sort_order: 1
+        options: [normal alignment]
+
+  - key: t_assessments
+    name: Assessments
+    section_key: assessment_plan
+    owner_scope: practice
+    elements:
+      - label: Narrative
+        sort_order: 1
+        options: [stable]
+
+  - key: t_assessment_plan
+    name: Assessment Plan
+    section_key: assessment_plan
+    owner_scope: practice
+    elements:
+      - label: Narrative
+        sort_order: 1
+        options: [stable]
+
+  - key: t_resp_march_2020
+    name: Respiratory Illness Screening March 2020
+    section_key: screening
+    owner_scope: practice
+    is_active: true
+    elements:
+      - label: Symptoms
+        sort_order: 1
+        options:
+          - label: no fever
+            polarity: negative
+
+  - key: t_resp_may_2020
+    name: Respiratory Illness Screening May 2020
+    section_key: screening
+    owner_scope: practice
+    is_active: true
+    elements:
+      - label: Symptoms
+        sort_order: 1
+        options:
+          - label: no fever
+            polarity: negative
