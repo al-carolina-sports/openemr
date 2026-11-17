@@ -1,0 +1,41 @@
+/**
+ * Graphite Rail theme pack for Annie's Compact Themes.
+ *
+ * Only the selected theme's file is loaded, after compact-base.css, so this
+ * file only needs to set the --cmt-* tokens (plus any extra rules it wants).
+ * Token reference: README.md, "Making a theme".
+ *
+ * @package   OpenEMR
+ * @link      https://www.open-emr.org
+ * @copyright Copyright (c) 2026 Carolina Sports and Spine
+ * @license   https://github.com/openemr/openemr/blob/master/LICENSE GNU General Public License 3
+ */
+
+html[data-cmt-theme] {
+  color-scheme: light;
+  --cmt-bg: #f6f6f4;
+  --cmt-surface: #ffffff;
+  --cmt-surface-2: #ffffff;
+  --cmt-hover: #efeee9;
+  --cmt-border: #e6e5e1;
+  --cmt-border-soft: #efeee9;
+  --cmt-text: #17191c;
+  --cmt-muted: #57606a;
+  --cmt-accent-default: #4f46e5;
+  --cmt-on-accent-default: #ffffff;
+  --cmt-danger-bg: #fdecec;
+  --cmt-danger-fg: #a11d1d;
+  --cmt-nav-bg: #ffffff;
+  --cmt-nav-fg: #3d4550;
+  --cmt-rail-bg: #111827;
+  --cmt-rail-fg: #cbd5e1;
+  --cmt-rail-hover: #1f2937;
+  --cmt-stripe: #fafaf8;
+  --cmt-shadow: 0 8px 24px rgba(17, 20, 24, 0.14);
+  --cmt-radius: 10px;
+  --cmt-card-title-size: 0.6875rem;
+  --cmt-card-title-weight: 500;
+  --cmt-card-title-transform: none;
+  --cmt-card-title-tracking: 0;
+  --cmt-card-title-color: var(--cmt-muted);
+}

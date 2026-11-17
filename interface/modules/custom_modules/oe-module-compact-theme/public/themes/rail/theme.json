@@ -1,0 +1,19 @@
+{
+    "id": "rail",
+    "name": "Graphite Rail",
+    "description": "Light workspace with a 72px icon rail for the main menu.",
+    "base": "light",
+    "layout": "rail",
+    "order": 30,
+    "version": "1.0.0",
+    "preview": {
+        "bg": "#f6f6f4",
+        "surface": "#ffffff",
+        "nav": "#ffffff",
+        "border": "#e6e5e1",
+        "text": "#17191c",
+        "muted": "#57606a",
+        "accent": "#4f46e5",
+        "rail": "#111827"
+    }
+}

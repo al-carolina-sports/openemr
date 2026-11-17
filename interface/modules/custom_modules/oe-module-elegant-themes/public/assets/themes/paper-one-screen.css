@@ -1,0 +1,21 @@
+/* Paper One-Screen - clean light single-page chart (Elation-inspired) */
+:root {
+  --aet-bg: #F7F7F5; --aet-panel: #FFFFFF; --aet-side: #FFFFFF; --aet-sidetx: #33403A;
+  --aet-text: #1F2723; --aet-muted: #5E6A64; --aet-border: #E4E6E1;
+  --aet-accent: #2E7D5B; --aet-accent2: #A86F17; --aet-warn: #B42318;
+  --aet-head-bg: #FAFAF8; --aet-stripe: #FBFBFA; --aet-hover: #EEF4F0; --aet-input: #FFFFFF;
+  --aet-nav-hover: #EEF4F0; --aet-side-border: #E4E6E1;
+  --aet-font: Inter, "Segoe UI", system-ui, -apple-system, Roboto, Arial, sans-serif;
+  --aet-base: 13px; --aet-pad: 9px; --aet-rad: 6px;
+}
+#mainBox > nav.navbar { box-shadow: 0 1px 0 #E4E6E1; }
+#mainMenu .appMenu > div > .menuLabel:hover, #mainMenu .appMenu > div > .menuSection > .menuLabel:hover { color: #2E7D5B !important; }
+.aet-ico { color: #2E7D5B; }
+.card { box-shadow: none !important; border: 1px solid #E4E6E1 !important; margin-bottom: 6px !important; }
+.card-header { background: #FFFFFF !important; border-bottom: 1px solid #EFF0EC !important; font-weight: 600; }
+.card-header .btn-link { font-size: 12px; text-transform: uppercase; letter-spacing: .5px; color: #5E6A64 !important; }
+/* one-screen chart: on wide screens let the dashboard's cards flow into columns */
+@media (min-width: 1400px) {
+  body.demographics .col-md-8, body.demographics .col-md-4 { padding-left: 4px !important; padding-right: 4px !important; }
+}
+#attendantData { background: #FFFFFF !important; }

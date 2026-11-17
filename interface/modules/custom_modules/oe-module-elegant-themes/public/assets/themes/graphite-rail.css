@@ -1,0 +1,131 @@
+/* Ported from Annie's Compact Themes (oe-module-compact-theme) theme pack 'rail' by Carolina Sports and Spine; --cmt-* tokens mapped to --aet-*. */
+/* Graphite Rail - light workspace, dark graphite icon rail, indigo accent */
+:root {
+  --aet-bg: #F6F6F4; --aet-panel: #FFFFFF; --aet-side: #111827; --aet-sidetx: #CBD5E1;
+  --aet-text: #17191C; --aet-muted: #57606A; --aet-border: #E6E5E1;
+  --aet-accent: #4F46E5; --aet-accent2: #0F766E; --aet-warn: #A11D1D;
+  --aet-head-bg: #FAFAF8; --aet-stripe: #FAFAF8; --aet-hover: #EFEEE9; --aet-input: #FFFFFF;
+  --aet-nav-hover: #1F2937;
+  --aet-font: Inter, "Segoe UI", system-ui, -apple-system, Roboto, Arial, sans-serif;
+  --aet-base: 12.5px; --aet-pad: 8px; --aet-rad: 10px; --aet-rail-w: 72px;
+}
+/* --- icon rail: main.php only (html.aet-main is set by elegant-themes.js) --- */
+@media (min-width: 1200px) {
+  html.aet-main #mainBox {
+    display: grid !important;
+    grid-template-columns: 72px minmax(0, 1fr);
+    grid-template-rows: auto auto 1fr;
+    height: 100vh; height: 100dvh; min-height: 0;
+  }
+  html.aet-main #mainBox > nav.navbar {
+    grid-column: 1; grid-row: 1 / span 3;
+    flex-direction: column !important; align-items: stretch !important; justify-content: flex-start !important;
+    min-height: 0; padding: 6px 4px !important; overflow: hidden; z-index: 1030;
+  }
+  html.aet-main #mainBox > nav.navbar > * { grid-column: auto; }
+  html.aet-main #mainBox > nav.navbar .navbar-brand { margin: 0 auto 6px !important; padding: 0 !important; }
+  html.aet-main #mainMenu { display: flex !important; flex-direction: column !important; flex: 1 1 auto !important; min-height: 0 !important; width: 100%; overflow-x: hidden; overflow-y: auto; overscroll-behavior: contain; scrollbar-width: thin; }
+  html.aet-main #mainMenu .appMenu { flex-direction: column !important; margin: 0 !important; width: 100%; }
+  html.aet-main #mainMenu .appMenu > div > .menuLabel,
+  html.aet-main #mainMenu .appMenu > div > .menuSection > .menuLabel {
+    display: flex !important; flex-direction: column; gap: 2px; width: 100%;
+    font-size: 10px; line-height: 1.1; padding: 5px 2px !important; text-align: center;
+    white-space: normal; word-break: break-word;
+  }
+  html.aet-main #mainMenu .appMenu .aet-ico { width: 18px; height: 18px; flex-basis: 18px; }
+  html.aet-main #mainMenu .appMenu .dropdown-toggle::after { display: none; }
+  html.aet-main #mainMenu .appMenu .menuSection { position: relative; }
+  html.aet-main #mainMenu .appMenu > div > .menuSection > .menuEntries {
+    position: fixed !important; left: 72px !important; top: auto !important; margin-top: -34px !important;
+    /* v1.2.1: never taller than the viewport; elegant-themes.js sets exact top/max-height and flips upward near the bottom */
+    max-height: calc(100vh - 16px); max-height: calc(100dvh - var(--aet-footer-h, 0px) - 16px); overflow-y: auto !important; overflow-x: hidden !important; min-width: 220px;
+    overscroll-behavior: contain;
+  }
+  /* v1.2.1: nested submenus expand inline inside the scrollable flyout (an absolutely positioned child of an
+     overflow:auto panel is clipped and unreachable) */
+  html.aet-main #mainMenu .menuEntries .menuEntries {
+    position: static !important; left: auto !important; top: auto !important; transform: none !important;
+    float: none !important; margin: 0 0 2px 10px !important; min-width: 0 !important; max-height: none !important;
+    box-shadow: none !important; border: 0 !important; border-left: 2px solid rgba(127,127,127,.25) !important;
+  }
+  /* v1.2.3: flyout visibility is controlled by elegant-themes.js (click-to-pin, hover intent, close delay);
+     flush to the rail edge so there is no gap between icon and flyout */
+  html.aet-main #mainMenu .appMenu > div > .menuSection > .menuEntries { display: none !important; }
+  html.aet-main #mainMenu .appMenu > div > .menuSection.aet-show > .menuEntries { display: block !important; }
+  html.aet-main #mainMenu .appMenu > div > .menuSection.aet-pinned > .menuLabel {
+    background: rgba(127,127,127,.22) !important; border-radius: 6px; box-shadow: inset 3px 0 0 currentColor;
+  }
+  /* v1.2.2: nested groups are collapsed accordions; click the header to open it downward (elegant-themes.js) */
+  html.aet-main #mainMenu .menuEntries .menuSection > .menuEntries { display: none !important; }
+  html.aet-main #mainMenu .menuEntries .menuSection.aet-open > .menuEntries { display: block !important; }
+  html.aet-main #mainMenu .menuEntries .menuSection > .menuLabel { font-weight: 600; cursor: pointer; display: flex !important; align-items: center; gap: 6px; }
+  html.aet-main #mainMenu .menuEntries .menuSection > .menuLabel.dropdown-toggle::after { display: none; }
+  html.aet-main #mainMenu .menuEntries .menuSection > .menuLabel::before {
+    content: ''; flex: 0 0 auto; width: 0; height: 0; border-top: 4px solid transparent; border-bottom: 4px solid transparent;
+    border-left: 5px solid currentColor; opacity: .7; transition: transform .15s ease;
+  }
+  html.aet-main #mainMenu .menuEntries .menuSection.aet-open > .menuLabel::before { transform: rotate(90deg); }
+  /* search + user block at the bottom of the rail */
+  html.aet-main #mainBox > nav.navbar > .navbar-nav,
+  html.aet-main #mainBox > nav.navbar > form,
+  html.aet-main #mainBox > nav.navbar > div:not(#mainMenu) { flex-direction: column !important; margin: 6px 0 0 !important; width: 100%; }
+  html.aet-main #mainBox > nav.navbar .input-group { flex-wrap: nowrap; }
+  html.aet-main #mainBox > nav.navbar #anySearchBox { width: 100% !important; min-width: 0; font-size: 10px; padding: 2px 4px; }
+  /* v1.5.6: the avatar menu is ul#userdropdown itself (the old selectors never matched it), so it opened
+     downward/left from the bottom-left avatar, off-screen and clipped by the rail (overflow:hidden).
+     Now a fixed flyout to the right of the rail, bottom-aligned above the footer and on top of it. */
+  html.aet-main #mainBox > nav.navbar #userdropdown.dropdown-menu {
+    position: fixed !important; left: 76px !important; right: auto !important; top: auto !important;
+    bottom: calc(var(--aet-footer-h, 0px) + 8px) !important; transform: none !important; margin: 0 !important; inset-inline-end: auto !important;
+    z-index: 1045 !important; min-width: 220px; max-height: calc(100vh - var(--aet-footer-h, 0px) - 16px); max-height: calc(100dvh - var(--aet-footer-h, 0px) - 16px); overflow-y: auto;
+    padding: 6px !important; border-radius: 8px !important; box-shadow: 0 8px 24px rgba(0, 0, 0, .14), 0 1px 2px rgba(0, 0, 0, .06) !important;
+  }
+  html.aet-main #mainBox > nav.navbar:has(#userdropdown.show) { z-index: 1045 !important; }
+  html.aet-main #mainBox > nav.navbar #userdropdown .dropdown-item { border-radius: 5px; padding: 4px 8px !important; }
+  html.aet-main #mainBox > nav.navbar #userdropdown .dropdown-item:focus-visible { outline: 2px solid var(--aet-accent, #2563EB) !important; outline-offset: -2px; }
+  html.aet-main #attendantData { grid-column: 2; grid-row: 1; }
+  html.aet-main #tabs_div { grid-column: 2; grid-row: 2; }
+  html.aet-main #mainFrames_div { grid-column: 2; grid-row: 3; min-height: 0; height: auto !important; }
+  /* v1.2.4: readable flyout states (WCAG AA). Rail-icon hover rules (light text on translucent white)
+     were also matching nested group headers inside the white flyout; pin explicit colours here. */
+  html.aet-main #mainMenu .appMenu .menuEntries .menuLabel, html.aet-main #mainMenu .appMenu .menuEntries .menuLabel a,
+  html.aet-main #mainMenu .appMenu .menuEntries .menuSection > .menuLabel { color: #17191C !important; background-color: transparent !important; }
+  html.aet-main #mainMenu .appMenu .menuEntries .menuLabel:hover, html.aet-main #mainMenu .appMenu .menuEntries .menuLabel:focus, html.aet-main #mainMenu .appMenu .menuEntries .menuLabel:focus-visible, html.aet-main #mainMenu .appMenu .menuEntries .menuLabel:active,
+  html.aet-main #mainMenu .appMenu .menuEntries .menuLabel:hover a, html.aet-main #mainMenu .appMenu .menuEntries .menuLabel:focus a,
+  html.aet-main #mainMenu .appMenu .menuEntries .menuSection:hover > .menuLabel:hover, html.aet-main #mainMenu .appMenu .menuEntries .menuSection > .menuLabel:hover {
+    color: #17191C !important; background-color: #EFEEE9 !important; text-decoration: none !important;
+  }
+  html.aet-main #mainMenu .appMenu .menuEntries .menuSection.aet-open > .menuLabel, html.aet-main #mainMenu .appMenu .menuEntries .menuSection.aet-open > .menuLabel:hover {
+    color: #312E81 !important; background-color: #E0E7FF !important;
+  }
+  html.aet-main #mainMenu .appMenu .menuEntries .menuLabel:focus-visible { outline: 2px solid #312E81 !important; outline-offset: -2px; }
+  /* v1.2.3: patient search lives in a top bar above the banner/tabs (moved there by elegant-themes.js) */
+  html.aet-main.aet-topsearch #mainBox { grid-template-rows: auto auto auto 1fr; }
+  html.aet-main.aet-topsearch #mainBox > nav.navbar { grid-row: 1 / span 4; }
+  html.aet-main.aet-topsearch #aet-topbar {
+    grid-column: 2; grid-row: 1; display: flex; align-items: center; gap: 8px; min-width: 0;
+    padding: 5px 12px; background: var(--aet-panel, #fff); border-bottom: 1px solid var(--aet-border, #ddd); z-index: 1020;
+  }
+  html.aet-main.aet-topsearch #aet-topbar form { margin: 0 !important; flex: 0 1 420px; min-width: 300px; }
+  html.aet-main.aet-topsearch #aet-topbar .input-group { width: 100%; flex-wrap: nowrap; }
+  html.aet-main.aet-topsearch #aet-topbar #anySearchBox { width: auto !important; flex: 1 1 auto; min-width: 0; font-size: 12.5px !important; padding: 4px 10px; height: 30px; }
+  html.aet-main.aet-topsearch #aet-topbar #search_globals { height: 30px; }
+  html.aet-main.aet-topsearch #attendantData { grid-row: 2; }
+  html.aet-main.aet-topsearch #tabs_div { grid-row: 3; }
+  html.aet-main.aet-topsearch #mainFrames_div { grid-row: 4; }
+  html.aet-main #versionFooter { display: none; }
+}
+
+.aet-ico { color: #A5B4FC; }
+#mainMenu .menuEntries .aet-ico, .dropdown-menu .aet-ico { color: #4F46E5; }
+.card { box-shadow: 0 1px 2px rgba(17, 20, 24, .06) !important; margin-bottom: 6px !important; }
+.card-header { background: #FFFFFF !important; font-weight: 500; }
+#attendantData { background: #FFFFFF !important; border-bottom: 1px solid #E6E5E1; }
+
+/* v1.5.5: flyout rows line up - section rows (Clinic, Patients, System, Cash-Pay Setup, ...) used to start
+   their text 16px right of plain items and were 13px taller because of the core caret icon on its own line.
+   One text column and one row height for every row; the expand chevron moves to the row's right edge. */
+@media (min-width: 1200px) {
+  html.aet-main #mainMenu .menuEntries > li > i.closeButton:has(+ .menuSection) { display: none !important; }
+  html.aet-main #mainMenu .menuEntries .menuSection > .menuLabel::before { order: 2; margin: 0 2px 0 auto !important; }
+}

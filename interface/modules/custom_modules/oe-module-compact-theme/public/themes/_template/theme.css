@@ -1,0 +1,64 @@
+/**
+ * Theme pack template for Annie's Compact Themes.
+ *
+ * To make a new theme:
+ *  1. Copy this folder to public/themes/<your-id> (lowercase letters, digits,
+ *     "-" or "_"; it must not start with "_").
+ *  2. In theme.json set "id" to the same <your-id>, then the name and
+ *     description shown in the Theme dropdown, "base" (light or dark: the
+ *     General Theme it is designed for), "layout" (top, or rail for the side
+ *     icon menu) and "order" (position in the dropdown).
+ *  3. Change any tokens below. Anything you leave out falls back to the
+ *     Paper Compact values in compact-base.css. You can also add your own
+ *     rules under html[data-cmt-theme] after the token block.
+ *  4. Bump "version" in theme.json whenever you edit this file, so browsers
+ *     fetch the new copy.
+ *
+ * @package   OpenEMR
+ * @link      https://www.open-emr.org
+ * @copyright Copyright (c) 2026 Carolina Sports and Spine
+ * @license   https://github.com/openemr/openemr/blob/master/LICENSE GNU General Public License 3
+ */
+
+html[data-cmt-theme] {
+  color-scheme: light;               /* dark for a dark theme */
+
+  /* surfaces and text */
+  --cmt-bg: #f4f5f7;                 /* page background */
+  --cmt-surface: #ffffff;            /* cards, inputs, dropdowns */
+  --cmt-surface-2: #ffffff;          /* patient bar, input add-ons */
+  --cmt-hover: #f1f3f6;              /* row and menu hover */
+  --cmt-border: #e3e6ea;
+  --cmt-border-soft: #eef0f3;        /* table row dividers */
+  --cmt-text: #1b1f24;
+  --cmt-muted: #5b6470;              /* keep 4.5:1 contrast on --cmt-surface */
+
+  /* accent (a user's Accent Color setting overrides these) */
+  --cmt-accent-default: #2563eb;
+  --cmt-on-accent-default: #ffffff;  /* text on accent buttons */
+
+  /* alerts */
+  --cmt-danger-bg: #fdecec;
+  --cmt-danger-fg: #a11d1d;
+
+  /* top menu bar and tab strip */
+  --cmt-nav-bg: #ffffff;
+  --cmt-nav-fg: #3d4550;
+
+  /* side rail (used when theme.json "layout" is "rail") */
+  --cmt-rail-bg: #111827;
+  --cmt-rail-fg: #cbd5e1;
+  --cmt-rail-hover: #1f2937;
+
+  /* details */
+  --cmt-stripe: #fafbfc;             /* striped table rows */
+  --cmt-shadow: 0 8px 24px rgba(17, 20, 24, 0.12);
+  --cmt-radius: 6px;
+
+  /* dashboard card titles */
+  --cmt-card-title-size: 0.8125rem;
+  --cmt-card-title-weight: 600;
+  --cmt-card-title-transform: none;  /* uppercase for the Slate look */
+  --cmt-card-title-tracking: 0;
+  --cmt-card-title-color: var(--cmt-text);
+}

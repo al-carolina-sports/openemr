@@ -1,0 +1,38 @@
+/**
+ * Paper Compact theme pack for Annie's Compact Themes.
+ *
+ * Only the selected theme's file is loaded, after compact-base.css, so this
+ * file only needs to set the --cmt-* tokens (plus any extra rules it wants).
+ * Token reference: README.md, "Making a theme".
+ *
+ * @package   OpenEMR
+ * @link      https://www.open-emr.org
+ * @copyright Copyright (c) 2026 Carolina Sports and Spine
+ * @license   https://github.com/openemr/openemr/blob/master/LICENSE GNU General Public License 3
+ */
+
+html[data-cmt-theme] {
+  color-scheme: light;
+  --cmt-bg: #f4f5f7;
+  --cmt-surface: #ffffff;
+  --cmt-surface-2: #ffffff;
+  --cmt-hover: #f1f3f6;
+  --cmt-border: #e3e6ea;
+  --cmt-border-soft: #eef0f3;
+  --cmt-text: #1b1f24;
+  --cmt-muted: #5b6470;
+  --cmt-accent-default: #2563eb;
+  --cmt-on-accent-default: #ffffff;
+  --cmt-danger-bg: #fdecec;
+  --cmt-danger-fg: #a11d1d;
+  --cmt-nav-bg: #ffffff;
+  --cmt-nav-fg: #3d4550;
+  --cmt-stripe: #fafbfc;
+  --cmt-shadow: 0 8px 24px rgba(17, 20, 24, 0.12);
+  --cmt-radius: 6px;
+  --cmt-card-title-size: 0.8125rem;
+  --cmt-card-title-weight: 600;
+  --cmt-card-title-transform: none;
+  --cmt-card-title-tracking: 0;
+  --cmt-card-title-color: var(--cmt-text);
+}
