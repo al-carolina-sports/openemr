@@ -1,0 +1,81 @@
+/*
+ * Annie's Elegant Calendar Style: Week view "Stretch" layout.
+ * --ecs-stretch-col-min is the minimum width of one provider sub-column.
+ */
+:root {
+    --ecs-stretch-col-min: 140px;
+    --ecs-stretch-time-col: 4.5rem;
+    --ecs-stretch-max-height: calc(100vh - 7rem); /* fallback; JS fits it to the viewport */
+}
+
+.ecs-layout-toggle { display: inline-flex; align-items: center; gap: 0.4rem; margin: 0 0 0.4rem; font-size: 0.8rem; }
+.ecs-layout-toggle .btn { padding: 0.1rem 0.6rem; font-size: 0.8rem; }
+
+.ecs-stretch-scroll {
+    overflow: auto;
+    max-height: var(--ecs-stretch-max-height);
+    border: 1px solid rgba(128, 128, 128, 0.35);
+}
+.ecs-stretch-table { border-collapse: separate; border-spacing: 0; table-layout: auto !important; margin: 0; width: max-content !important; min-width: 100%; }
+.ecs-stretch-table > tbody > tr > td,
+.ecs-stretch-table > thead > tr > th { padding: 0; vertical-align: top; }
+.ecs-stretch-table td.schedule {
+    width: var(--ecs-stretch-col-min);
+    min-width: var(--ecs-stretch-col-min);
+    border-left: 1px solid rgba(128, 128, 128, 0.25);
+}
+/*
+ * The inner div sets the real minimum width (table cells ignore min-width on
+ * their own); width 100% lets it grow with the cell when there is spare room,
+ * e.g. Mon-Fri only with Hide: Sat | Sun.
+ */
+.ecs-stretch-table td.schedule > .calendar_day { width: 100%; min-width: var(--ecs-stretch-col-min); }
+.ecs-stretch-table td.schedule.ecs-day-first { border-left: 2px solid rgba(128, 128, 128, 0.7); }
+.ecs-stretch-table .ecs-time-cell {
+    width: var(--ecs-stretch-time-col);
+    min-width: var(--ecs-stretch-time-col);
+    position: sticky; left: 0; z-index: 6;
+    background-color: var(--ecs-stretch-head-bg, #fff);
+}
+.ecs-stretch-table thead th {
+    position: sticky; z-index: 7;
+    text-align: center; font-size: 0.75rem; font-weight: 700;
+    white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+    border-bottom: 1px solid rgba(128, 128, 128, 0.35);
+    padding: 0.15rem 0.25rem;
+    /* Opaque so scrolled events never show through; set from the page background in JS. */
+    background-color: var(--ecs-stretch-head-bg, #fff);
+    background-clip: padding-box;
+}
+/* top for each header row is set in JS (provider row = measured day-row height). */
+.ecs-stretch-table thead tr.ecs-day-row th { top: 0; }
+.ecs-stretch-table thead tr.ecs-prov-row th { top: var(--ecs-stretch-prov-top, 1.6rem); font-weight: 600; font-size: 0.7rem; }
+.ecs-stretch-table thead th.ecs-day-head { border-left: 2px solid rgba(128, 128, 128, 0.7); }
+.ecs-stretch-table thead th.ecs-corner { left: 0; z-index: 9; }
+.ecs-stretch-table td.ecs-time-cell { background-color: var(--ecs-stretch-head-bg, #fff); }
+/*
+ * Do not change z-index of the moved events: core's click-to-create marker
+ * (a.apptMarker, z-index 1) must stay below them, otherwise it covers the
+ * appointment under the pointer and the hover card never sees it (v1.2.1 bug).
+ * Event z-indexes (max 3) stay below the sticky time column (6) and headers (7+).
+ */
+.ecs-stretch-hidden { display: none !important; }
+
+/* Rollover menu on the Week button */
+.ecs-week-menu { position: absolute; z-index: 3000; min-width: 8rem; padding: 0.25rem 0; margin-top: 2px; font-size: 0.85rem; }
+.ecs-week-menu .ecs-check { display: inline-block; width: 1.1rem; font-weight: 700; }
+
+/*
+ * Hide: Sat | Sun (v1.3.1; one Hide weekends toggle in v1.3.0). JS marks
+ * Saturday cells and headers with .ecs-sat and Sunday ones with .ecs-sun
+ * (both also .ecs-weekend) from each cell's own date; a class per day on
+ * <html> hides them in the week view (Stack and Stretch) and the month view.
+ * The remaining columns share the table width (core gives every .schedule the
+ * same width).
+ */
+html.ecs-hide-sat #bigCal .ecs-sat,
+html.ecs-hide-sun #bigCal .ecs-sun { display: none !important; }
+.ecs-layout-toggle .ecs-weekend-group { display: inline-flex; align-items: center; gap: 0.35rem; margin-left: 0.6rem; }
+.ecs-weekend-toggle .ecs-check { display: inline-block; width: 0.9rem; font-weight: 700; text-align: left; }
+.ecs-weekend-toggle .ecs-weekend-badge { margin-left: 0.35rem; font-size: 0.65rem; vertical-align: 0.05rem; }
+.ecs-weekend-group .ecs-weekend-reset { padding: 0 0.25rem; line-height: 1; font-size: 1rem; text-decoration: none; }
